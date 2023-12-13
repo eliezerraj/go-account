@@ -7,7 +7,7 @@ metadata:
     nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
     nginx.ingress.kubernetes.io/rewrite-target: /
     nginx.ingress.kubernetes.io/ssl-redirect: "false"
-    nginx.ingress.kubernetes.io/default-backend: "svc-go-rest-balance"
+    nginx.ingress.kubernetes.io/default-backend: "svc-go-account"
 spec:
   ingressClassName: nginx
   rules:

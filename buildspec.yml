@@ -1,9 +1,9 @@
-# AWS_DEFAULT_REGION	us-east-2	PLAINTEXT
-# AWS_ACCOUNT_ID	908671954593	PLAINTEXT
-# IMAGE_TAG	latest	PLAINTEXT
-# IMAGE_REPO_NAME	go-account	PLAINTEXT
+# AWS_DEFAULT_REGION us-east-2
+# AWS_ACCOUNT_ID 908671954593
+# IMAGE_TAG latest
+# IMAGE_REPO_NAME go-account
 
-version: 0.2 
+version: 0.2
 phases: 
   pre_build: 
     commands: 
@@ -24,7 +24,6 @@ phases:
       - echo Pushing the Docker image... 
       - docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG
       - printf '[{"name":"image","version":"%s"}]' $IMAGE_REPO_NAME:$IMAGE_TAG > build.json
-
 artifacts:
   files:
     - build.json  
