@@ -255,3 +255,26 @@ func (h *HttpWorkerAdapter) AddFundBalanceAccount( rw http.ResponseWriter, req *
 	json.NewEncoder(rw).Encode(res)
 	return
 }
+
+func (h *HttpWorkerAdapter) GetMovimentBalanceAccount( rw http.ResponseWriter, req *http.Request) {
+	childLogger.Debug().Msg("GetMovimentBalanceAccount")
+
+	vars := mux.Vars(req)
+	varID := vars["id"]
+
+	accountBalance := core.AccountBalance{}
+	accountBalance.AccountID = varID
+
+	res, err := h.workerService.GetMovimentBalanceAccount(req.Context(), accountBalance)
+	if err != nil {
+		switch err {
+		default:
+			rw.WriteHeader(409)
+			json.NewEncoder(rw).Encode(err.Error())
+			return
+		}
+	}
+
+	json.NewEncoder(rw).Encode(res)
+	return
+}

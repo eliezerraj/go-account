@@ -116,6 +116,14 @@ func (h HttpServer) StartHttpAppServer(ctx context.Context, httpWorkerAdapter *H
 	)
 	addFundAcc.Use(httpWorkerAdapter.DecoratorDB)
 
+	getMovAcc := myRouter.Methods(http.MethodGet, http.MethodOptions).Subrouter()
+	getMovAcc.Handle("/get/movimentBalanceAccount/{id}", 
+						xray.Handler(xray.NewFixedSegmentNamer(fmt.Sprintf("%s%s%s", "account:", h.httpAppServer.InfoPod.AvailabilityZone, ".get.movimentBalanceAccount")), 
+						http.HandlerFunc(httpWorkerAdapter.GetMovimentBalanceAccount),
+						),
+	)
+	getMovAcc.Use(httpWorkerAdapter.DecoratorDB)
+
 	// ---------------
 	srv := http.Server{
 		Addr:         ":" +  strconv.Itoa(h.httpAppServer.Server.Port),      	

@@ -9,6 +9,7 @@ import (
 	_ "github.com/lib/pq"
 
 	"github.com/go-account/internal/core"
+	"github.com/go-account/internal/erro"
 	"github.com/aws/aws-xray-sdk-go/xray"
 
 )
@@ -51,8 +52,7 @@ func (w WorkerRepository) CreateFundBalanceAccount(ctx context.Context,  tx *sql
 
 func (w WorkerRepository) UpdateFundBalanceAccount(ctx context.Context, tx *sql.Tx, accountBalance core.AccountBalance) (int64, error){
 	childLogger.Debug().Msg("UpdateFundBalanceAccount")
-
-	childLogger.Debug().Interface("==>>accountBalance : ", accountBalance).Msg("")
+	//childLogger.Debug().Interface("==>>accountBalance : ", accountBalance).Msg("")
 
 	_, root := xray.BeginSubsegment(ctx, "SQL.UpdateFundBalanceAccount")
 	defer func() {
@@ -82,4 +82,86 @@ func (w WorkerRepository) UpdateFundBalanceAccount(ctx context.Context, tx *sql.
 
 	defer stmt.Close()
 	return rowsAffected , nil
+}
+
+func (w WorkerRepository) GetFundBalanceAccount(ctx context.Context, accountBalance core.AccountBalance) (*core.AccountBalance, error){
+	childLogger.Debug().Msg("GetFundBalanceAccount")
+
+	_, root := xray.BeginSubsegment(ctx, "SQL.GetFundBalanceAccount")
+	defer func() {
+		root.Close(nil)
+	}()
+
+	client := w.databaseHelper.GetConnection()
+
+	result_accountBalance := core.AccountBalance{}
+	rows, err := client.QueryContext(ctx, `select b.currency , b.amount 
+											from account a,
+												account_balance b
+											where account_id = $1
+											and a.id = b.fk_account_id`, accountBalance.AccountID)
+	if err != nil {
+		childLogger.Error().Err(err).Msg("Query statement")
+		return nil, errors.New(err.Error())
+	}
+
+	for rows.Next() {
+		err := rows.Scan( 	&result_accountBalance.Currency, 
+							&result_accountBalance.Amount, 
+							)
+		if err != nil {
+			childLogger.Error().Err(err).Msg("Scan statement")
+			return nil, errors.New(err.Error())
+        }
+		return &result_accountBalance, nil
+	}
+
+	defer rows.Close()
+	return nil, erro.ErrNotFound
+}
+
+func (w WorkerRepository) ListAccountStatementMoviment(ctx context.Context, accountBalance core.AccountBalance) (*[]core.AccountStatement, error){
+	childLogger.Debug().Msg("ListAccountStatementMoviment")
+
+	_, root := xray.BeginSubsegment(ctx, "SQL.ListAccountStatementMoviment")
+	defer func() {
+		root.Close(nil)
+	}()
+
+	client := w.databaseHelper.GetConnection()
+
+	result_accountStatement := core.AccountStatement{}
+	accountStatement_list := []core.AccountStatement{}
+
+	rows, err := client.QueryContext(ctx, `select 	a.account_id,
+												a.person_id,
+												b.type_charge,
+												b.currency,
+												b.amount
+											from account a,
+												account_statement b
+											where account_id = $1
+											and a.id = b.fk_account_id
+											order by charged_at desc`, accountBalance.AccountID)
+	if err != nil {
+		childLogger.Error().Err(err).Msg("Query statement")
+		return nil, errors.New(err.Error())
+	}
+
+	for rows.Next() {
+		err := rows.Scan( 	&result_accountStatement.AccountID, 
+							&result_accountStatement.PersonID, 
+							&result_accountStatement.Type, 
+							&result_accountStatement.Currency, 
+							&result_accountStatement.Amount, 
+							)
+		if err != nil {
+			childLogger.Error().Err(err).Msg("Scan statement")
+			return nil, errors.New(err.Error())
+        }
+		accountStatement_list = append(accountStatement_list, result_accountStatement)
+	}
+
+	defer rows.Close()
+	return &accountStatement_list, nil
 }

@@ -44,3 +44,27 @@ func (s WorkerService) AddFundBalanceAccount(ctx context.Context, accountBalance
 
 	return &accountBalance, nil
 }
+
+func (s WorkerService) GetMovimentBalanceAccount(ctx context.Context, accountBalance core.AccountBalance) (interface{} , error){
+	childLogger.Debug().Msg("GetMovimentBalanceAccount")
+	childLogger.Debug().Interface("=>accountBalance : ", accountBalance).Msg("")
+
+	_, root := xray.BeginSubsegment(ctx, "Service.GetMovimentBalanceAccount")
+	defer root.Close(nil)
+
+	res_accountBalance, err := s.workerRepository.GetFundBalanceAccount(ctx, accountBalance)
+	if err != nil {
+		return nil, err
+	}
+
+	res_list_accountBalance, err := s.workerRepository.ListAccountStatementMoviment(ctx, accountBalance)
+	if err != nil {
+		return nil, err
+	}
+
+	movimentAccount := core.MovimentAccount{}
+	movimentAccount.AccountBalance = res_accountBalance
+	movimentAccount.AccountStatement = res_list_accountBalance
+
+	return &movimentAccount, nil
+}

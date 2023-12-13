@@ -79,11 +79,9 @@ func (w WorkerRepository) Get(ctx context.Context, account core.Account) (*core.
 			childLogger.Error().Err(err).Msg("Scan statement")
 			return nil, errors.New(err.Error())
         }
-		defer rows.Close()
-
 		return &result_query, nil
 	}
-
+	defer rows.Close()
 	return nil, erro.ErrNotFound
 }
 
