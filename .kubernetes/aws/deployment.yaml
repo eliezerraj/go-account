@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: &app-name go-rest-balance
+  name: &app-name go-account
   namespace: test-a
   labels:
     app: *app-name
@@ -17,21 +17,25 @@ spec:
       labels:
         app: *app-name
     spec:
+      serviceAccountName: sa-go-account
       volumes:
       - name: volume-secret
         secret:
-          secretName: secret-go-rest-balance
+          secretName: es-rds-arch-secret-go-account
       securityContext:
         runAsUser: 1000
         runAsGroup: 2000
         fsGroup: 3000
       containers:
       - name: *app-name
-        imagePullPolicy: Never
-        image: go-rest-balance:latest
+        #imagePullPolicy: Never
+        image: 908671954593.dkr.ecr.us-east-2.amazonaws.com/go-account:latest
+        env:
+          - name: AWS_XRAY_DAEMON_ADDRESS
+            value: xray-service.amazon-cloudwatch:2000
         envFrom:
         - configMapRef:
-            name: go-rest-balance-cm
+            name: go-account-cm
         volumeMounts:
           - mountPath: "/var/pod/secret"
             name: volume-secret
@@ -42,7 +46,7 @@ spec:
              memory: 50Mi
            limits:
              cpu: 200m
-             memory: 100Mi
+             memory: 150Mi
         securityContext:
           seccompProfile:
             type: RuntimeDefault
@@ -70,7 +74,7 @@ spec:
               command:
               - /bin/sh
               - -c
-              - "ps -A | grep go-rest-balance | grep -v grep"
+              - "ps -A | grep go-account | grep -v grep"
             initialDelaySeconds: 5
             periodSeconds: 30
             failureThreshold: 3

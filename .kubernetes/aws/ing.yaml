@@ -1,7 +1,7 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: ing-go-rest-balance
+  name: ing-go-account
   namespace: test-a
   annotations:
     nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
@@ -11,13 +11,13 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-    - host: svc01.domain.com
+    - host: go-account.domain.com
       http:
         paths:
-        - path: /balance
+        - path: /
           pathType: Prefix
           backend:
             service:
-              name: svc-go-rest-balance
+              name: svc-go-account
               port:
-                number: 8900
+                number: 5000
