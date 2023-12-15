@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: &app-name go-account
+  name: &app-name go-account-cm
   namespace: test-a
   labels:
     app: *app-name

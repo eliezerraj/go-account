@@ -39,3 +39,4 @@ phases:
       - kubectl apply -f .kubernetes/aws/hpa.yaml
       - kubectl apply -f .kubernetes/aws/ing.yaml
       - kubectl apply -f .kubernetes/aws/deployment.yaml
+      - kubectl apply -f .kubernetes/aws/svc.yaml
