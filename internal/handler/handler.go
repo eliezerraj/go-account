@@ -268,6 +268,10 @@ func (h *HttpWorkerAdapter) GetMovimentBalanceAccount( rw http.ResponseWriter, r
 	res, err := h.workerService.GetMovimentBalanceAccount(req.Context(), accountBalance)
 	if err != nil {
 		switch err {
+		case erro.ErrNotFound:
+			rw.WriteHeader(404)
+			json.NewEncoder(rw).Encode(err.Error())
+			return
 		default:
 			rw.WriteHeader(409)
 			json.NewEncoder(rw).Encode(err.Error())

@@ -16,7 +16,7 @@ import (
 func (w WorkerRepository) Add(ctx context.Context, account core.Account) (*core.Account, error){
 	childLogger.Debug().Msg("Add")
 
-	_, root := xray.BeginSubsegment(ctx, "SQL.Add")
+	_, root := xray.BeginSubsegment(ctx, "Repository.Add.Account")
 	defer func() {
 		root.Close(nil)
 	}()
@@ -52,7 +52,7 @@ func (w WorkerRepository) Add(ctx context.Context, account core.Account) (*core.
 func (w WorkerRepository) Get(ctx context.Context, account core.Account) (*core.Account, error){
 	childLogger.Debug().Msg("Get")
 
-	_, root := xray.BeginSubsegment(ctx, "SQL.Get-Account")
+	_, root := xray.BeginSubsegment(ctx, "Repository.Get.Account")
 	defer func() {
 		root.Close(nil)
 	}()
@@ -89,7 +89,7 @@ func (w WorkerRepository) Update(ctx context.Context, account core.Account) (boo
 	childLogger.Debug().Msg("Update...")
 	//childLogger.Debug().Interface("account : ", account).Msg("account")
 
-	_, root := xray.BeginSubsegment(ctx, "SQL.Update-Account")
+	_, root := xray.BeginSubsegment(ctx, "Repository.Update.Account")
 	defer func() {
 		root.Close(nil)
 	}()
@@ -129,7 +129,7 @@ func (w WorkerRepository) Update(ctx context.Context, account core.Account) (boo
 func (w WorkerRepository) Delete(ctx context.Context, account core.Account) (bool, error){
 	childLogger.Debug().Msg("Delete")
 
-	_, root := xray.BeginSubsegment(ctx, "SQL.Update-Account")
+	_, root := xray.BeginSubsegment(ctx, "Repository.Update.Account")
 	defer func() {
 		root.Close(nil)
 	}()
@@ -158,7 +158,7 @@ func (w WorkerRepository) Delete(ctx context.Context, account core.Account) (boo
 func (w WorkerRepository) List(ctx context.Context, account core.Account) (*[]core.Account, error){
 	childLogger.Debug().Msg("List")
 
-	_, root := xray.BeginSubsegment(ctx, "SQL.List-Account")
+	_, root := xray.BeginSubsegment(ctx, "Repository.List.Account")
 	defer func() {
 		root.Close(nil)
 	}()

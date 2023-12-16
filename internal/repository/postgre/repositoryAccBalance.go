@@ -17,7 +17,7 @@ import (
 func (w WorkerRepository) CreateFundBalanceAccount(ctx context.Context,  tx *sql.Tx, accountBalance core.AccountBalance) (*core.AccountBalance, error){
 	childLogger.Debug().Msg("CreateFundBalanceAccount")
 
-	_, root := xray.BeginSubsegment(ctx, "SQL.CreateFundBalanceAccount")
+	_, root := xray.BeginSubsegment(ctx, "Repository.CreateFundBalanceAccount")
 	defer func() {
 		root.Close(nil)
 	}()
@@ -54,7 +54,7 @@ func (w WorkerRepository) UpdateFundBalanceAccount(ctx context.Context, tx *sql.
 	childLogger.Debug().Msg("UpdateFundBalanceAccount")
 	//childLogger.Debug().Interface("==>>accountBalance : ", accountBalance).Msg("")
 
-	_, root := xray.BeginSubsegment(ctx, "SQL.UpdateFundBalanceAccount")
+	_, root := xray.BeginSubsegment(ctx, "Repository.UpdateFundBalanceAccount")
 	defer func() {
 		root.Close(nil)
 	}()
@@ -87,7 +87,7 @@ func (w WorkerRepository) UpdateFundBalanceAccount(ctx context.Context, tx *sql.
 func (w WorkerRepository) GetFundBalanceAccount(ctx context.Context, accountBalance core.AccountBalance) (*core.AccountBalance, error){
 	childLogger.Debug().Msg("GetFundBalanceAccount")
 
-	_, root := xray.BeginSubsegment(ctx, "SQL.GetFundBalanceAccount")
+	_, root := xray.BeginSubsegment(ctx, "Repository.GetFundBalanceAccount")
 	defer func() {
 		root.Close(nil)
 	}()
@@ -123,7 +123,7 @@ func (w WorkerRepository) GetFundBalanceAccount(ctx context.Context, accountBala
 func (w WorkerRepository) ListAccountStatementMoviment(ctx context.Context, accountBalance core.AccountBalance) (*[]core.AccountStatement, error){
 	childLogger.Debug().Msg("ListAccountStatementMoviment")
 
-	_, root := xray.BeginSubsegment(ctx, "SQL.ListAccountStatementMoviment")
+	_, root := xray.BeginSubsegment(ctx, "Repository.ListAccountStatementMoviment")
 	defer func() {
 		root.Close(nil)
 	}()

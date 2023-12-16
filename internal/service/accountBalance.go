@@ -52,6 +52,13 @@ func (s WorkerService) GetMovimentBalanceAccount(ctx context.Context, accountBal
 	_, root := xray.BeginSubsegment(ctx, "Service.GetMovimentBalanceAccount")
 	defer root.Close(nil)
 
+	account := core.Account{}
+	account.AccountID = accountBalance.AccountID
+	_, err := s.workerRepository.Get(ctx, account)
+	if err != nil {
+		return nil, err
+	}
+
 	res_accountBalance, err := s.workerRepository.GetFundBalanceAccount(ctx, accountBalance)
 	if err != nil {
 		return nil, err
