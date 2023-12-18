@@ -2,7 +2,9 @@
 
 POC for test purposes.
 
-CRUD a account data
+CRUD for account
+
+CRUD for account_balance
 
 ## Database
 
@@ -53,6 +55,8 @@ CRUD a account data
         }
 
 + DELETE /delete/ACC-001
+
++ GET /movimentBalanceAccount/ACC-100
 
 ## K8 local
 
