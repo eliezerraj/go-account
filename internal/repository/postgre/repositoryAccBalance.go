@@ -97,7 +97,7 @@ func (w WorkerRepository) GetFundBalanceAccount(ctx context.Context, accountBala
 	result_accountBalance := core.AccountBalance{}
 	rows, err := client.QueryContext(ctx, `select b.currency , b.amount 
 											from account a,
-												account_balance b
+												account_balance b,
 											where account_id = $1
 											and a.id = b.fk_account_id`, accountBalance.AccountID)
 	if err != nil {
@@ -134,10 +134,11 @@ func (w WorkerRepository) ListAccountStatementMoviment(ctx context.Context, acco
 	accountStatement_list := []core.AccountStatement{}
 
 	rows, err := client.QueryContext(ctx, `select 	a.account_id,
-												a.person_id,
-												b.type_charge,
-												b.currency,
-												b.amount
+													a.person_id,
+													b.type_charge,
+													b.currency,
+													b.amount,
+													b.charge_at
 											from account a,
 												account_statement b
 											where account_id = $1
@@ -154,6 +155,7 @@ func (w WorkerRepository) ListAccountStatementMoviment(ctx context.Context, acco
 							&result_accountStatement.Type, 
 							&result_accountStatement.Currency, 
 							&result_accountStatement.Amount, 
+							&result_accountStatement.ChargeAt, 
 							)
 		if err != nil {
 			childLogger.Error().Err(err).Msg("Scan statement")
