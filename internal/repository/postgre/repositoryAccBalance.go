@@ -97,7 +97,7 @@ func (w WorkerRepository) GetFundBalanceAccount(ctx context.Context, accountBala
 	result_accountBalance := core.AccountBalance{}
 	rows, err := client.QueryContext(ctx, `select b.currency , b.amount 
 											from account a,
-												account_balance b,
+												account_balance b
 											where account_id = $1
 											and a.id = b.fk_account_id`, accountBalance.AccountID)
 	if err != nil {
