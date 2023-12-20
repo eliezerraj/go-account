@@ -138,7 +138,7 @@ func (w WorkerRepository) ListAccountStatementMoviment(ctx context.Context, acco
 													b.type_charge,
 													b.currency,
 													b.amount,
-													b.charge_at
+													b.charged_at
 											from account a,
 												account_statement b
 											where account_id = $1

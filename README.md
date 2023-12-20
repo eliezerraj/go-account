@@ -27,6 +27,16 @@ CRUD for account_balance
             tenant_id       varchar(200) null,
             user_last_update	varchar(200) NULL);
 
+        CREATE TABLE account_statement (
+            id              SERIAL PRIMARY KEY,
+            fk_account_id   integer REFERENCES account(id),
+            type_charge     varchar(200) NULL,
+            charged_at      timestamptz NULL,
+            currency        varchar(10) NULL,   
+            amount          float8 NULL,
+            tenant_id       varchar(200) NULL
+        );
+
 ## Endpoints
 
 + POST /add
