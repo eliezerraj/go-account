@@ -10,6 +10,8 @@ import (
 	"syscall"
 	"context"
 	"fmt"
+	"encoding/base64"
+	"crypto/tls"
 
 	"github.com/gorilla/mux"
 
@@ -123,19 +125,53 @@ func (h HttpServer) StartHttpAppServer(ctx context.Context, httpWorkerAdapter *H
 	)
 	getMovAcc.Use(httpWorkerAdapter.DecoratorDB)
 
+	// -------------------
+
+	var serverTLSConf *tls.Config
+	if string(h.httpAppServer.Cert.CertPEM) != "" {
+		certPEM_Raw, err := base64.StdEncoding.DecodeString(string(h.httpAppServer.Cert.CertPEM))
+		if err != nil {
+			panic(err)
+		}
+		certPrivKeyPEM_Raw, err := base64.StdEncoding.DecodeString(string(h.httpAppServer.Cert.CertPrivKeyPEM))
+		if err != nil {
+			panic(err)
+		}
+
+		fmt.Println("------------------------------------------------")
+		fmt.Println(string(certPEM_Raw))
+		fmt.Println("------------------------------------------------")
+		fmt.Println(string(certPrivKeyPEM_Raw))
+		fmt.Println("------------------------------------------------")
+
+		serverCert, err := tls.X509KeyPair(certPEM_Raw, certPrivKeyPEM_Raw)
+		if err != nil {
+			childLogger.Error().Err(err).Msg("Erro Load X509 KeyPair")
+		}
+		serverTLSConf = &tls.Config{
+			Certificates: []tls.Certificate{serverCert},
+		}
+	}
+
 	// ---------------
 	srv := http.Server{
 		Addr:         ":" +  strconv.Itoa(h.httpAppServer.Server.Port),      	
 		Handler:      myRouter,                	          
 		ReadTimeout:  time.Duration(h.httpAppServer.Server.ReadTimeout) * time.Second,   
 		WriteTimeout: time.Duration(h.httpAppServer.Server.WriteTimeout) * time.Second,  
-		IdleTimeout:  time.Duration(h.httpAppServer.Server.IdleTimeout) * time.Second, 
+		IdleTimeout:  time.Duration(h.httpAppServer.Server.IdleTimeout) * time.Second,
+		TLSConfig: serverTLSConf,
 	}
 
 	childLogger.Info().Str("Service Port : ", strconv.Itoa(h.httpAppServer.Server.Port)).Msg("Service Port")
 
 	go func() {
-		err := srv.ListenAndServe()
+		var err error
+		if serverTLSConf == nil {
+			err = srv.ListenAndServe()
+		}else {
+			err = srv.ListenAndServeTLS("","")
+		}
 		if err != nil {
 			childLogger.Error().Err(err).Msg("Cancel http mux server !!!")
 		}

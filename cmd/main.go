@@ -31,6 +31,9 @@ var(
 	server					core.Server
 	dataBaseHelper 			postgre.DatabaseHelper
 	repoDB					postgre.WorkerRepository
+
+	certs					core.Cert
+	certPEM, certPrivKeyPEM		[]byte
 )
 
 func init(){
@@ -60,6 +63,23 @@ func init(){
 		log.Error().Err(err).Msg("ERRO FATAL recuperacao secret-pass")
 		os.Exit(3)
 	}
+
+	// ---- TLS
+	certPEM, err = ioutil.ReadFile("/var/pod/secret/certPEM")
+	if err != nil {
+		log.Info().Err(err).Msg("Cert certPEM nao encontrado")
+	} else {
+		certs.CertPEM = certPEM
+	}
+
+	certPrivKeyPEM, err = ioutil.ReadFile("/var/pod/secret/certPrivKeyPEM")
+	if err != nil {
+		log.Info().Err(err).Msg("Cert CertPrivKeyPEM nao encontrado")
+	} else {
+		certs.CertPrivKeyPEM = certPrivKeyPEM
+	}
+	//----
+
 	envDB.User = string(file_user)
 	envDB.Password = string(file_pass)
 	envDB.Db_timeout = 90
@@ -159,7 +179,8 @@ func main() {
 				log.Error().Err(err).Msg("Erro na abertura do Database")
 			} else {
 				log.Error().Err(err).Msg("ERRO FATAL na abertura do Database aborting")
-				panic(err)
+				//panic(err)
+				break
 			}
 			time.Sleep(3 * time.Second)
 			count = count + 1
@@ -176,6 +197,7 @@ func main() {
 	httpWorkerAdapter := handler.NewHttpWorkerAdapter(workerService)
 
 	httpAppServerConfig.InfoPod = &infoPod
+	httpAppServerConfig.Cert = &certs
 	httpServer := handler.NewHttpAppServer(httpAppServerConfig)
 
 	httpServer.StartHttpAppServer(ctx, httpWorkerAdapter)
