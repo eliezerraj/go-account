@@ -19,6 +19,9 @@ spec:
     spec:
       serviceAccountName: sa-go-account
       volumes:
+      - name: volume-cert
+        secret:
+          secretName: es-certs-go-account
       - name: volume-secret
         secret:
           secretName: es-rds-arch-secret-go-account
@@ -28,7 +31,6 @@ spec:
         fsGroup: 3000
       containers:
       - name: *app-name
-        #imagePullPolicy: Never
         image: 908671954593.dkr.ecr.us-east-2.amazonaws.com/go-account:latest
         env:
           - name: AWS_XRAY_DAEMON_ADDRESS
@@ -39,6 +41,9 @@ spec:
         volumeMounts:
           - mountPath: "/var/pod/secret"
             name: volume-secret
+            readOnly: true
+          - mountPath: "/var/pod/cert"
+            name: volume-cert
             readOnly: true
         resources:
            requests:
@@ -60,15 +65,15 @@ spec:
         - name: http
           containerPort: 5000
           protocol: TCP
-        readinessProbe:
-            httpGet:
-              path: /health
-              port: http
-            initialDelaySeconds: 5
-            periodSeconds: 30
-            failureThreshold: 3
-            successThreshold: 1
-            timeoutSeconds: 30
+        #readinessProbe:
+        #    httpGet:
+        #      path: /health
+        #      port: http
+        #    initialDelaySeconds: 5
+        #    periodSeconds: 30
+        #    failureThreshold: 3
+        #    successThreshold: 1
+        #    timeoutSeconds: 30
         livenessProbe:
             exec:
               command:

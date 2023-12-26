@@ -24,7 +24,7 @@ import(
 var(
 	logLevel 	= 	zerolog.DebugLevel
 	noAZ		=	true // set only if you get to split the xray trace per AZ
-
+	isTLS		= 	false
 	infoPod					core.InfoPod
 	envDB	 				core.DatabaseRDS
 	httpAppServerConfig 	core.HttpAppServer
@@ -65,18 +65,20 @@ func init(){
 	}
 
 	// ---- TLS
-	certPEM, err = ioutil.ReadFile("/var/pod/secret/certPEM")
-	if err != nil {
-		log.Info().Err(err).Msg("Cert certPEM nao encontrado")
-	} else {
-		certs.CertPEM = certPEM
-	}
-
-	certPrivKeyPEM, err = ioutil.ReadFile("/var/pod/secret/certPrivKeyPEM")
-	if err != nil {
-		log.Info().Err(err).Msg("Cert CertPrivKeyPEM nao encontrado")
-	} else {
-		certs.CertPrivKeyPEM = certPrivKeyPEM
+	if (isTLS) {
+		certPEM, err = ioutil.ReadFile("/var/pod/cert/server.crt")
+		if err != nil {
+			log.Info().Err(err).Msg("Cert certPEM nao encontrado")
+		} else {
+			certs.CertPEM = certPEM
+		}
+	
+		certPrivKeyPEM, err = ioutil.ReadFile("/var/pod/cert/server.key")
+		if err != nil {
+			log.Info().Err(err).Msg("Cert CertPrivKeyPEM nao encontrado")
+		} else {
+			certs.CertPrivKeyPEM = certPrivKeyPEM
+		}
 	}
 	//----
 
@@ -149,6 +151,10 @@ func getEnv() {
 	}
 	if os.Getenv("DB_DRIVER") !=  "" {	
 		envDB.Postgres_Driver = os.Getenv("DB_DRIVER")
+	}
+
+	if os.Getenv("TLS") !=  "false" {	
+		isTLS = true
 	}
 
 	if os.Getenv("NO_AZ") == "false" {	

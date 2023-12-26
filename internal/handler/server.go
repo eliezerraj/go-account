@@ -13,6 +13,7 @@ import (
 	"encoding/base64"
 	"crypto/tls"
 
+
 	"github.com/gorilla/mux"
 
 	"github.com/go-account/internal/service"
@@ -144,12 +145,13 @@ func (h HttpServer) StartHttpAppServer(ctx context.Context, httpWorkerAdapter *H
 		fmt.Println(string(certPrivKeyPEM_Raw))
 		fmt.Println("------------------------------------------------")
 
-		serverCert, err := tls.X509KeyPair(certPEM_Raw, certPrivKeyPEM_Raw)
+		serverCert, err := tls.X509KeyPair( certPEM_Raw, certPrivKeyPEM_Raw)
 		if err != nil {
 			childLogger.Error().Err(err).Msg("Erro Load X509 KeyPair")
 		}
 		serverTLSConf = &tls.Config{
 			Certificates: []tls.Certificate{serverCert},
+			//InsecureSkipVerify: true,
 		}
 	}
 
