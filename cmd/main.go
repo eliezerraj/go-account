@@ -185,7 +185,7 @@ func main() {
 				log.Error().Err(err).Msg("Erro na abertura do Database")
 			} else {
 				log.Error().Err(err).Msg("ERRO FATAL na abertura do Database aborting")
-				//panic(err)
+				panic(err)
 				break
 			}
 			time.Sleep(3 * time.Second)
