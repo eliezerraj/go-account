@@ -113,6 +113,9 @@ func (s WorkerService) GetMovimentBalanceAccount(ctx context.Context, accountBal
 	if (res_accountBalanceStatementDebit != nil){
 		movimentAccount.AccountBalanceStatementDebit = res_accountBalanceStatementDebit.Amount
 	}
+	if (res_accountBalanceStatementCredit != nil) && (res_accountBalanceStatementDebit != nil){
+		movimentAccount.AccountBalanceStatementTotal = res_accountBalanceStatementCredit.Amount - res_accountBalanceStatementDebit.Amount
+	}
 	if (res_list_accountBalance != nil){
 		movimentAccount.AccountStatement = res_list_accountBalance
 	}

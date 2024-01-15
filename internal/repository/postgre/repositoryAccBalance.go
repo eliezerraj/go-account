@@ -145,7 +145,8 @@ func (w WorkerRepository) ListAccountStatementMoviment(ctx context.Context, acco
 												account_statement b
 											where account_id = $1
 											and a.id = b.fk_account_id
-											order by charged_at desc`, accountBalance.AccountID)
+											order by charged_at desc
+											limit 10 `, accountBalance.AccountID)
 	if err != nil {
 		childLogger.Error().Err(err).Msg("Query statement")
 		return nil, errors.New(err.Error())
