@@ -110,7 +110,7 @@ func (h *HttpWorkerAdapter) Add( rw http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		switch err {
 		default:
-			rw.WriteHeader(409)
+			rw.WriteHeader(400)
 			json.NewEncoder(rw).Encode(err.Error())
 			return
 		}
@@ -246,7 +246,7 @@ func (h *HttpWorkerAdapter) AddFundBalanceAccount( rw http.ResponseWriter, req *
 	if err != nil {
 		switch err {
 		default:
-			rw.WriteHeader(409)
+			rw.WriteHeader(400)
 			json.NewEncoder(rw).Encode(err.Error())
 			return
 		}
@@ -273,7 +273,59 @@ func (h *HttpWorkerAdapter) GetMovimentBalanceAccount( rw http.ResponseWriter, r
 			json.NewEncoder(rw).Encode(err.Error())
 			return
 		default:
-			rw.WriteHeader(409)
+			rw.WriteHeader(400)
+			json.NewEncoder(rw).Encode(err.Error())
+			return
+		}
+	}
+
+	json.NewEncoder(rw).Encode(res)
+	return
+}
+
+func (h *HttpWorkerAdapter) GetFundBalanceAccount( rw http.ResponseWriter, req *http.Request) {
+	childLogger.Debug().Msg("GetFundBalanceAccount")
+
+	vars := mux.Vars(req)
+	varID := vars["id"]
+
+	accountBalance := core.AccountBalance{}
+	accountBalance.AccountID = varID
+
+	res, err := h.workerService.GetFundBalanceAccount(req.Context(), accountBalance)
+	if err != nil {
+		switch err {
+		case erro.ErrNotFound:
+			rw.WriteHeader(404)
+			json.NewEncoder(rw).Encode(err.Error())
+			return
+		default:
+			rw.WriteHeader(400)
+			json.NewEncoder(rw).Encode(err.Error())
+			return
+		}
+	}
+
+	json.NewEncoder(rw).Encode(res)
+	return
+}
+
+func (h *HttpWorkerAdapter) TransferFundAccount( rw http.ResponseWriter, req *http.Request) {
+	childLogger.Debug().Msg("TransferFundAccount")
+
+	transfer := core.Transfer{}
+	err := json.NewDecoder(req.Body).Decode(&transfer)
+    if err != nil {
+		rw.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(rw).Encode(erro.ErrUnmarshal.Error())
+        return
+    }
+
+	res, err := h.workerService.TransferFundAccount(req.Context(), transfer)
+	if err != nil {
+		switch err {
+		default:
+			rw.WriteHeader(400)
 			json.NewEncoder(rw).Encode(err.Error())
 			return
 		}

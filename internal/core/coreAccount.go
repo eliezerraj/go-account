@@ -40,6 +40,22 @@ type AccountStatement struct {
 }
 
 type MovimentAccount struct {
-	AccountBalance		*AccountBalance		`json:"account_balance,omitempty"`
-	AccountStatement	*[]AccountStatement	`json:"account_statement,omitempty"`
+	AccountBalance				*AccountBalance		`json:"account_balance,omitempty"`
+	AccountBalanceStatementCredit	float64			`json:"account_balance_statement_credit,omitempty"`
+	AccountBalanceStatementDebit	float64			`json:"account_balance_statement_debit,omitempty"`
+	AccountBalanceStatementTotal	float64			`json:"account_balance_debit.debit_total,omitempty"`
+	AccountStatement				*[]AccountStatement	`json:"account_statement,omitempty"`
+}
+
+type Transfer struct {
+	ID				int			`json:"id,omitempty"`
+	AccountIDFrom	string		`json:"account_id_from,omitempty"`
+	FkAccountIDFrom	int			`json:"fk_account_id_from,omitempty"`
+	TransferAt		time.Time 	`json:"transfer_at,omitempty"`
+	Type			string  	`json:"type_charge,omitempty"`
+	Status			string  	`json:"status,omitempty"`
+	Currency		string  	`json:"currency,omitempty"`
+	Amount			float64 	`json:"amount,omitempty"`
+	AccountIDTo		string		`json:"account_id_to,omitempty"`
+	FkAccountIDTo	int			`json:"fk_account_id_to,omitempty"`
 }

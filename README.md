@@ -8,6 +8,8 @@ CRUD for account_balance
 
 ## Database
 
+        CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
         CREATE TABLE ACCOUNT (
             id              SERIAL PRIMARY KEY,
             account_id      varchar(200) UNIQUE NULL,
@@ -25,7 +27,8 @@ CRUD for account_balance
             create_at       timestamptz NULL,
             update_at       timestamptz NULL,
             tenant_id       varchar(200) null,
-            user_last_update	varchar(200) NULL);
+            user_last_update	varchar(200) NULL,
+            transaction_id	uuid null);
 
         CREATE TABLE account_statement (
             id              SERIAL PRIMARY KEY,

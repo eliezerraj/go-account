@@ -44,7 +44,27 @@ func (s WorkerService) Add(ctx context.Context, account core.Account) (*core.Acc
 		root.Close(nil)
 	}()
 
+	// Create account
 	res, err := s.workerRepository.Add(ctx, account)
+	if err != nil {
+		return nil, err
+	}
+
+	// Get ID account
+	res, err = s.workerRepository.Get(ctx, account)
+	if err != nil {
+		return nil, err
+	}
+
+	// Create the Balance Account
+	accountBalance := core.AccountBalance{}
+	accountBalance.Amount = 0
+	accountBalance.Currency = "BRL"
+	accountBalance.AccountID = res.AccountID
+	accountBalance.FkAccountID = res.ID
+	accountBalance.TenantID = res.TenantID
+
+	_, err = s.AddFundBalanceAccount(ctx, accountBalance)
 	if err != nil {
 		return nil, err
 	}

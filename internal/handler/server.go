@@ -126,6 +126,22 @@ func (h HttpServer) StartHttpAppServer(ctx context.Context, httpWorkerAdapter *H
 	)
 	getMovAcc.Use(httpWorkerAdapter.DecoratorDB)
 
+	getFundAcc := myRouter.Methods(http.MethodGet, http.MethodOptions).Subrouter()
+	getFundAcc.Handle("/fundBalanceAccount/{id}", 
+						xray.Handler(xray.NewFixedSegmentNamer(fmt.Sprintf("%s%s%s", "account:", h.httpAppServer.InfoPod.AvailabilityZone, ".get.fundBalanceAccount")), 
+						http.HandlerFunc(httpWorkerAdapter.GetFundBalanceAccount),
+						),
+	)
+	getFundAcc.Use(httpWorkerAdapter.DecoratorDB)
+
+	transferFundAcc := myRouter.Methods(http.MethodPost, http.MethodOptions).Subrouter()
+	transferFundAcc.Handle("/transferFund", 
+						xray.Handler(xray.NewFixedSegmentNamer(fmt.Sprintf("%s%s%s", "account:", h.httpAppServer.InfoPod.AvailabilityZone, ".get.transferFund")), 
+						http.HandlerFunc(httpWorkerAdapter.TransferFundAccount),
+						),
+	)
+	transferFundAcc.Use(httpWorkerAdapter.DecoratorDB)
+
 	// -------------------
 
 	var serverTLSConf *tls.Config
