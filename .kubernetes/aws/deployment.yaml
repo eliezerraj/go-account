@@ -59,7 +59,6 @@ spec:
           runAsUser: 1100
           allowPrivilegeEscalation: false
           capabilities:
-            add: ["NET_ADMIN"]
             drop:
             - ALL
         ports:
