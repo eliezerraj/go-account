@@ -71,6 +71,21 @@ CRUD for account_balance
 
 + GET /movimentBalanceAccount/ACC-100
 
++ GET /fundBalanceAccount/ACC-20
+
++ POST /transferFund
+
+        {
+            "account_id_from": "ACC-500",
+            "fk_account_id_from": 11,
+            "account_id_to": "ACC-600",
+            "fk_account_id_TO": 12,
+            "type_charge": "TRANSFER1",
+            "currency": "BRL",
+            "amount": 1.00
+        }
+
+
 ## K8 local
 
 Add in hosts file /etc/hosts the lines below
