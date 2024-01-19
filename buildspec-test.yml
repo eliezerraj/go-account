@@ -1,0 +1,32 @@
+version: 0.2
+
+env:
+  variables:
+    PACKAGE: "github.com/go-account"
+
+phases:
+  install:
+    runtime-versions:
+      golang: 1.21
+    commands:
+        # AWS Codebuild Go images use /go for the $GOPATH so copy the src code into that dir structure
+      - echo INSTALL installing Go dependencies...
+      - mkdir -p "/go/src/$(dirname ${PACKAGE})"
+      - ln -s "${CODEBUILD_SRC_DIR}" "/go/src/${PACKAGE}"
+
+      # Print all environment variables (handy for AWS CodeBuild logs)
+      - echo Print all enviroment variables ...
+      - env
+
+  pre_build:
+    commands:
+      - echo PRE_BUILD installing source dependencies on `date`
+      - echo Make sure we are in the project directory within our GOPATH 
+      - cd "/go/src/${PACKAGE}"
+      - echo Fetch all dependencies
+      - go get -t ./...
+
+  build:
+    commands:
+      - echo Test our go application on `date`
+      - go test -v ./internal/services/
