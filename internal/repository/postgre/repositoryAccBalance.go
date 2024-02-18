@@ -120,7 +120,8 @@ func (w WorkerRepository) GetFundBalanceAccount(ctx context.Context, accountBala
 	}
 
 	defer rows.Close()
-	return nil, erro.ErrNotFound
+	accountBalance.Amount=0
+	return &accountBalance, nil
 }
 
 func (w WorkerRepository) ListAccountStatementMoviment(ctx context.Context, accountBalance core.AccountBalance) (*[]core.AccountStatement, error){

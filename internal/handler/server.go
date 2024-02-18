@@ -70,7 +70,7 @@ func (h HttpServer) StartHttpAppServer(ctx context.Context, httpWorkerAdapter *H
 
 	header := myRouter.Methods(http.MethodGet, http.MethodOptions).Subrouter()
     header.HandleFunc("/header", httpWorkerAdapter.Header)
-	header.Use(MiddleWareHandlerHeader)
+	//header.Use(MiddleWareHandlerHeader)
 
 	addAccount := myRouter.Methods(http.MethodPost, http.MethodOptions).Subrouter()
 	addAccount.Handle("/add", 
@@ -81,13 +81,20 @@ func (h HttpServer) StartHttpAppServer(ctx context.Context, httpWorkerAdapter *H
 	addAccount.Use(httpWorkerAdapter.DecoratorDB)
 
 	getAccount := myRouter.Methods(http.MethodGet, http.MethodOptions).Subrouter()
-    //getAccount.HandleFunc("/get/{id}", httpWorkerAdapter.Get)
 	getAccount.Handle("/get/{id}",
-						xray.Handler(xray.NewFixedSegmentNamer(fmt.Sprintf("%s%s%s", "account:", h.httpAppServer.InfoPod.AvailabilityZone, ".getId")),
+						xray.Handler(xray.NewFixedSegmentNamer(fmt.Sprintf("%s%s%s", "account:", h.httpAppServer.InfoPod.AvailabilityZone, ".get")),
 						http.HandlerFunc(httpWorkerAdapter.Get),
 						),
 	)
-	getAccount.Use(MiddleWareHandlerHeader)
+	//getAccount.Use(MiddleWareHandlerHeader)
+
+	getIdAccount := myRouter.Methods(http.MethodGet, http.MethodOptions).Subrouter()
+	getIdAccount.Handle("/getId/{id}",
+						xray.Handler(xray.NewFixedSegmentNamer(fmt.Sprintf("%s%s%s", "account:", h.httpAppServer.InfoPod.AvailabilityZone, ".getId")),
+						http.HandlerFunc(httpWorkerAdapter.GetId),
+						),
+	)
+	//getIdAccount.Use(MiddleWareHandlerHeader)
 
 	updateAccount := myRouter.Methods(http.MethodPost, http.MethodOptions).Subrouter()
 	updateAccount.Handle("/update/{id}", 

@@ -192,3 +192,39 @@ func (w WorkerRepository) List(ctx context.Context, account core.Account) (*[]co
 	defer rows.Close()
 	return &balance_list , nil
 }
+
+func (w WorkerRepository) GetId(ctx context.Context, account core.Account) (*core.Account, error){
+	childLogger.Debug().Msg("GetId")
+
+	_, root := xray.BeginSubsegment(ctx, "Repository.GetId.Account")
+	defer func() {
+		root.Close(nil)
+	}()
+
+	client := w.databaseHelper.GetConnection()
+
+	result_query := core.Account{}
+	rows, err := client.QueryContext(ctx, `SELECT id, account_id, person_id, create_at, update_at, tenant_id, user_last_update FROM account WHERE id =$1`, account.ID)
+	if err != nil {
+		childLogger.Error().Err(err).Msg("Query statement")
+		return nil, errors.New(err.Error())
+	}
+
+	for rows.Next() {
+		err := rows.Scan( &result_query.ID, 
+							&result_query.AccountID, 
+							&result_query.PersonID, 
+							&result_query.CreateAt,
+							&result_query.UpdateAt,
+							&result_query.TenantID,
+							&result_query.UserLastUpdate,
+							)
+		if err != nil {
+			childLogger.Error().Err(err).Msg("Scan statement")
+			return nil, errors.New(err.Error())
+        }
+		return &result_query, nil
+	}
+	defer rows.Close()
+	return nil, erro.ErrNotFound
+}

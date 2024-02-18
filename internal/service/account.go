@@ -154,3 +154,19 @@ func (s WorkerService) List(ctx context.Context, account core.Account) (*[]core.
 
 	return res, nil
 }
+
+func (s WorkerService) GetId(ctx context.Context, account core.Account) (*core.Account, error){
+	childLogger.Debug().Msg("GetId")
+
+	_, root := xray.BeginSubsegment(ctx, "Service.GetId")
+	defer func() {
+		root.Close(nil)
+	}()
+
+	res, err := s.workerRepository.GetId(ctx, account)
+	if err != nil {
+		return nil, err
+	}
+
+	return res, nil
+}

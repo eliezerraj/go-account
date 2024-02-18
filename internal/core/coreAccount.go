@@ -20,7 +20,7 @@ type AccountBalance struct {
 	AccountID		string		`json:"account_id,omitempty"`
 	FkAccountID		int			`json:"fk_account_id,omitempty"`
 	Currency		string  	`json:"currency,omitempty"`
-	Amount			float64 	`json:"amount,omitempty"`
+	Amount			float64 	`json:"amount"`
 	TenantID		string  	`json:"tenant_id,omitempty"`
 	CreateAt		time.Time 	`json:"create_at,omitempty"`
 	UpdateAt		*time.Time 	`json:"update_at,omitempty"`

@@ -13,4 +13,5 @@ var (
 	ErrUnmarshal 		= errors.New("Erro na conversão do JSON")
 	ErrUnauthorized 	= errors.New("Erro de autorização")
 	ErrTransaction		= errors.New("Type of Transaction invalid !!!")
+	ErrConvStrint		= errors.New("The field must be numeric !!!")
 )

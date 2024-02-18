@@ -2,6 +2,7 @@ package handler
 
 import (	
 	"net/http"
+	"strconv"
 	"encoding/json"
 	"github.com/rs/zerolog/log"
 	"github.com/gorilla/mux"
@@ -146,6 +147,41 @@ func (h *HttpWorkerAdapter) Get(rw http.ResponseWriter, req *http.Request) {
 	json.NewEncoder(rw).Encode(res)
 	return
 }
+
+func (h *HttpWorkerAdapter) GetId(rw http.ResponseWriter, req *http.Request) {
+	childLogger.Debug().Msg("GetId")
+
+	vars := mux.Vars(req)
+	varID := vars["id"]
+
+	i, err := strconv.Atoi(varID)
+	if err != nil{
+		rw.WriteHeader(400)
+		json.NewEncoder(rw).Encode(erro.ErrConvStrint.Error())
+		return
+	}
+
+	account := core.Account{}
+	account.ID = i
+	
+	res, err := h.workerService.GetId(req.Context(), account)
+	if err != nil {
+		switch err {
+		case erro.ErrNotFound:
+			rw.WriteHeader(404)
+			json.NewEncoder(rw).Encode(err.Error())
+			return
+		default:
+			rw.WriteHeader(500)
+			json.NewEncoder(rw).Encode(err.Error())
+			return
+		}
+	}
+
+	json.NewEncoder(rw).Encode(res)
+	return
+}
+
 
 func (h *HttpWorkerAdapter) Update(rw http.ResponseWriter, req *http.Request) {
 	childLogger.Debug().Msg("Update")
