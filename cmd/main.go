@@ -47,10 +47,10 @@ func init(){
 
 	getEnv()
 
-	server.ReadTimeout = 60
-	server.WriteTimeout = 60
-	server.IdleTimeout = 60
-	server.CtxTimeout = 60
+	server.ReadTimeout = 10
+	server.WriteTimeout = 5
+	server.IdleTimeout = 10
+	//server.CtxTimeout = 60
 
 	// Get Database Secrets
 	file_user, err := ioutil.ReadFile("/var/pod/secret/username")
