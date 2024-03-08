@@ -2,7 +2,7 @@ package service
 
 import (
 	"context"
-
+	//"errors"
 	"github.com/go-account/internal/erro"
 	"github.com/go-account/internal/core"
 	"github.com/aws/aws-xray-sdk-go/xray"
@@ -69,7 +69,7 @@ func (s WorkerService) GetFundBalanceAccount(ctx context.Context, accountBalance
 
 func (s WorkerService) GetMovimentBalanceAccount(ctx context.Context, accountBalance core.AccountBalance) (interface{} , error){
 	childLogger.Debug().Msg("GetMovimentBalanceAccount")
-	childLogger.Debug().Interface("=>accountBalance : ", accountBalance).Msg("")
+	//childLogger.Debug().Interface("=>accountBalance : ", accountBalance).Msg("")
 
 	_, root := xray.BeginSubsegment(ctx, "Service.GetMovimentBalanceAccount")
 	defer root.Close(nil)
@@ -145,15 +145,18 @@ func (s WorkerService) TransferFundAccount(ctx context.Context, transfer core.Tr
 
 	// Debit the fund
 	if (transfer.Type != "TRANSFER") {
-		return nil, erro.ErrTransaction
+		err = erro.ErrTransaction 
+		return nil, err
 	}
+
 	transfer.Amount = (transfer.Amount * -1)
 	res, uuid ,err := s.workerRepository.TransferFundAccount(ctx, tx, transfer)
 	if err != nil {
 		return nil, err
 	}
 	if res == 0 {
-		return nil, erro.ErrUpdate
+		err = erro.ErrUpdate
+		return nil, err
 	}
 
 	accountStatementFrom := core.AccountStatement{}
@@ -178,7 +181,8 @@ func (s WorkerService) TransferFundAccount(ctx context.Context, transfer core.Tr
 		return nil, err
 	}
 	if res == 0 {
-		return nil, erro.ErrUpdate
+		err = erro.ErrUpdate
+		return nil, err
 	}
 	accountStatementTo := core.AccountStatement{}
 	accountStatementTo.AccountID = transfer.AccountIDTo
@@ -196,7 +200,8 @@ func (s WorkerService) TransferFundAccount(ctx context.Context, transfer core.Tr
 		return nil, err
 	}
 	if res == 0 {
-		return nil, erro.ErrUpdate
+		err = erro.ErrUpdate
+		return nil, err
 	}
 
 	return &transfer, nil

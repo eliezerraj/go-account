@@ -17,7 +17,7 @@ type WorkerService struct {
 	workerRepository 		*postgre.WorkerRepository
 }
 
-func NewWorkerService(	workerRepository 	*postgre.WorkerRepository) *WorkerService{
+func NewWorkerService(	workerRepository *postgre.WorkerRepository) *WorkerService{
 	childLogger.Debug().Msg("NewWorkerService")
 
 	return &WorkerService{

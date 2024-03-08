@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 	"errors"
+	//"fmt"
 
 	_ "github.com/lib/pq"
 
@@ -33,6 +34,7 @@ func (w WorkerRepository) Add(ctx context.Context, account core.Account) (*core.
 		childLogger.Error().Err(err).Msg("INSERT statement")
 		return nil, errors.New(err.Error())
 	}
+	defer stmt.Close()
 
 	_, err = stmt.ExecContext(	ctx,	
 								account.AccountID, 
@@ -45,7 +47,6 @@ func (w WorkerRepository) Add(ctx context.Context, account core.Account) (*core.
 		return nil, errors.New(err.Error())
 	}
 
-	defer stmt.Close()
 	return &account , nil
 }
 
@@ -60,11 +61,14 @@ func (w WorkerRepository) Get(ctx context.Context, account core.Account) (*core.
 	client := w.databaseHelper.GetConnection()
 
 	result_query := core.Account{}
+
+	//firstQueryStart  := time.Now()
 	rows, err := client.QueryContext(ctx, `SELECT id, account_id, person_id, create_at, update_at, tenant_id, user_last_update FROM account WHERE account_id =$1`, account.AccountID)
 	if err != nil {
 		childLogger.Error().Err(err).Msg("Query statement")
 		return nil, errors.New(err.Error())
 	}
+	defer rows.Close()
 
 	for rows.Next() {
 		err := rows.Scan( &result_query.ID, 
@@ -79,9 +83,12 @@ func (w WorkerRepository) Get(ctx context.Context, account core.Account) (*core.
 			childLogger.Error().Err(err).Msg("Scan statement")
 			return nil, errors.New(err.Error())
         }
+		//firstQueryEnd := time.Now()
+		//fmt.Println(fmt.Sprintf(" ==== > query took %s",  firstQueryEnd.Sub(firstQueryStart).String()))
+
 		return &result_query, nil
 	}
-	defer rows.Close()
+	
 	return nil, erro.ErrNotFound
 }
 
@@ -106,6 +113,7 @@ func (w WorkerRepository) Update(ctx context.Context, account core.Account) (boo
 		childLogger.Error().Err(err).Msg("UPDATE statement")
 		return false, errors.New(err.Error())
 	}
+	defer stmt.Close()
 
 	result, err := stmt.ExecContext(ctx,	
 									account.PersonID,
@@ -122,7 +130,6 @@ func (w WorkerRepository) Update(ctx context.Context, account core.Account) (boo
 	rowsAffected, _ := result.RowsAffected()
 	childLogger.Debug().Int("rowsAffected : ",int(rowsAffected)).Msg("")
 
-	defer stmt.Close()
 	return true , nil
 }
 
@@ -147,11 +154,11 @@ func (w WorkerRepository) Delete(ctx context.Context, account core.Account) (boo
 		childLogger.Error().Err(err).Msg("Exec statement")
 		return false, errors.New(err.Error())
 	}
-
+	defer stmt.Close()
+	
 	rowsAffected, _ := result.RowsAffected()
 	childLogger.Debug().Int("rowsAffected : ",int(rowsAffected)).Msg("")
 	
-	defer stmt.Close()
 	return true , nil
 }
 
@@ -172,6 +179,7 @@ func (w WorkerRepository) List(ctx context.Context, account core.Account) (*[]co
 		childLogger.Error().Err(err).Msg("SELECT statement")
 		return nil, errors.New(err.Error())
 	}
+	defer rows.Close()
 
 	for rows.Next() {
 		err := rows.Scan( 	&result_query.ID, 
@@ -189,7 +197,6 @@ func (w WorkerRepository) List(ctx context.Context, account core.Account) (*[]co
 		balance_list = append(balance_list, result_query)
 	}
 
-	defer rows.Close()
 	return &balance_list , nil
 }
 
@@ -209,6 +216,7 @@ func (w WorkerRepository) GetId(ctx context.Context, account core.Account) (*cor
 		childLogger.Error().Err(err).Msg("Query statement")
 		return nil, errors.New(err.Error())
 	}
+	defer rows.Close()
 
 	for rows.Next() {
 		err := rows.Scan( &result_query.ID, 
@@ -225,6 +233,6 @@ func (w WorkerRepository) GetId(ctx context.Context, account core.Account) (*cor
         }
 		return &result_query, nil
 	}
-	defer rows.Close()
+	
 	return nil, erro.ErrNotFound
 }

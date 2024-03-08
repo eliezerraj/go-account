@@ -45,14 +45,14 @@ func (w WorkerRepository) CreateFundBalanceAccount(ctx context.Context,  tx *sql
 		childLogger.Error().Err(err).Msg("Exec statement")
 		return nil, errors.New(err.Error())
 	}
-
 	defer stmt.Close()
+
 	return &accountBalance , nil
 }
 
 func (w WorkerRepository) UpdateFundBalanceAccount(ctx context.Context, tx *sql.Tx, accountBalance core.AccountBalance) (int64, error){
 	childLogger.Debug().Msg("UpdateFundBalanceAccount")
-	//childLogger.Debug().Interface("==>>accountBalance : ", accountBalance).Msg("")
+	childLogger.Debug().Interface("==>>accountBalance : ", accountBalance).Msg("")
 
 	_, root := xray.BeginSubsegment(ctx, "Repository.UpdateFundBalanceAccount")
 	defer func() {
@@ -76,11 +76,11 @@ func (w WorkerRepository) UpdateFundBalanceAccount(ctx context.Context, tx *sql.
 		childLogger.Error().Err(err).Msg("Exec statement")
 		return 0, errors.New(err.Error())
 	}
+	defer stmt.Close()
 
 	rowsAffected, _ := result.RowsAffected()
 	childLogger.Debug().Int("rowsAffected : ",int(rowsAffected)).Msg("")
 
-	defer stmt.Close()
 	return rowsAffected , nil
 }
 
@@ -104,6 +104,7 @@ func (w WorkerRepository) GetFundBalanceAccount(ctx context.Context, accountBala
 		childLogger.Error().Err(err).Msg("Query statement")
 		return nil, errors.New(err.Error())
 	}
+	defer rows.Close()
 
 	for rows.Next() {
 		err := rows.Scan( 	&result_accountBalance.AccountID,
@@ -119,7 +120,6 @@ func (w WorkerRepository) GetFundBalanceAccount(ctx context.Context, accountBala
 		return &result_accountBalance, nil
 	}
 
-	defer rows.Close()
 	accountBalance.Amount=0
 	return &accountBalance, nil
 }
@@ -152,6 +152,7 @@ func (w WorkerRepository) ListAccountStatementMoviment(ctx context.Context, acco
 		childLogger.Error().Err(err).Msg("Query statement")
 		return nil, errors.New(err.Error())
 	}
+	defer rows.Close()
 
 	for rows.Next() {
 		err := rows.Scan( 	&result_accountStatement.AccountID, 
@@ -168,7 +169,6 @@ func (w WorkerRepository) ListAccountStatementMoviment(ctx context.Context, acco
 		accountStatement_list = append(accountStatement_list, result_accountStatement)
 	}
 
-	defer rows.Close()
 	return &accountStatement_list, nil
 }
 
@@ -195,6 +195,7 @@ func (w WorkerRepository) GetFundBalanceAccountStatementMoviment(ctx context.Con
 		childLogger.Error().Err(err).Msg("Query statement")
 		return nil, errors.New(err.Error())
 	}
+	defer rows.Close()
 
 	if rows == nil {
 		return nil, erro.ErrNotFound
@@ -209,7 +210,6 @@ func (w WorkerRepository) GetFundBalanceAccountStatementMoviment(ctx context.Con
 		return &result_accountBalance, nil
 	}
 
-	defer rows.Close()
 	return nil, erro.ErrNotFound
 }
 
@@ -252,14 +252,14 @@ func (w WorkerRepository) TransferFundAccount(ctx context.Context, tx *sql.Tx, t
 									transfer.Amount)
 	if err != nil {
 		childLogger.Error().Err(err).Msg("Exec statement")
-		return 0, "",errors.New(err.Error())
+		return 0, "", errors.New(err.Error())
 	}
+	defer stmt.Close()
 
 	rowsAffected, _ := result.RowsAffected()
 	childLogger.Debug().Int("rowsAffected : ",int(rowsAffected)).Msg("")
 
-	defer stmt.Close()
-	return rowsAffected, uuid ,nil
+	return rowsAffected, uuid, nil
 }
 
 func (w WorkerRepository) AddAccountStatement(ctx context.Context, tx *sql.Tx ,credit core.AccountStatement) (*core.AccountStatement, error){
@@ -293,10 +293,9 @@ func (w WorkerRepository) AddAccountStatement(ctx context.Context, tx *sql.Tx ,c
 		childLogger.Error().Err(err).Msg("Exec statement")
 		return nil, errors.New(err.Error())
 	}
+	defer stmt.Close()
 
 	credit.ChargeAt = time.Now()
-
-	defer stmt.Close()
 	return &credit , nil
 }
 
@@ -325,10 +324,10 @@ func (w WorkerRepository) CommitTransferFundAccount(ctx context.Context, tx *sql
 		childLogger.Error().Err(err).Msg("Exec statement")
 		return 0, errors.New(err.Error())
 	}
+	defer stmt.Close()
 
 	rowsAffected, _ := result.RowsAffected()
 	childLogger.Debug().Int("rowsAffected : ",int(rowsAffected)).Msg("")
 
-	defer stmt.Close()
 	return rowsAffected ,nil
 }
