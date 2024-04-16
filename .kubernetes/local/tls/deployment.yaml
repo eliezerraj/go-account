@@ -62,31 +62,28 @@ spec:
         ports:
         - name: http
           containerPort: 5000
-          protocol: TCP
-        readinessProbe:
-            httpGet:
-              path: /health
-              port: http
-            initialDelaySeconds: 2
-            periodSeconds: 30
-            failureThreshold: 3
-            successThreshold: 1
-            timeoutSeconds: 30
+        #  protocol: HTTPS
+        #readinessProbe:
+        #    httpGet:
+        #      path: /health
+        #      port: 443
+        #      scheme: HTTPS
+        #    initialDelaySeconds: 5
+        #    periodSeconds: 30
+        #    failureThreshold: 3
+        #    successThreshold: 1
+        #    timeoutSeconds: 30
         livenessProbe:
             exec:
               command:
               - /bin/sh
               - -c
               - "ps -A | grep go-account | grep -v grep"
-            initialDelaySeconds: 3
+            initialDelaySeconds: 5
             periodSeconds: 30
             failureThreshold: 3
             successThreshold: 1
             timeoutSeconds: 5
-        lifecycle:
-          preStop:
-            exec:
-              command: ["/bin/sh","-c","sleep 2"]
       terminationGracePeriodSeconds: 60
       affinity:
         podAntiAffinity:

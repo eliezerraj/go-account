@@ -66,14 +66,14 @@ func init(){
 
 	// ---- TLS
 	if (isTLS) {
-		certPEM, err = ioutil.ReadFile("/var/pod/cert/server.crt")
+		certPEM, err = ioutil.ReadFile("/var/pod/cert/server_account_B64.crt") // server_account_B64.crt
 		if err != nil {
 			log.Info().Err(err).Msg("Cert certPEM nao encontrado")
 		} else {
 			certs.CertPEM = certPEM
 		}
 	
-		certPrivKeyPEM, err = ioutil.ReadFile("/var/pod/cert/server.key")
+		certPrivKeyPEM, err = ioutil.ReadFile("/var/pod/cert/server_account_B64.key") // server_account_B64.key
 		if err != nil {
 			log.Info().Err(err).Msg("Cert CertPrivKeyPEM nao encontrado")
 		} else {

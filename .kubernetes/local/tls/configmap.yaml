@@ -15,4 +15,4 @@ data:
   DB_SCHEMA: "public"
   DB_DRIVER: "postgres"
   NO_AZ: "true"
-  TLS: "false"
+  TLS: "true"
