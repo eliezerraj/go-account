@@ -1,5 +1,4 @@
-#docker build -t go-account .
-#docker run -dit --name go-account -p 5000:5000 go-account
+#docker build -t go-account .cd 
 
 FROM golang:1.21 As builder
 

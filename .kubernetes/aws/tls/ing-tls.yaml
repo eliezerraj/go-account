@@ -32,3 +32,7 @@ spec:
               name: svc-go-account
               port:
                 number: 5000
+  tls:
+  - secretName: sc-ing-go-account-tls
+    hosts:
+      - go-account.architecture.caradhras.io
