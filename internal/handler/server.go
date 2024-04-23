@@ -70,7 +70,7 @@ func (h HttpServer) StartHttpAppServer(ctx context.Context, httpWorkerAdapter *H
 
 	header := myRouter.Methods(http.MethodGet, http.MethodOptions).Subrouter()
     header.HandleFunc("/header", httpWorkerAdapter.Header)
-	//header.Use(MiddleWareHandlerHeader)
+	header.Use(MiddleWareHandlerHeader)
 
 	addAccount := myRouter.Methods(http.MethodPost, http.MethodOptions).Subrouter()
 	addAccount.Handle("/add", 
@@ -86,7 +86,7 @@ func (h HttpServer) StartHttpAppServer(ctx context.Context, httpWorkerAdapter *H
 						http.HandlerFunc(httpWorkerAdapter.Get),
 						),
 	)
-	//getAccount.Use(MiddleWareHandlerHeader)
+	getAccount.Use(MiddleWareHandlerHeader)
 
 	getIdAccount := myRouter.Methods(http.MethodGet, http.MethodOptions).Subrouter()
 	getIdAccount.Handle("/getId/{id}",
@@ -94,7 +94,7 @@ func (h HttpServer) StartHttpAppServer(ctx context.Context, httpWorkerAdapter *H
 						http.HandlerFunc(httpWorkerAdapter.GetId),
 						),
 	)
-	//getIdAccount.Use(MiddleWareHandlerHeader)
+	getIdAccount.Use(MiddleWareHandlerHeader)
 
 	updateAccount := myRouter.Methods(http.MethodPost, http.MethodOptions).Subrouter()
 	updateAccount.Handle("/update/{id}", 
