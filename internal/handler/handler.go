@@ -30,6 +30,7 @@ func MiddleWareHandlerHeader(next http.Handler) http.Handler {
 
 		w.Header().Set("Content-Type", "application/json")
 		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Cache-Control", "public, max-age=0")
 		w.Header().Set("Access-Control-Allow-Headers","Content-Type,access-control-allow-origin, access-control-allow-headers")
 		//log.Println(r.Header.Get("Host"))
 		//log.Println(r.Header.Get("User-Agent"))
@@ -58,6 +59,7 @@ func (h *HttpWorkerAdapter) DecoratorDB(next http.Handler) http.Handler {
 
 		w.Header().Set("Content-Type", "application/json")
 		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Cache-Control", "public, max-age=0")
 		w.Header().Set("Access-Control-Allow-Headers","Content-Type,access-control-allow-origin, access-control-allow-headers")
 	
 		// If the user was informed then insert it in the session
