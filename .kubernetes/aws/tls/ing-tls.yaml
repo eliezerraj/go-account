@@ -22,16 +22,16 @@ spec:
               name: svc-go-account
               port:
                 number: 5000
-    - host: go-account-pv.architecture.caradhras.io
-      http:
-        paths:
-        - path: /
-          pathType: Prefix
-          backend:
-            service:
-              name: svc-go-account
-              port:
-                number: 5000
+    #- host: go-account-pv.architecture.caradhras.io
+    #  http:
+    #    paths:
+    #    - path: /
+    #      pathType: Prefix
+    #      backend:
+    #        service:
+    #          name: svc-go-account
+    #          port:
+    #            number: 5000
   tls:
   - secretName: sc-ing-go-account-tls
     hosts:

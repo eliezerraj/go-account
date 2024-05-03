@@ -65,6 +65,7 @@ func init(){
 	}
 
 	// ---- TLS
+	certs.IsTLS = isTLS
 	if (isTLS) {
 		certPEM, err = ioutil.ReadFile("/var/pod/cert/serverB64.crt") // server_account_B64.crt
 		if err != nil {
