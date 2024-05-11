@@ -11,7 +11,7 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-    - host: go-account-local.architecture.caradhras.io
+    - host: go-account.domain.local
       http:
         paths:
         - path: /

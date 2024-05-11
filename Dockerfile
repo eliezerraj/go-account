@@ -1,4 +1,4 @@
-#docker build -t go-account .cd 
+#docker build -t go-account .
 
 FROM golang:1.21 As builder
 
