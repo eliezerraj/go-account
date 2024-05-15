@@ -16,35 +16,39 @@ import (
 
 var(
 	logLevel = zerolog.DebugLevel
-	envDB	 				core.DatabaseRDS
-	dataBaseHelper 			postgre.DatabaseHelper
-	infoPod					core.InfoPod
-	server					core.Server
-	repoDB					postgre.WorkerRepository
+	appServer	core.AppServer
+	databaseRDS core.DatabaseRDS
+	server  core.Server
 )
 
 func getEnv() {
+	log.Debug().Msg("1. getEnv")
+
 	if os.Getenv("DB_HOST") !=  "" {
-		envDB.Host = os.Getenv("DB_HOST")
+		databaseRDS.Host = os.Getenv("DB_HOST")
 	}
 	if os.Getenv("DB_PORT") !=  "" {
-		envDB.Port = os.Getenv("DB_PORT")
+		databaseRDS.Port = os.Getenv("DB_PORT")
 	}
 	if os.Getenv("DB_NAME") !=  "" {	
-		envDB.DatabaseName = os.Getenv("DB_NAME")
+		databaseRDS.DatabaseName = os.Getenv("DB_NAME")
 	}
 	if os.Getenv("DB_SCHEMA") !=  "" {	
-		envDB.Schema = os.Getenv("DB_SCHEMA")
+		databaseRDS.Schema = os.Getenv("DB_SCHEMA")
 	}
 	if os.Getenv("DB_DRIVER") !=  "" {	
-		envDB.Postgres_Driver = os.Getenv("DB_DRIVER")
+		databaseRDS.Postgres_Driver = os.Getenv("DB_DRIVER")
 	}
 	if os.Getenv("DB_USER") !=  "" {	
-		envDB.User = os.Getenv("DB_USER")
+		databaseRDS.User = os.Getenv("DB_USER")
 	}
 	if os.Getenv("DB_PASS") !=  "" {	
-		envDB.Password = os.Getenv("DB_PASS")
+		databaseRDS.Password = os.Getenv("DB_PASS")
 	}
+	server.ReadTimeout=60
+
+	appServer.Server = &server
+	appServer.Database = &databaseRDS
 }
 
 func TestGetAccount(t *testing.T) {
@@ -59,20 +63,17 @@ func TestGetAccount(t *testing.T) {
 
 	getEnv()
 
-	server.ReadTimeout = 60
-	server.WriteTimeout = 60
-	server.IdleTimeout = 60
-	server.CtxTimeout = 60
+	log.Debug().Msg("2. Start TestGetAccount")
 
-	infoPod.Database = &envDB
+	log.Debug().Interface("2. AppServer.Database :", appServer.Database).Msg("")
 
-	log.Debug().Interface("infoPod.Database :", infoPod.Database).Msg("init")
-
-	ctx, cancel := context.WithTimeout(context.Background(), time.Duration( server.ReadTimeout ) * time.Second)
+	ctx, cancel := context.WithTimeout(	context.Background(), 
+										time.Duration( appServer.Server.ReadTimeout ) * time.Second)
 	defer cancel()
 
-	dataBaseHelper, err = postgre.NewDatabaseHelper(ctx, envDB)
-	repoDB = postgre.NewWorkerRepository(dataBaseHelper)
+	dataBaseHelper, err := postgre.NewDatabaseHelper(ctx, 
+													appServer.Database)
+	repoDB := postgre.NewWorkerRepository(dataBaseHelper)
 	workerService := NewWorkerService(&repoDB)
 
 	account := core.Account{AccountID: os.Getenv("TST_ACCOUNT_ID") }
