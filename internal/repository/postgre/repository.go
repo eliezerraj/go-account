@@ -14,17 +14,19 @@ import (
 
 var childLogger = log.With().Str("repository", "WorkerRepository").Logger()
 
+//---------------------------------------------------------------
 type WorkerRepository struct {
 	databaseHelper DatabaseHelper
 }
 
 func NewWorkerRepository(databaseHelper DatabaseHelper) WorkerRepository {
 	childLogger.Debug().Msg("NewWorkerRepository")
+
 	return WorkerRepository{
 		databaseHelper: databaseHelper,
 	}
 }
-
+//---------------------------------------------------------------
 func (w WorkerRepository) SetSessionVariable(ctx context.Context,userCredential string) (bool, error) {
 	childLogger.Debug().Msg("++++++++++++++++++++++++++++++++")
 	childLogger.Debug().Msg("SetSessionVariable")

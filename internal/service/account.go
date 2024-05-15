@@ -14,17 +14,17 @@ import (
 var childLogger = log.With().Str("service", "service").Logger()
 
 type WorkerService struct {
-	workerRepository 		*postgre.WorkerRepository
+	workerRepository 	*postgre.WorkerRepository
 }
 
-func NewWorkerService(	workerRepository *postgre.WorkerRepository) *WorkerService{
+func NewWorkerService(workerRepository *postgre.WorkerRepository) *WorkerService{
 	childLogger.Debug().Msg("NewWorkerService")
 
 	return &WorkerService{
 		workerRepository:	workerRepository,
 	}
 }
-
+// -----------------------------------------------
 func (s WorkerService) SetSessionVariable(ctx context.Context, userCredential string) (bool, error){
 	childLogger.Debug().Msg("SetSessionVariable")
 

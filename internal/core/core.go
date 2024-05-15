@@ -11,10 +11,13 @@ type DatabaseRDS struct {
 	Postgres_Driver		string `json:"postgres_driver"`
 }
 
-type HttpAppServer struct {
-	InfoPod 	*InfoPod 		`json:"info_pod"`
-	Server     	Server     		`json:"server"`
-	Cert		*Cert			`json:"cert"`
+type AppServer struct {
+	InfoPod 		*InfoPod 		`json:"info_pod"`
+	Server     		*Server     	`json:"server"`
+	Database		*DatabaseRDS	`json:"database"`
+	//Cert			*Cert			`json:"cert"`
+	RestEndpoint	*RestEndpoint	`json:"rest_endpoint"`
+	ConfigOTEL		*ConfigOTEL		`json:"otel_config"`
 }
 
 type InfoPod struct {
@@ -23,7 +26,7 @@ type InfoPod struct {
 	OSPID				string `json:"os_pid"`
 	IPAddress			string `json:"ip_address"`
 	AvailabilityZone 	string `json:"availabilityZone"`
-	Database			*DatabaseRDS
+	IsAZ				bool	`json:"is_az"`
 }
 
 type Server struct {
@@ -32,4 +35,26 @@ type Server struct {
 	WriteTimeout	int `json:"writeTimeout"`
 	IdleTimeout		int `json:"idleTimeout"`
 	CtxTimeout		int `json:"ctxTimeout"`
+	Cert			*Cert `json:"server_cert"`	
+}
+
+type RestEndpoint struct {
+	ServiceUrlDomain 	string `json:"service_url_domain"`
+	XApigwId			string `json:"xApigwId"`
+}
+
+type Cert struct {
+	IsTLS				bool
+	CertPEM 			[]byte 	`json:"server_cert"`		
+	CertPrivKeyPEM	    []byte  `json:"server_key"`	 
+}
+
+type ConfigOTEL struct {
+	OtelExportEndpoint		string
+	TimeInterval            int64    `mapstructure:"TimeInterval"`
+	TimeAliveIncrementer    int64    `mapstructure:"RandomTimeAliveIncrementer"`
+	TotalHeapSizeUpperBound int64    `mapstructure:"RandomTotalHeapSizeUpperBound"`
+	ThreadsActiveUpperBound int64    `mapstructure:"RandomThreadsActiveUpperBound"`
+	CpuUsageUpperBound      int64    `mapstructure:"RandomCpuUsageUpperBound"`
+	SampleAppPorts          []string `mapstructure:"SampleAppPorts"`
 }

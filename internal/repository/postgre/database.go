@@ -17,9 +17,11 @@ type DatabaseHelperImplementacion struct {
 	client   	*sql.DB
 }
 
-func NewDatabaseHelper(ctx context.Context, databaseRDS core.DatabaseRDS) (DatabaseHelper, error) {
+func NewDatabaseHelper(	ctx context.Context, 
+						databaseRDS *core.DatabaseRDS) (DatabaseHelper, error) {
 	childLogger.Debug().Msg("NewDatabaseHelper")
-	
+	childLogger.Debug().Interface("databaseRDS :",databaseRDS).Msg("")
+
 	connStr := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable", 
 							databaseRDS.User, 
 							databaseRDS.Password, 

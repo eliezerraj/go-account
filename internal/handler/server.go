@@ -13,7 +13,6 @@ import (
 	"encoding/base64"
 	"crypto/tls"
 
-
 	"github.com/gorilla/mux"
 
 	"github.com/go-account/internal/service"
@@ -21,32 +20,32 @@ import (
 	"github.com/aws/aws-xray-sdk-go/xray"
 
 )
-
+// ----------------------------------------------------
 type HttpWorkerAdapter struct {
 	workerService 	*service.WorkerService
 }
 
-func NewHttpWorkerAdapter(workerService *service.WorkerService) *HttpWorkerAdapter {
+func NewHttpWorkerAdapter(workerService *service.WorkerService) HttpWorkerAdapter {
 	childLogger.Debug().Msg("NewHttpWorkerAdapter")
-	return &HttpWorkerAdapter{
+
+	return HttpWorkerAdapter{
 		workerService: workerService,
 	}
 }
-
+// ----------------------------------------------------
 type HttpServer struct {
-	start 			time.Time
-	httpAppServer 	core.HttpAppServer
+	httpServer	*core.Server
 }
 
-func NewHttpAppServer(httpAppServer core.HttpAppServer) HttpServer {
+func NewHttpAppServer(httpServer *core.Server) HttpServer {
 	childLogger.Debug().Msg("NewHttpAppServer")
 
-	return HttpServer{	start: time.Now(), 
-						httpAppServer: httpAppServer,
-					}
+	return HttpServer{httpServer: httpServer }
 }
-
-func (h HttpServer) StartHttpAppServer(ctx context.Context, httpWorkerAdapter *HttpWorkerAdapter) {
+// ----------------------------------------------------
+func (h HttpServer) StartHttpAppServer(	ctx context.Context, 
+										httpWorkerAdapter *HttpWorkerAdapter,
+										appServer *core.AppServer) {
 	childLogger.Info().Msg("StartHttpAppServer")
 		
 	myRouter := mux.NewRouter().StrictSlash(true)
@@ -54,12 +53,12 @@ func (h HttpServer) StartHttpAppServer(ctx context.Context, httpWorkerAdapter *H
 
 	myRouter.HandleFunc("/", func(rw http.ResponseWriter, req *http.Request) {
 		childLogger.Debug().Msg("/")
-		json.NewEncoder(rw).Encode(h.httpAppServer)
+		json.NewEncoder(rw).Encode(appServer)
 	})
 
 	myRouter.HandleFunc("/info", func(rw http.ResponseWriter, req *http.Request) {
 		childLogger.Debug().Msg("/info")
-		json.NewEncoder(rw).Encode(h.httpAppServer)
+		json.NewEncoder(rw).Encode(&appServer)
 	})
 	
 	health := myRouter.Methods(http.MethodGet, http.MethodOptions).Subrouter()
@@ -74,7 +73,7 @@ func (h HttpServer) StartHttpAppServer(ctx context.Context, httpWorkerAdapter *H
 
 	addAccount := myRouter.Methods(http.MethodPost, http.MethodOptions).Subrouter()
 	addAccount.Handle("/add", 
-						xray.Handler(xray.NewFixedSegmentNamer(fmt.Sprintf("%s%s%s", "account:", h.httpAppServer.InfoPod.AvailabilityZone, ".add")), 
+						xray.Handler(xray.NewFixedSegmentNamer(fmt.Sprintf("%s%s%s", "account:", appServer.InfoPod.AvailabilityZone, ".add")), 
 						http.HandlerFunc(httpWorkerAdapter.Add),
 						),
 	)
@@ -82,7 +81,7 @@ func (h HttpServer) StartHttpAppServer(ctx context.Context, httpWorkerAdapter *H
 
 	getAccount := myRouter.Methods(http.MethodGet, http.MethodOptions).Subrouter()
 	getAccount.Handle("/get/{id}",
-						xray.Handler(xray.NewFixedSegmentNamer(fmt.Sprintf("%s%s%s", "account:", h.httpAppServer.InfoPod.AvailabilityZone, ".get")),
+						xray.Handler(xray.NewFixedSegmentNamer(fmt.Sprintf("%s%s%s", "account:", appServer.InfoPod.AvailabilityZone, ".get")),
 						http.HandlerFunc(httpWorkerAdapter.Get),
 						),
 	)
@@ -90,7 +89,7 @@ func (h HttpServer) StartHttpAppServer(ctx context.Context, httpWorkerAdapter *H
 
 	getIdAccount := myRouter.Methods(http.MethodGet, http.MethodOptions).Subrouter()
 	getIdAccount.Handle("/getId/{id}",
-						xray.Handler(xray.NewFixedSegmentNamer(fmt.Sprintf("%s%s%s", "account:", h.httpAppServer.InfoPod.AvailabilityZone, ".getId")),
+						xray.Handler(xray.NewFixedSegmentNamer(fmt.Sprintf("%s%s%s", "account:", appServer.InfoPod.AvailabilityZone, ".getId")),
 						http.HandlerFunc(httpWorkerAdapter.GetId),
 						),
 	)
@@ -98,7 +97,7 @@ func (h HttpServer) StartHttpAppServer(ctx context.Context, httpWorkerAdapter *H
 
 	updateAccount := myRouter.Methods(http.MethodPost, http.MethodOptions).Subrouter()
 	updateAccount.Handle("/update/{id}", 
-						xray.Handler(xray.NewFixedSegmentNamer(fmt.Sprintf("%s%s%s", "account:", h.httpAppServer.InfoPod.AvailabilityZone, ".updateId")),
+						xray.Handler(xray.NewFixedSegmentNamer(fmt.Sprintf("%s%s%s", "account:", appServer.InfoPod.AvailabilityZone, ".updateId")),
 						http.HandlerFunc(httpWorkerAdapter.Update),
 						),
 	)
@@ -106,7 +105,7 @@ func (h HttpServer) StartHttpAppServer(ctx context.Context, httpWorkerAdapter *H
 
 	listAccount := myRouter.Methods(http.MethodGet, http.MethodOptions).Subrouter()
 	listAccount.Handle("/list/{id}", 
-						xray.Handler(xray.NewFixedSegmentNamer(fmt.Sprintf("%s%s%s", "account:", h.httpAppServer.InfoPod.AvailabilityZone, ".list")),
+						xray.Handler(xray.NewFixedSegmentNamer(fmt.Sprintf("%s%s%s", "account:", appServer.InfoPod.AvailabilityZone, ".list")),
 						http.HandlerFunc(httpWorkerAdapter.List),
 						),
 	)
@@ -119,7 +118,7 @@ func (h HttpServer) StartHttpAppServer(ctx context.Context, httpWorkerAdapter *H
 	//---------------
 	addFundAcc := myRouter.Methods(http.MethodPost, http.MethodOptions).Subrouter()
 	addFundAcc.Handle("/add/fund", 
-						xray.Handler(xray.NewFixedSegmentNamer(fmt.Sprintf("%s%s%s", "account:", h.httpAppServer.InfoPod.AvailabilityZone, ".add.fund")), 
+						xray.Handler(xray.NewFixedSegmentNamer(fmt.Sprintf("%s%s%s", "account:", appServer.InfoPod.AvailabilityZone, ".add.fund")), 
 						http.HandlerFunc(httpWorkerAdapter.AddFundBalanceAccount),
 						),
 	)
@@ -127,7 +126,7 @@ func (h HttpServer) StartHttpAppServer(ctx context.Context, httpWorkerAdapter *H
 
 	getMovAcc := myRouter.Methods(http.MethodGet, http.MethodOptions).Subrouter()
 	getMovAcc.Handle("/get/movimentBalanceAccount/{id}", 
-						xray.Handler(xray.NewFixedSegmentNamer(fmt.Sprintf("%s%s%s", "account:", h.httpAppServer.InfoPod.AvailabilityZone, ".get.movimentBalanceAccount")), 
+						xray.Handler(xray.NewFixedSegmentNamer(fmt.Sprintf("%s%s%s", "account:", appServer.InfoPod.AvailabilityZone, ".get.movimentBalanceAccount")), 
 						http.HandlerFunc(httpWorkerAdapter.GetMovimentBalanceAccount),
 						),
 	)
@@ -135,7 +134,7 @@ func (h HttpServer) StartHttpAppServer(ctx context.Context, httpWorkerAdapter *H
 
 	getFundAcc := myRouter.Methods(http.MethodGet, http.MethodOptions).Subrouter()
 	getFundAcc.Handle("/fundBalanceAccount/{id}", 
-						xray.Handler(xray.NewFixedSegmentNamer(fmt.Sprintf("%s%s%s", "account:", h.httpAppServer.InfoPod.AvailabilityZone, ".get.fundBalanceAccount")), 
+						xray.Handler(xray.NewFixedSegmentNamer(fmt.Sprintf("%s%s%s", "account:", appServer.InfoPod.AvailabilityZone, ".get.fundBalanceAccount")), 
 						http.HandlerFunc(httpWorkerAdapter.GetFundBalanceAccount),
 						),
 	)
@@ -143,7 +142,7 @@ func (h HttpServer) StartHttpAppServer(ctx context.Context, httpWorkerAdapter *H
 
 	transferFundAcc := myRouter.Methods(http.MethodPost, http.MethodOptions).Subrouter()
 	transferFundAcc.Handle("/transferFund", 
-						xray.Handler(xray.NewFixedSegmentNamer(fmt.Sprintf("%s%s%s", "account:", h.httpAppServer.InfoPod.AvailabilityZone, ".get.transferFund")), 
+						xray.Handler(xray.NewFixedSegmentNamer(fmt.Sprintf("%s%s%s", "account:", appServer.InfoPod.AvailabilityZone, ".get.transferFund")), 
 						http.HandlerFunc(httpWorkerAdapter.TransferFundAccount),
 						),
 	)
@@ -152,19 +151,20 @@ func (h HttpServer) StartHttpAppServer(ctx context.Context, httpWorkerAdapter *H
 	// -------------------
 
 	var serverTLSConf *tls.Config
-	if string(h.httpAppServer.Cert.CertPEM) != "" {
-		certPEM_Raw, err := base64.StdEncoding.DecodeString(string(h.httpAppServer.Cert.CertPEM))
+	if h.httpServer.Cert.IsTLS == true {
+
+		certPEM_Raw, err := base64.StdEncoding.DecodeString(string(h.httpServer.Cert.CertPEM))
 		if err != nil {
 			panic(err)
 		}
-		certPrivKeyPEM_Raw, err := base64.StdEncoding.DecodeString(string(h.httpAppServer.Cert.CertPrivKeyPEM))
+		certPrivKeyPEM_Raw, err := base64.StdEncoding.DecodeString(string(h.httpServer.Cert.CertPrivKeyPEM))
 		if err != nil {
 			panic(err)
 		}
 
-		fmt.Println("------------------------------------------------")
+		fmt.Println("---------------- Server CRT ------------------------")
 		fmt.Println(string(certPEM_Raw))
-		fmt.Println("------------------------------------------------")
+		fmt.Println("-----------------Server Key ----------------------")
 		fmt.Println(string(certPrivKeyPEM_Raw))
 		fmt.Println("------------------------------------------------")
 
@@ -174,21 +174,21 @@ func (h HttpServer) StartHttpAppServer(ctx context.Context, httpWorkerAdapter *H
 		}
 		serverTLSConf = &tls.Config{
 			Certificates: []tls.Certificate{serverCert},
-			//InsecureSkipVerify: true,
+			InsecureSkipVerify: false,
 		}
 	}
 
 	// ---------------
 	srv := http.Server{
-		Addr:         ":" +  strconv.Itoa(h.httpAppServer.Server.Port),      	
+		Addr:         ":" +  strconv.Itoa(h.httpServer.Port),      	
 		Handler:      myRouter,                	          
-		ReadTimeout:  time.Duration(h.httpAppServer.Server.ReadTimeout) * time.Second,   
-		WriteTimeout: time.Duration(h.httpAppServer.Server.WriteTimeout) * time.Second,  
-		IdleTimeout:  time.Duration(h.httpAppServer.Server.IdleTimeout) * time.Second,
+		ReadTimeout:  time.Duration(h.httpServer.ReadTimeout) * time.Second,   
+		WriteTimeout: time.Duration(h.httpServer.WriteTimeout) * time.Second,  
+		IdleTimeout:  time.Duration(h.httpServer.IdleTimeout) * time.Second,
 		TLSConfig: serverTLSConf,
 	}
 
-	childLogger.Info().Str("Service Port : ", strconv.Itoa(h.httpAppServer.Server.Port)).Msg("Service Port")
+	childLogger.Info().Str("Service Port : ", strconv.Itoa(h.httpServer.Port)).Msg("Service Port")
 
 	go func() {
 		var err error
