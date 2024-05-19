@@ -47,6 +47,8 @@ func getEnv() {
 	}
 	server.ReadTimeout=60
 
+	databaseRDS.Host = "rds-proxy-db-arch.proxy-couoacqalfwt.us-east-2.rds.amazonaws.com"
+
 	appServer.Server = &server
 	appServer.Database = &databaseRDS
 }
