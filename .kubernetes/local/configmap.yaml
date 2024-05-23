@@ -9,7 +9,7 @@ data:
   API_VERSION: "1.1"
   POD_NAME: "go-account.k8"
   PORT: "5000"
-  DB_HOST: "host.docker.internal"
+  DB_HOST: "host.minikube.internal"
   DB_PORT: "5432"
   DB_NAME: "postgres"
   DB_SCHEMA: "public"

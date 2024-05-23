@@ -10,34 +10,40 @@ CRUD for account_balance
 
         CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
-        CREATE TABLE ACCOUNT (
-            id              SERIAL PRIMARY KEY,
-            account_id      varchar(200) UNIQUE NULL,
-            person_id       varchar(200) NULL,
-            create_at       timestamptz NULL,
-            update_at       timestamptz NULL,
-            tenant_id       varchar(200) null,
-            user_last_update	varchar(200) NULL);
+        CREATE TABLE public.account (
+            id serial4 NOT NULL,
+            account_id varchar(200) NULL,
+            person_id varchar(200) NULL,
+            create_at timestamptz NULL,
+            update_at timestamptz NULL,
+            tenant_id varchar(200) NULL,
+            user_last_update varchar(200) NULL,
+            CONSTRAINT account_account_id_key UNIQUE (account_id),
+            CONSTRAINT account_pkey PRIMARY KEY (id)
+        );
 
-        CREATE TABLE ACCOUNT_BALANCE (
-            id              SERIAL PRIMARY KEY,
-            fk_account_id   integer REFERENCES account(id),
-            currency        varchar(10) NULL,   
-            amount          float8 NULL,
-            create_at       timestamptz NULL,
-            update_at       timestamptz NULL,
-            tenant_id       varchar(200) null,
-            user_last_update	varchar(200) NULL,
-            transaction_id	uuid null);
+        CREATE TABLE public.account_balance (
+            id serial4 NOT NULL,
+            fk_account_id int4 NULL,
+            currency varchar(10) NULL,
+            amount float8 NULL,
+            create_at timestamptz NULL,
+            update_at timestamptz NULL,
+            tenant_id varchar(200) NULL,
+            user_last_update varchar(200) NULL,
+            transaction_id uuid NULL,
+            CONSTRAINT account_balance_pkey PRIMARY KEY (id)
+        );
 
-        CREATE TABLE account_statement (
-            id              SERIAL PRIMARY KEY,
-            fk_account_id   integer REFERENCES account(id),
-            type_charge     varchar(200) NULL,
-            charged_at      timestamptz NULL,
-            currency        varchar(10) NULL,   
-            amount          float8 NULL,
-            tenant_id       varchar(200) NULL
+        CREATE TABLE public.account_statement (
+            id serial4 NOT NULL,
+            fk_account_id int4 NULL,
+            type_charge varchar(200) NULL,
+            charged_at timestamptz NULL,
+            currency varchar(10) NULL,
+            amount float8 NULL,
+            tenant_id varchar(200) NULL,
+            CONSTRAINT account_statement_pkey PRIMARY KEY (id)
         );
 
 ## Endpoints

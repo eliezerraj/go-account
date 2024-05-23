@@ -19,9 +19,6 @@ spec:
     spec:
       serviceAccountName: sa-go-account
       volumes:
-      - name: volume-cert
-        secret:
-          secretName: es-certs-go-account
       - name: volume-secret
         secret:
           secretName: es-rds-arch-secret-go-account
@@ -39,9 +36,6 @@ spec:
         volumeMounts:
           - mountPath: "/var/pod/secret"
             name: volume-secret
-            readOnly: true
-          - mountPath: "/var/pod/cert"
-            name: volume-cert
             readOnly: true
         resources:
            requests:

@@ -69,7 +69,6 @@ func (h HttpServer) StartHttpAppServer(	ctx context.Context,
 
 	header := myRouter.Methods(http.MethodGet, http.MethodOptions).Subrouter()
     header.HandleFunc("/header", httpWorkerAdapter.Header)
-	header.Use(MiddleWareHandlerHeader)
 
 	addAccount := myRouter.Methods(http.MethodPost, http.MethodOptions).Subrouter()
 	addAccount.Handle("/add", 
@@ -85,7 +84,6 @@ func (h HttpServer) StartHttpAppServer(	ctx context.Context,
 						http.HandlerFunc(httpWorkerAdapter.Get),
 						),
 	)
-	getAccount.Use(MiddleWareHandlerHeader)
 
 	getIdAccount := myRouter.Methods(http.MethodGet, http.MethodOptions).Subrouter()
 	getIdAccount.Handle("/getId/{id}",
@@ -93,7 +91,6 @@ func (h HttpServer) StartHttpAppServer(	ctx context.Context,
 						http.HandlerFunc(httpWorkerAdapter.GetId),
 						),
 	)
-	getIdAccount.Use(MiddleWareHandlerHeader)
 
 	updateAccount := myRouter.Methods(http.MethodPost, http.MethodOptions).Subrouter()
 	updateAccount.Handle("/update/{id}", 
@@ -101,7 +98,6 @@ func (h HttpServer) StartHttpAppServer(	ctx context.Context,
 						http.HandlerFunc(httpWorkerAdapter.Update),
 						),
 	)
-	updateAccount.Use(httpWorkerAdapter.DecoratorDB)
 
 	listAccount := myRouter.Methods(http.MethodGet, http.MethodOptions).Subrouter()
 	listAccount.Handle("/list/{id}", 
@@ -109,11 +105,9 @@ func (h HttpServer) StartHttpAppServer(	ctx context.Context,
 						http.HandlerFunc(httpWorkerAdapter.List),
 						),
 	)
-	listAccount.Use(MiddleWareHandlerHeader)
 	
 	deleteAccount := myRouter.Methods(http.MethodDelete, http.MethodOptions).Subrouter()
     deleteAccount.HandleFunc("/delete/{id}", httpWorkerAdapter.Delete)
-	deleteAccount.Use(MiddleWareHandlerHeader)
 
 	//---------------
 	addFundAcc := myRouter.Methods(http.MethodPost, http.MethodOptions).Subrouter()
