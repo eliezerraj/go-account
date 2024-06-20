@@ -1,3 +1,4 @@
+
 [req]
 default_md = sha256
 prompt = no
@@ -11,6 +12,14 @@ CN = go-account.architecture.caradhras.io
 keyUsage = critical,digitalSignature,keyEncipherment
 extendedKeyUsage = critical,serverAuth,clientAuth
 subjectAltName = @alt_names
+
+[crl_ext]
+# CRL extensions.
+# Only issuerAltName and authorityKeyIdentifier make any sense in a CRL.
+authorityKeyIdentifier=keyid:always
+
+[ server_cert ]
+crlDistributionPoints = URI:http://example.com/intermediate.crl
 
 [alt_names]
 DNS.1 = localhost

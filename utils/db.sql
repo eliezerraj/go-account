@@ -1,3 +1,4 @@
+truncate       person cascade; 
 truncate       account cascade; 
 truncate       account_balance cascade;
 truncate       account_statement cascade;
@@ -8,7 +9,8 @@ truncate       terminal cascade;
 truncate       transfer_moviment cascade;
 truncate       fraud_dataset_view cascade;
 
-drop    table  account cascade; 
+drop    table  		person cascade; 
+drop    table  		account cascade; 
 drop    table       account_balance cascade;
 drop    table       account_statement cascade;
 drop    table       account_statement_fee cascade;
@@ -19,6 +21,24 @@ drop    table       transfer_moviment cascade;
 drop    table       fraud_dataset_view cascade;
 
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+CREATE TABLE public.person (
+	id 	serial4		NOT NULL,
+	person_id 		varchar(200) NULL,
+	person_name 	varchar(200) NULL,
+	age 			int NULL,
+	profession		int NULL,
+	education_level	int NULL,
+	salary_level	int NULL,
+	gender			varchar(1) NULL,
+	create_at 		timestamptz NULL,
+	update_at 		timestamptz NULL,
+	fk_person_id 	int NULL,
+	tenant_id 		varchar(200) NULL,
+	CONSTRAINT person_id_key UNIQUE (person_id),
+	CONSTRAINT person_pkey PRIMARY KEY (id),
+	FOREIGN KEY (fk_person_id) REFERENCES public.person(id)
+);
 
 CREATE TABLE public.account (
 	id serial4 NOT NULL,
