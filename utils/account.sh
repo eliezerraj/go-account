@@ -15,7 +15,7 @@ TOKEN=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImFkbWluIiwic2NvcGUiO
 
 startid=1
 
-for (( x=0; x<=00; x++ ))
+for (( x=0; x<=0; x++ ))
 do
     idx=$((startid + x))
     echo curl -X POST $domain -H 'Content-Type: application/json' -H "Authorization: $TOKEN" -d '{"account_id":"ACC-'$idx'","person_id": "P-'$idx'","tenant_id": "TENANT-1"}'

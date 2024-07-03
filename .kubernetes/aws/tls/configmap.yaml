@@ -7,13 +7,13 @@ metadata:
     app: *app-name
 data:
   API_VERSION: "2.0"
-  POD_NAME: "go-account,k8"
+  POD_NAME: "go-account.k8-mtls"
   PORT: "5000"
   DB_HOST: "rds-proxy-db-arch.proxy-couoacqalfwt.us-east-2.rds.amazonaws.com"
   DB_PORT: "5432"
   DB_NAME: "postgres"
   DB_SCHEMA: "public"
   DB_DRIVER: "postgres"
-  SETPOD_AZ=false
+  SETPOD_AZ: "false"
   TLS: "true"
   OTEL_EXPORTER_OTLP_ENDPOINT: "arch-eks-02-xray-collector.default.svc.cluster.local:4317"

@@ -6,7 +6,12 @@ req_extensions = v3_ext
 distinguished_name = req_distinguished_name
 
 [req_distinguished_name]
-CN = go-account.architecture.caradhras.io
+CN = go-account-mtls.architecture.caradhras.io
+O = dock
+OU = architecture
+C = BR
+ST = SP
+L = SP
 
 [v3_ext]
 keyUsage = critical,digitalSignature,keyEncipherment
@@ -23,7 +28,7 @@ crlDistributionPoints = URI:http://example.com/intermediate.crl
 
 [alt_names]
 DNS.1 = localhost
-DNS.2 = go-account.architecture.caradhras.io
-DNS.3 = go-account-local.architecture.caradhras.io
+DNS.2 = go-account-mtls.architecture.caradhras.io
+DNS.3 = go-account.architecture.caradhras.io
 IP.1 = 0.0.0.0
 IP.1 = 127.0.0.1
