@@ -16,4 +16,4 @@ data:
   DB_DRIVER: "postgres"
   SETPOD_AZ: "false"
   TLS: "false"
-  OTEL_EXPORTER_OTLP_ENDPOINT: "arch-eks-02-xray-collector.default.svc.cluster.local:4317"
+  OTEL_EXPORTER_OTLP_ENDPOINT: "arch-eks-01-xray-collector.default.svc.cluster.local:4317"
