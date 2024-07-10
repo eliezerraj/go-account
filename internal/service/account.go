@@ -4,11 +4,10 @@ import (
 	"context"
 	"github.com/rs/zerolog/log"
 
+	"github.com/go-account/internal/lib"
 	"github.com/go-account/internal/erro"
 	"github.com/go-account/internal/core"
 	"github.com/go-account/internal/repository/postgre"
-	"github.com/aws/aws-xray-sdk-go/xray"
-
 )
 
 var childLogger = log.With().Str("service", "service").Logger()
@@ -39,10 +38,8 @@ func (s WorkerService) SetSessionVariable(ctx context.Context, userCredential st
 func (s WorkerService) Add(ctx context.Context, account core.Account) (*core.Account, error){
 	childLogger.Debug().Msg("Add")
 
-	_, root := xray.BeginSubsegment(ctx, "Service.Add")
-	defer func() {
-		root.Close(nil)
-	}()
+	span := lib.Span(ctx, "service.Add")
+	span.End()
 
 	// Create account
 	res, err := s.workerRepository.Add(ctx, account)
@@ -75,10 +72,8 @@ func (s WorkerService) Add(ctx context.Context, account core.Account) (*core.Acc
 func (s WorkerService) Get(ctx context.Context, account core.Account) (*core.Account, error){
 	childLogger.Debug().Msg("Get")
 
-	_, root := xray.BeginSubsegment(ctx, "Service.Get")
-	defer func() {
-		root.Close(nil)
-	}()
+	span := lib.Span(ctx, "service.Get")
+	span.End()
 
 	res, err := s.workerRepository.Get(ctx, account)
 	if err != nil {
@@ -91,10 +86,8 @@ func (s WorkerService) Get(ctx context.Context, account core.Account) (*core.Acc
 func (s WorkerService) Update(ctx context.Context, account core.Account) (*core.Account, error){
 	childLogger.Debug().Msg("Update")
 
-	_, root := xray.BeginSubsegment(ctx, "Service.Update")
-	defer func() {
-		root.Close(nil)
-	}()
+	span := lib.Span(ctx, "service.Update")
+	span.End()
 
 	res_account, err := s.workerRepository.Get(ctx, account)
 	if err != nil {
@@ -120,10 +113,8 @@ func (s WorkerService) Update(ctx context.Context, account core.Account) (*core.
 func (s WorkerService) Delete(ctx context.Context,account core.Account) (bool, error){
 	childLogger.Debug().Msg("Delete")
 
-	_, root := xray.BeginSubsegment(ctx, "Service.Delete")
-	defer func() {
-		root.Close(nil)
-	}()
+	span := lib.Span(ctx, "service.Delete")
+	span.End()
 
 	res_account, err := s.workerRepository.Get(ctx,account)
 	if err != nil {
@@ -144,8 +135,8 @@ func (s WorkerService) Delete(ctx context.Context,account core.Account) (bool, e
 func (s WorkerService) List(ctx context.Context, account core.Account) (*[]core.Account, error){
 	childLogger.Debug().Msg("List")
 
-	_, root := xray.BeginSubsegment(ctx, "Service.List")
-	defer root.Close(nil)
+	span := lib.Span(ctx, "service.List")
+	span.End()
 
 	res, err := s.workerRepository.List(ctx, account)
 	if err != nil {
@@ -158,10 +149,8 @@ func (s WorkerService) List(ctx context.Context, account core.Account) (*[]core.
 func (s WorkerService) GetId(ctx context.Context, account core.Account) (*core.Account, error){
 	childLogger.Debug().Msg("GetId")
 
-	_, root := xray.BeginSubsegment(ctx, "Service.GetId")
-	defer func() {
-		root.Close(nil)
-	}()
+	span := lib.Span(ctx, "service.GetId")
+	span.End()
 
 	res, err := s.workerRepository.GetId(ctx, account)
 	if err != nil {

@@ -106,3 +106,6 @@ Add -host header in PostMan
 
 Create a public apigw
 
+## 
+
+cat xxx.key | base64 -w 0

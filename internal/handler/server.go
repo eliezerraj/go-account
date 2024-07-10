@@ -15,10 +15,13 @@ import (
 
 	"github.com/gorilla/mux"
 
+	"github.com/go-account/internal/lib"
 	"github.com/go-account/internal/service"
 	"github.com/go-account/internal/core"
-	"github.com/aws/aws-xray-sdk-go/xray"
 
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/contrib/propagators/aws/xray"
+	"go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux"
 )
 // ----------------------------------------------------
 type HttpWorkerAdapter struct {
@@ -47,7 +50,20 @@ func (h HttpServer) StartHttpAppServer(	ctx context.Context,
 										httpWorkerAdapter *HttpWorkerAdapter,
 										appServer *core.AppServer) {
 	childLogger.Info().Msg("StartHttpAppServer")
-		
+
+	// ---------------------- OTEL ---------------
+	childLogger.Info().Str("OTEL_EXPORTER_OTLP_ENDPOINT :", appServer.ConfigOTEL.OtelExportEndpoint).Msg("")
+	
+	tp := lib.NewTracerProvider(ctx, appServer.ConfigOTEL, appServer.InfoPod)
+	defer func() { 
+		err := tp.Shutdown(ctx)
+		if err != nil{
+			childLogger.Error().Err(err).Msg("Erro closing OTEL tracer !!!")
+		}
+	}()
+	otel.SetTextMapPropagator(xray.Propagator{})
+	otel.SetTracerProvider(tp)
+
 	myRouter := mux.NewRouter().StrictSlash(true)
 	myRouter.Use(MiddleWareHandlerHeader)
 
@@ -58,6 +74,7 @@ func (h HttpServer) StartHttpAppServer(	ctx context.Context,
 
 	myRouter.HandleFunc("/info", func(rw http.ResponseWriter, req *http.Request) {
 		childLogger.Debug().Msg("/info")
+		childLogger.Debug().Interface("===> : ", req.TLS).Msg("")
 		json.NewEncoder(rw).Encode(&appServer)
 	})
 	
@@ -72,75 +89,58 @@ func (h HttpServer) StartHttpAppServer(	ctx context.Context,
 
 	addAccount := myRouter.Methods(http.MethodPost, http.MethodOptions).Subrouter()
 	addAccount.Handle("/add", 
-						xray.Handler(xray.NewFixedSegmentNamer(fmt.Sprintf("%s%s%s", "account:", appServer.InfoPod.AvailabilityZone, ".add")), 
-						http.HandlerFunc(httpWorkerAdapter.Add),
-						),
-	)
+						http.HandlerFunc(httpWorkerAdapter.Add),)
 	addAccount.Use(httpWorkerAdapter.DecoratorDB)
+	addAccount.Use(otelmux.Middleware("go-account"))
 
 	getAccount := myRouter.Methods(http.MethodGet, http.MethodOptions).Subrouter()
 	getAccount.Handle("/get/{id}",
-						xray.Handler(xray.NewFixedSegmentNamer(fmt.Sprintf("%s%s%s", "account:", appServer.InfoPod.AvailabilityZone, ".get")),
-						http.HandlerFunc(httpWorkerAdapter.Get),
-						),
-	)
+						http.HandlerFunc(httpWorkerAdapter.Get),)
+	getAccount.Use(otelmux.Middleware("go-account"))
 
 	getIdAccount := myRouter.Methods(http.MethodGet, http.MethodOptions).Subrouter()
 	getIdAccount.Handle("/getId/{id}",
-						xray.Handler(xray.NewFixedSegmentNamer(fmt.Sprintf("%s%s%s", "account:", appServer.InfoPod.AvailabilityZone, ".getId")),
-						http.HandlerFunc(httpWorkerAdapter.GetId),
-						),
-	)
+						http.HandlerFunc(httpWorkerAdapter.GetId),)
+	getIdAccount.Use(otelmux.Middleware("go-account"))
 
 	updateAccount := myRouter.Methods(http.MethodPost, http.MethodOptions).Subrouter()
 	updateAccount.Handle("/update/{id}", 
-						xray.Handler(xray.NewFixedSegmentNamer(fmt.Sprintf("%s%s%s", "account:", appServer.InfoPod.AvailabilityZone, ".updateId")),
-						http.HandlerFunc(httpWorkerAdapter.Update),
-						),
-	)
+						http.HandlerFunc(httpWorkerAdapter.Update),)
+	updateAccount.Use(otelmux.Middleware("go-account"))
 
 	listAccount := myRouter.Methods(http.MethodGet, http.MethodOptions).Subrouter()
 	listAccount.Handle("/list/{id}", 
-						xray.Handler(xray.NewFixedSegmentNamer(fmt.Sprintf("%s%s%s", "account:", appServer.InfoPod.AvailabilityZone, ".list")),
-						http.HandlerFunc(httpWorkerAdapter.List),
-						),
-	)
-	
+						http.HandlerFunc(httpWorkerAdapter.List),)
+	listAccount.Use(otelmux.Middleware("go-account"))
+
 	deleteAccount := myRouter.Methods(http.MethodDelete, http.MethodOptions).Subrouter()
     deleteAccount.HandleFunc("/delete/{id}", httpWorkerAdapter.Delete)
+	deleteAccount.Use(otelmux.Middleware("go-account"))
 
 	//---------------
 	addFundAcc := myRouter.Methods(http.MethodPost, http.MethodOptions).Subrouter()
 	addFundAcc.Handle("/add/fund", 
-						xray.Handler(xray.NewFixedSegmentNamer(fmt.Sprintf("%s%s%s", "account:", appServer.InfoPod.AvailabilityZone, ".add.fund")), 
-						http.HandlerFunc(httpWorkerAdapter.AddFundBalanceAccount),
-						),
-	)
+						http.HandlerFunc(httpWorkerAdapter.AddFundBalanceAccount),)
 	addFundAcc.Use(httpWorkerAdapter.DecoratorDB)
+	addFundAcc.Use(otelmux.Middleware("go-account"))
 
 	getMovAcc := myRouter.Methods(http.MethodGet, http.MethodOptions).Subrouter()
 	getMovAcc.Handle("/get/movimentBalanceAccount/{id}", 
-						xray.Handler(xray.NewFixedSegmentNamer(fmt.Sprintf("%s%s%s", "account:", appServer.InfoPod.AvailabilityZone, ".get.movimentBalanceAccount")), 
-						http.HandlerFunc(httpWorkerAdapter.GetMovimentBalanceAccount),
-						),
-	)
+						http.HandlerFunc(httpWorkerAdapter.GetMovimentBalanceAccount),)
 	getMovAcc.Use(httpWorkerAdapter.DecoratorDB)
+	getMovAcc.Use(otelmux.Middleware("go-account"))
 
 	getFundAcc := myRouter.Methods(http.MethodGet, http.MethodOptions).Subrouter()
 	getFundAcc.Handle("/fundBalanceAccount/{id}", 
-						xray.Handler(xray.NewFixedSegmentNamer(fmt.Sprintf("%s%s%s", "account:", appServer.InfoPod.AvailabilityZone, ".get.fundBalanceAccount")), 
-						http.HandlerFunc(httpWorkerAdapter.GetFundBalanceAccount),
-						),
-	)
+						http.HandlerFunc(httpWorkerAdapter.GetFundBalanceAccount),)
 	getFundAcc.Use(httpWorkerAdapter.DecoratorDB)
+	getFundAcc.Use(otelmux.Middleware("go-account"))
 
 	transferFundAcc := myRouter.Methods(http.MethodPost, http.MethodOptions).Subrouter()
 	transferFundAcc.Handle("/transferFund", 
-						xray.Handler(xray.NewFixedSegmentNamer(fmt.Sprintf("%s%s%s", "account:", appServer.InfoPod.AvailabilityZone, ".get.transferFund")), 
-						http.HandlerFunc(httpWorkerAdapter.TransferFundAccount),
-						),
-	)
+						http.HandlerFunc(httpWorkerAdapter.TransferFundAccount),)
 	transferFundAcc.Use(httpWorkerAdapter.DecoratorDB)
+	transferFundAcc.Use(otelmux.Middleware("go-account"))
 
 	// -------------------
 
@@ -168,6 +168,7 @@ func (h HttpServer) StartHttpAppServer(	ctx context.Context,
 		}
 		serverTLSConf = &tls.Config{
 			Certificates: []tls.Certificate{serverCert},
+			MinVersion:       tls.VersionTLS13,
 			InsecureSkipVerify: false,
 		}
 	}

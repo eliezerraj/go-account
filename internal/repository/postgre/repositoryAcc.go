@@ -4,23 +4,19 @@ import (
 	"context"
 	"time"
 	"errors"
-	//"fmt"
 
 	_ "github.com/lib/pq"
 
 	"github.com/go-account/internal/core"
 	"github.com/go-account/internal/erro"
-	"github.com/aws/aws-xray-sdk-go/xray"
-
+	"github.com/go-account/internal/lib"
 )
 
 func (w WorkerRepository) Add(ctx context.Context, account core.Account) (*core.Account, error){
 	childLogger.Debug().Msg("Add")
 
-	_, root := xray.BeginSubsegment(ctx, "Repository.Add.Account")
-	defer func() {
-		root.Close(nil)
-	}()
+	span := lib.Span(ctx, "repo.Account.Add")	
+	defer span.End()
 
 	client := w.databaseHelper.GetConnection()
 
@@ -53,10 +49,8 @@ func (w WorkerRepository) Add(ctx context.Context, account core.Account) (*core.
 func (w WorkerRepository) Get(ctx context.Context, account core.Account) (*core.Account, error){
 	childLogger.Debug().Msg("Get")
 
-	_, root := xray.BeginSubsegment(ctx, "Repository.Get.Account")
-	defer func() {
-		root.Close(nil)
-	}()
+	span := lib.Span(ctx, "repo.Account.Get")	
+	defer span.End()
 
 	client := w.databaseHelper.GetConnection()
 
@@ -96,10 +90,8 @@ func (w WorkerRepository) Update(ctx context.Context, account core.Account) (boo
 	childLogger.Debug().Msg("Update...")
 	//childLogger.Debug().Interface("account : ", account).Msg("account")
 
-	_, root := xray.BeginSubsegment(ctx, "Repository.Update.Account")
-	defer func() {
-		root.Close(nil)
-	}()
+	span := lib.Span(ctx, "repo.Account.Update")	
+	defer span.End()
 
 	client := w.databaseHelper.GetConnection()
 
@@ -136,11 +128,9 @@ func (w WorkerRepository) Update(ctx context.Context, account core.Account) (boo
 func (w WorkerRepository) Delete(ctx context.Context, account core.Account) (bool, error){
 	childLogger.Debug().Msg("Delete")
 
-	_, root := xray.BeginSubsegment(ctx, "Repository.Update.Account")
-	defer func() {
-		root.Close(nil)
-	}()
-	
+	span := lib.Span(ctx, "repo.Account.Delete")	
+	defer span.End()
+
 	client := w.databaseHelper.GetConnection()
 
 	stmt, err := client.Prepare(`Delete from account where id = $1 `)
@@ -165,10 +155,8 @@ func (w WorkerRepository) Delete(ctx context.Context, account core.Account) (boo
 func (w WorkerRepository) List(ctx context.Context, account core.Account) (*[]core.Account, error){
 	childLogger.Debug().Msg("List")
 
-	_, root := xray.BeginSubsegment(ctx, "Repository.List.Account")
-	defer func() {
-		root.Close(nil)
-	}()
+	span := lib.Span(ctx, "repo.Account.List")	
+	defer span.End()
 
 	client:= w.databaseHelper.GetConnection()
 	
@@ -203,10 +191,8 @@ func (w WorkerRepository) List(ctx context.Context, account core.Account) (*[]co
 func (w WorkerRepository) GetId(ctx context.Context, account core.Account) (*core.Account, error){
 	childLogger.Debug().Msg("GetId")
 
-	_, root := xray.BeginSubsegment(ctx, "Repository.GetId.Account")
-	defer func() {
-		root.Close(nil)
-	}()
+	span := lib.Span(ctx, "repo.Account.GetId")	
+	defer span.End()
 
 	client := w.databaseHelper.GetConnection()
 

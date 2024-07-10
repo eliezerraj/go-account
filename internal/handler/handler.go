@@ -184,7 +184,6 @@ func (h *HttpWorkerAdapter) GetId(rw http.ResponseWriter, req *http.Request) {
 	return
 }
 
-
 func (h *HttpWorkerAdapter) Update(rw http.ResponseWriter, req *http.Request) {
 	childLogger.Debug().Msg("Update")
 

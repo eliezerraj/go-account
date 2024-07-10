@@ -2,17 +2,16 @@ package service
 
 import (
 	"context"
-	//"errors"
+
+	"github.com/go-account/internal/lib"
 	"github.com/go-account/internal/erro"
 	"github.com/go-account/internal/core"
-	"github.com/aws/aws-xray-sdk-go/xray"
-
 )
 
 func (s WorkerService) AddFundBalanceAccount(ctx context.Context, accountBalance core.AccountBalance) (*core.AccountBalance, error){
 	childLogger.Debug().Msg("AddFundBalanceAccount")
 
-	_, root := xray.BeginSubsegment(ctx, "Service.AddFundBalanceAccount")
+	span := lib.Span(ctx, "service.AddFundBalanceAccount")
 	
 	tx, err := s.workerRepository.StartTx(ctx)
 	if err != nil {
@@ -25,7 +24,7 @@ func (s WorkerService) AddFundBalanceAccount(ctx context.Context, accountBalance
 		} else {
 			tx.Commit()
 		}
-		root.Close(nil)
+		span.End()
 	}()
 
 	// Try to update the account_balance
@@ -49,8 +48,8 @@ func (s WorkerService) AddFundBalanceAccount(ctx context.Context, accountBalance
 func (s WorkerService) GetFundBalanceAccount(ctx context.Context, accountBalance core.AccountBalance) (interface{} , error){
 	childLogger.Debug().Msg("GetFundBalanceAccount")
 
-	_, root := xray.BeginSubsegment(ctx, "Service.GetFundBalanceAccount")
-	defer root.Close(nil)
+	span := lib.Span(ctx, "service.GetFundBalanceAccount")
+	span.End()
 
 	account := core.Account{}
 	account.AccountID = accountBalance.AccountID
@@ -71,8 +70,8 @@ func (s WorkerService) GetMovimentBalanceAccount(ctx context.Context, accountBal
 	childLogger.Debug().Msg("GetMovimentBalanceAccount")
 	//childLogger.Debug().Interface("=>accountBalance : ", accountBalance).Msg("")
 
-	_, root := xray.BeginSubsegment(ctx, "Service.GetMovimentBalanceAccount")
-	defer root.Close(nil)
+	span := lib.Span(ctx, "service.GetMovimentBalanceAccount")
+	span.End()
 
 	account := core.Account{}
 	account.AccountID = accountBalance.AccountID
@@ -127,8 +126,9 @@ func (s WorkerService) TransferFundAccount(ctx context.Context, transfer core.Tr
 	childLogger.Debug().Msg("TransferFundAccount")
 	//childLogger.Debug().Interface("=>transfer : ", transfer).Msg("")
 
-	_, root := xray.BeginSubsegment(ctx, "Service.TransferFundAccount")
-	
+	span := lib.Span(ctx, "service.TransferFundAccount")
+	span.End()
+
 	tx, err := s.workerRepository.StartTx(ctx)
 	if err != nil {
 		return nil, err
@@ -140,7 +140,7 @@ func (s WorkerService) TransferFundAccount(ctx context.Context, transfer core.Tr
 		} else {
 			tx.Commit()
 		}
-		root.Close(nil)
+		span.End()
 	}()
 
 	// Debit the fund

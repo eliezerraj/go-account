@@ -11,7 +11,6 @@ import(
 	"github.com/go-account/internal/core"
 	"github.com/go-account/internal/service"
 	"github.com/go-account/internal/repository/postgre"
-	
 )
 
 var(
@@ -76,5 +75,4 @@ func main() {
 	httpServer.StartHttpAppServer(	ctx, 
 									&httpWorkerAdapter,
 									&appServer)
-	
 }

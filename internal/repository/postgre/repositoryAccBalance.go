@@ -10,17 +10,14 @@ import (
 
 	"github.com/go-account/internal/core"
 	"github.com/go-account/internal/erro"
-	"github.com/aws/aws-xray-sdk-go/xray"
-
+	"github.com/go-account/internal/lib"
 )
 
 func (w WorkerRepository) CreateFundBalanceAccount(ctx context.Context,  tx *sql.Tx, accountBalance core.AccountBalance) (*core.AccountBalance, error){
 	childLogger.Debug().Msg("CreateFundBalanceAccount")
 
-	_, root := xray.BeginSubsegment(ctx, "Repository.CreateFundBalanceAccount")
-	defer func() {
-		root.Close(nil)
-	}()
+	span := lib.Span(ctx, "repo.CreateFundBalanceAccount")	
+    defer span.End()
 
 	stmt, err := tx.Prepare(`INSERT INTO ACCOUNT_BALANCE ( 	fk_account_id, 
 															currency, 
@@ -54,10 +51,8 @@ func (w WorkerRepository) UpdateFundBalanceAccount(ctx context.Context, tx *sql.
 	childLogger.Debug().Msg("UpdateFundBalanceAccount")
 	childLogger.Debug().Interface("==>>accountBalance : ", accountBalance).Msg("")
 
-	_, root := xray.BeginSubsegment(ctx, "Repository.UpdateFundBalanceAccount")
-	defer func() {
-		root.Close(nil)
-	}()
+	span := lib.Span(ctx, "repo.UpdateFundBalanceAccount")	
+    defer span.End()
 
 	stmt, err := tx.Prepare(`Update ACCOUNT_BALANCE
 									set amount = amount + $1, 
@@ -87,10 +82,8 @@ func (w WorkerRepository) UpdateFundBalanceAccount(ctx context.Context, tx *sql.
 func (w WorkerRepository) GetFundBalanceAccount(ctx context.Context, accountBalance core.AccountBalance) (*core.AccountBalance, error){
 	childLogger.Debug().Msg("GetFundBalanceAccount")
 
-	_, root := xray.BeginSubsegment(ctx, "Repository.GetFundBalanceAccount")
-	defer func() {
-		root.Close(nil)
-	}()
+	span := lib.Span(ctx, "repo.GetFundBalanceAccount")	
+    defer span.End()
 
 	client := w.databaseHelper.GetConnection()
 
@@ -126,10 +119,9 @@ func (w WorkerRepository) GetFundBalanceAccount(ctx context.Context, accountBala
 
 func (w WorkerRepository) ListAccountStatementMoviment(ctx context.Context, accountBalance core.AccountBalance) (*[]core.AccountStatement, error){
 	childLogger.Debug().Msg("ListAccountStatementMoviment")
-	_, root := xray.BeginSubsegment(ctx, "Repository.ListAccountStatementMoviment")
-	defer func() {
-		root.Close(nil)
-	}()
+
+	span := lib.Span(ctx, "repo.ListAccountStatementMoviment")	
+    defer span.End()
 
 	client := w.databaseHelper.GetConnection()
 
@@ -175,10 +167,8 @@ func (w WorkerRepository) ListAccountStatementMoviment(ctx context.Context, acco
 func (w WorkerRepository) GetFundBalanceAccountStatementMoviment(ctx context.Context, type_charge string , accountBalance core.AccountBalance) (*core.AccountBalance, error){
 	childLogger.Debug().Msg("GetFundBalanceAccountStatementMoviment:"+type_charge)
 
-	_, root := xray.BeginSubsegment(ctx, "Repository.GetFundBalanceAccountStatementMoviment:"+type_charge)
-	defer func() {
-		root.Close(nil)
-	}()
+	span := lib.Span(ctx, "repo.GetFundBalanceAccountStatementMoviment")	
+    defer span.End()
 
 	client := w.databaseHelper.GetConnection()
 
@@ -216,10 +206,8 @@ func (w WorkerRepository) GetFundBalanceAccountStatementMoviment(ctx context.Con
 func (w WorkerRepository) TransferFundAccount(ctx context.Context, tx *sql.Tx, transfer core.Transfer) (int64, string ,error){
 	childLogger.Debug().Msg("TransferFundAccount")
 
-	_, root := xray.BeginSubsegment(ctx, "Repository.TransferFundAccount")
-	defer func() {
-		root.Close(nil)
-	}()
+	span := lib.Span(ctx, "repo.TransferFundAccount")	
+    defer span.End()
 
 	rows_uuid, err := tx.QueryContext(ctx, "SELECT uuid_generate_v4()")
 	if err != nil {
@@ -265,10 +253,8 @@ func (w WorkerRepository) TransferFundAccount(ctx context.Context, tx *sql.Tx, t
 func (w WorkerRepository) AddAccountStatement(ctx context.Context, tx *sql.Tx ,credit core.AccountStatement) (*core.AccountStatement, error){
 	childLogger.Debug().Msg("AddAccountStatement")
 
-	_, root := xray.BeginSubsegment(ctx, "Repository.AddAccountStatement")
-	defer func() {
-		root.Close(nil)
-	}()
+	span := lib.Span(ctx, "repo.AddAccountStatement")	
+    defer span.End()
 
 	stmt, err := tx.Prepare(`INSERT INTO account_statement ( 	fk_account_id, 
 																type_charge,
@@ -302,10 +288,8 @@ func (w WorkerRepository) AddAccountStatement(ctx context.Context, tx *sql.Tx ,c
 func (w WorkerRepository) CommitTransferFundAccount(ctx context.Context, tx *sql.Tx, uuid string ,transfer core.Transfer) (int64 ,error){
 	childLogger.Debug().Msg("CommitTransferFundAccount")
 
-	_, root := xray.BeginSubsegment(ctx, "Repository.CommitTransferFundAccount")
-	defer func() {
-		root.Close(nil)
-	}()
+	span := lib.Span(ctx, "repo.CommitTransferFundAccount")	
+    defer span.End()
 
 	stmt, err := tx.Prepare(`Update ACCOUNT_BALANCE
 								set update_at =$3

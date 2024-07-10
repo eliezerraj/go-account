@@ -15,7 +15,6 @@ type AppServer struct {
 	InfoPod 		*InfoPod 		`json:"info_pod"`
 	Server     		*Server     	`json:"server"`
 	Database		*DatabaseRDS	`json:"database"`
-	//Cert			*Cert			`json:"cert"`
 	RestEndpoint	*RestEndpoint	`json:"rest_endpoint"`
 	ConfigOTEL		*ConfigOTEL		`json:"otel_config"`
 }
@@ -27,6 +26,8 @@ type InfoPod struct {
 	IPAddress			string `json:"ip_address"`
 	AvailabilityZone 	string `json:"availabilityZone"`
 	IsAZ				bool	`json:"is_az"`
+	Env					string `json:"enviroment,omitempty"`
+	AccountID			string `json:"account_id,omitempty"`
 }
 
 type Server struct {

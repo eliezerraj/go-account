@@ -30,5 +30,6 @@ crlDistributionPoints = URI:http://example.com/intermediate.crl
 DNS.1 = localhost
 DNS.2 = go-account-mtls.architecture.caradhras.io
 DNS.3 = go-account.architecture.caradhras.io
+DNS.4 = go-api-global.architecture.caradhras.io
 IP.1 = 0.0.0.0
 IP.1 = 127.0.0.1
