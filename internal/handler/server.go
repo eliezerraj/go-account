@@ -50,7 +50,6 @@ func (h HttpServer) StartHttpAppServer(	ctx context.Context,
 										httpWorkerAdapter *HttpWorkerAdapter,
 										appServer *core.AppServer) {
 	childLogger.Info().Msg("StartHttpAppServer")
-
 	// ---------------------- OTEL ---------------
 	childLogger.Info().Str("OTEL_EXPORTER_OTLP_ENDPOINT :", appServer.ConfigOTEL.OtelExportEndpoint).Msg("")
 	

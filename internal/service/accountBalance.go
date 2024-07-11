@@ -49,7 +49,7 @@ func (s WorkerService) GetFundBalanceAccount(ctx context.Context, accountBalance
 	childLogger.Debug().Msg("GetFundBalanceAccount")
 
 	span := lib.Span(ctx, "service.GetFundBalanceAccount")
-	span.End()
+	defer span.End()
 
 	account := core.Account{}
 	account.AccountID = accountBalance.AccountID
@@ -71,7 +71,7 @@ func (s WorkerService) GetMovimentBalanceAccount(ctx context.Context, accountBal
 	//childLogger.Debug().Interface("=>accountBalance : ", accountBalance).Msg("")
 
 	span := lib.Span(ctx, "service.GetMovimentBalanceAccount")
-	span.End()
+	defer span.End()
 
 	account := core.Account{}
 	account.AccountID = accountBalance.AccountID
@@ -127,7 +127,7 @@ func (s WorkerService) TransferFundAccount(ctx context.Context, transfer core.Tr
 	//childLogger.Debug().Interface("=>transfer : ", transfer).Msg("")
 
 	span := lib.Span(ctx, "service.TransferFundAccount")
-	span.End()
+	defer span.End()
 
 	tx, err := s.workerRepository.StartTx(ctx)
 	if err != nil {

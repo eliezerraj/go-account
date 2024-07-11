@@ -9,7 +9,7 @@ import (
 
 	"github.com/go-account/internal/core"
 	"github.com/go-account/internal/erro"
-	
+	"github.com/go-account/internal/lib"
 )
 
 var childLogger = log.With().Str("handler", "handler").Logger()
@@ -101,6 +101,9 @@ func (h *HttpWorkerAdapter) Header(rw http.ResponseWriter, req *http.Request) {
 func (h *HttpWorkerAdapter) Add( rw http.ResponseWriter, req *http.Request) {
 	childLogger.Debug().Msg("Add")
 
+	span := lib.Span(req.Context(), "handler.Add")
+	defer span.End()
+
 	account := core.Account{}
 	err := json.NewDecoder(req.Body).Decode(&account)
     if err != nil {
@@ -126,6 +129,9 @@ func (h *HttpWorkerAdapter) Add( rw http.ResponseWriter, req *http.Request) {
 func (h *HttpWorkerAdapter) Get(rw http.ResponseWriter, req *http.Request) {
 	childLogger.Debug().Msg("Get")
 
+	span := lib.Span(req.Context(), "handler.Get")
+	defer span.End()
+	
 	vars := mux.Vars(req)
 	varID := vars["id"]
 
@@ -152,6 +158,9 @@ func (h *HttpWorkerAdapter) Get(rw http.ResponseWriter, req *http.Request) {
 
 func (h *HttpWorkerAdapter) GetId(rw http.ResponseWriter, req *http.Request) {
 	childLogger.Debug().Msg("GetId")
+	
+	span := lib.Span(req.Context(), "handler.GetId")
+	defer span.End()
 
 	vars := mux.Vars(req)
 	varID := vars["id"]
@@ -186,6 +195,9 @@ func (h *HttpWorkerAdapter) GetId(rw http.ResponseWriter, req *http.Request) {
 
 func (h *HttpWorkerAdapter) Update(rw http.ResponseWriter, req *http.Request) {
 	childLogger.Debug().Msg("Update")
+	
+	span := lib.Span(req.Context(), "handler.Update")
+	defer span.End()
 
 	account := core.Account{}
 	err := json.NewDecoder(req.Body).Decode(&account)
@@ -220,6 +232,9 @@ func (h *HttpWorkerAdapter) Update(rw http.ResponseWriter, req *http.Request) {
 func (h *HttpWorkerAdapter) Delete(rw http.ResponseWriter, req *http.Request) {
 	childLogger.Debug().Msg("Delete")
 
+	span := lib.Span(req.Context(), "handler.Delete")
+	defer span.End()
+
 	account := core.Account{}
 	vars := mux.Vars(req)
 	varID := vars["id"]
@@ -245,6 +260,9 @@ func (h *HttpWorkerAdapter) Delete(rw http.ResponseWriter, req *http.Request) {
 
 func (h *HttpWorkerAdapter) List(rw http.ResponseWriter, req *http.Request) {
 	childLogger.Debug().Msg("List")
+	
+	span := lib.Span(req.Context(), "handler.List")
+	defer span.End()
 
 	vars := mux.Vars(req)
 	varID := vars["id"]
@@ -271,6 +289,9 @@ func (h *HttpWorkerAdapter) List(rw http.ResponseWriter, req *http.Request) {
 func (h *HttpWorkerAdapter) AddFundBalanceAccount( rw http.ResponseWriter, req *http.Request) {
 	childLogger.Debug().Msg("AddFundBalanceAccount")
 
+	span := lib.Span(req.Context(), "handler.AddFundBalanceAccount")
+	defer span.End()
+
 	accountBalance := core.AccountBalance{}
 	err := json.NewDecoder(req.Body).Decode(&accountBalance)
     if err != nil {
@@ -295,6 +316,9 @@ func (h *HttpWorkerAdapter) AddFundBalanceAccount( rw http.ResponseWriter, req *
 
 func (h *HttpWorkerAdapter) GetMovimentBalanceAccount( rw http.ResponseWriter, req *http.Request) {
 	childLogger.Debug().Msg("GetMovimentBalanceAccount")
+
+	span := lib.Span(req.Context(), "handler.GetMovimentBalanceAccount")
+	defer span.End()
 
 	vars := mux.Vars(req)
 	varID := vars["id"]
@@ -323,6 +347,9 @@ func (h *HttpWorkerAdapter) GetMovimentBalanceAccount( rw http.ResponseWriter, r
 func (h *HttpWorkerAdapter) GetFundBalanceAccount( rw http.ResponseWriter, req *http.Request) {
 	childLogger.Debug().Msg("GetFundBalanceAccount")
 
+	span := lib.Span(req.Context(), "handler.GetFundBalanceAccount")
+	defer span.End()
+
 	vars := mux.Vars(req)
 	varID := vars["id"]
 
@@ -349,6 +376,9 @@ func (h *HttpWorkerAdapter) GetFundBalanceAccount( rw http.ResponseWriter, req *
 
 func (h *HttpWorkerAdapter) TransferFundAccount( rw http.ResponseWriter, req *http.Request) {
 	childLogger.Debug().Msg("TransferFundAccount")
+
+	span := lib.Span(req.Context(), "handler.TransferFundAccount")
+	defer span.End()
 
 	transfer := core.Transfer{}
 	err := json.NewDecoder(req.Body).Decode(&transfer)

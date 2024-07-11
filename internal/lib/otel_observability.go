@@ -34,13 +34,14 @@ func Span(ctx context.Context, spanName string) trace.Span {
 	}*/
 
 	tracer := otel.GetTracerProvider().Tracer("go.opentelemetry.io/otel")
+	
 	_, span := tracer.Start(
-		ctx,
-		spanName,
-		trace.WithSpanKind(trace.SpanKindConsumer),
-		trace.WithAttributes(
-			attribute.String("user_id", cID),
-			attribute.String("request_id", rID)),
+							ctx,
+							spanName,
+							trace.WithSpanKind(trace.SpanKindConsumer),
+							trace.WithAttributes(
+								attribute.String("id", cID),
+								attribute.String("request_id", rID)),
 	)
 
 	return span

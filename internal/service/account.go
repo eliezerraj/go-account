@@ -39,7 +39,7 @@ func (s WorkerService) Add(ctx context.Context, account core.Account) (*core.Acc
 	childLogger.Debug().Msg("Add")
 
 	span := lib.Span(ctx, "service.Add")
-	span.End()
+	defer span.End()
 
 	// Create account
 	res, err := s.workerRepository.Add(ctx, account)
@@ -73,7 +73,7 @@ func (s WorkerService) Get(ctx context.Context, account core.Account) (*core.Acc
 	childLogger.Debug().Msg("Get")
 
 	span := lib.Span(ctx, "service.Get")
-	span.End()
+	defer span.End()
 
 	res, err := s.workerRepository.Get(ctx, account)
 	if err != nil {
@@ -87,7 +87,7 @@ func (s WorkerService) Update(ctx context.Context, account core.Account) (*core.
 	childLogger.Debug().Msg("Update")
 
 	span := lib.Span(ctx, "service.Update")
-	span.End()
+	defer span.End()
 
 	res_account, err := s.workerRepository.Get(ctx, account)
 	if err != nil {
@@ -114,7 +114,7 @@ func (s WorkerService) Delete(ctx context.Context,account core.Account) (bool, e
 	childLogger.Debug().Msg("Delete")
 
 	span := lib.Span(ctx, "service.Delete")
-	span.End()
+	defer span.End()
 
 	res_account, err := s.workerRepository.Get(ctx,account)
 	if err != nil {
@@ -136,7 +136,7 @@ func (s WorkerService) List(ctx context.Context, account core.Account) (*[]core.
 	childLogger.Debug().Msg("List")
 
 	span := lib.Span(ctx, "service.List")
-	span.End()
+	defer span.End()
 
 	res, err := s.workerRepository.List(ctx, account)
 	if err != nil {
@@ -150,7 +150,7 @@ func (s WorkerService) GetId(ctx context.Context, account core.Account) (*core.A
 	childLogger.Debug().Msg("GetId")
 
 	span := lib.Span(ctx, "service.GetId")
-	span.End()
+	defer span.End()
 
 	res, err := s.workerRepository.GetId(ctx, account)
 	if err != nil {

@@ -15,7 +15,7 @@ import (
 func (w WorkerRepository) Add(ctx context.Context, account core.Account) (*core.Account, error){
 	childLogger.Debug().Msg("Add")
 
-	span := lib.Span(ctx, "repo.Account.Add")	
+	span := lib.Span(ctx, "repo.Add")	
 	defer span.End()
 
 	client := w.databaseHelper.GetConnection()
@@ -49,7 +49,7 @@ func (w WorkerRepository) Add(ctx context.Context, account core.Account) (*core.
 func (w WorkerRepository) Get(ctx context.Context, account core.Account) (*core.Account, error){
 	childLogger.Debug().Msg("Get")
 
-	span := lib.Span(ctx, "repo.Account.Get")	
+	span := lib.Span(ctx, "repo.Get")	
 	defer span.End()
 
 	client := w.databaseHelper.GetConnection()
@@ -90,7 +90,7 @@ func (w WorkerRepository) Update(ctx context.Context, account core.Account) (boo
 	childLogger.Debug().Msg("Update...")
 	//childLogger.Debug().Interface("account : ", account).Msg("account")
 
-	span := lib.Span(ctx, "repo.Account.Update")	
+	span := lib.Span(ctx, "repo.Update")	
 	defer span.End()
 
 	client := w.databaseHelper.GetConnection()
@@ -128,7 +128,7 @@ func (w WorkerRepository) Update(ctx context.Context, account core.Account) (boo
 func (w WorkerRepository) Delete(ctx context.Context, account core.Account) (bool, error){
 	childLogger.Debug().Msg("Delete")
 
-	span := lib.Span(ctx, "repo.Account.Delete")	
+	span := lib.Span(ctx, "repo.Delete")	
 	defer span.End()
 
 	client := w.databaseHelper.GetConnection()
@@ -155,7 +155,7 @@ func (w WorkerRepository) Delete(ctx context.Context, account core.Account) (boo
 func (w WorkerRepository) List(ctx context.Context, account core.Account) (*[]core.Account, error){
 	childLogger.Debug().Msg("List")
 
-	span := lib.Span(ctx, "repo.Account.List")	
+	span := lib.Span(ctx, "repo.List")	
 	defer span.End()
 
 	client:= w.databaseHelper.GetConnection()
@@ -191,7 +191,7 @@ func (w WorkerRepository) List(ctx context.Context, account core.Account) (*[]co
 func (w WorkerRepository) GetId(ctx context.Context, account core.Account) (*core.Account, error){
 	childLogger.Debug().Msg("GetId")
 
-	span := lib.Span(ctx, "repo.Account.GetId")	
+	span := lib.Span(ctx, "repo.GetId")	
 	defer span.End()
 
 	client := w.databaseHelper.GetConnection()
