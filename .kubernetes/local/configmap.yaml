@@ -17,3 +17,4 @@ data:
   SETPOD_AZ: "false"
   TLS: "false"
   OTEL_EXPORTER_OTLP_ENDPOINT: "localhost:4317"
+  ENV: "dev"
