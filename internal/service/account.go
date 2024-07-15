@@ -7,7 +7,6 @@ import (
 	"github.com/go-account/internal/lib"
 	"github.com/go-account/internal/erro"
 	"github.com/go-account/internal/core"
-	"github.com/go-account/internal/repository/postgre"
 	"github.com/go-account/internal/repository/pg"
 )
 
@@ -15,22 +14,20 @@ var childLogger = log.With().Str("service", "service").Logger()
 
 type WorkerService struct {
 	workerRepo		 	*pg.WorkerRepository
-	workerRepository 	*postgre.WorkerRepository
 }
 
-func NewWorkerService( workerRepo *pg.WorkerRepository, workerRepository *postgre.WorkerRepository) *WorkerService{
+func NewWorkerService( workerRepo *pg.WorkerRepository) *WorkerService{
 	childLogger.Debug().Msg("NewWorkerService")
 
 	return &WorkerService{
 		workerRepo:		 	workerRepo,
-		workerRepository:	workerRepository,
 	}
 }
 // -----------------------------------------------
 func (s WorkerService) SetSessionVariable(ctx context.Context, userCredential string) (bool, error){
 	childLogger.Debug().Msg("SetSessionVariable")
 
-	res, err := s.workerRepository.SetSessionVariable(ctx, userCredential)
+	res, err := s.workerRepo.SetSessionVariable(ctx, userCredential)
 	if err != nil {
 		return false, err
 	}

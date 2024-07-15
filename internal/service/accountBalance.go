@@ -13,29 +13,29 @@ func (s WorkerService) AddFundBalanceAccount(ctx context.Context, accountBalance
 
 	span := lib.Span(ctx, "service.AddFundBalanceAccount")
 	
-	tx, err := s.workerRepository.StartTx(ctx)
+	tx, err := s.workerRepo.StartTx(ctx)
 	if err != nil {
 		return nil, err
 	}
 	
 	defer func() {
 		if err != nil {
-			tx.Rollback()
+			tx.Rollback(ctx)
 		} else {
-			tx.Commit()
+			tx.Commit(ctx)
 		}
 		span.End()
 	}()
 
 	// Try to update the account_balance
-	res, err := s.workerRepository.UpdateFundBalanceAccount(ctx, tx, accountBalance)
+	res, err := s.workerRepo.UpdateFundBalanceAccount(ctx, tx, accountBalance)
 	if err != nil {
 		return nil, err
 	}
 
 	// If the account_balance so it created one
 	if res == 0 {
-		res_create, err := s.workerRepository.CreateFundBalanceAccount(ctx, tx, accountBalance)
+		res_create, err := s.workerRepo.CreateFundBalanceAccount(ctx, tx, accountBalance)
 		if err != nil {
 			return nil, err
 		}
@@ -53,12 +53,12 @@ func (s WorkerService) GetFundBalanceAccount(ctx context.Context, accountBalance
 
 	account := core.Account{}
 	account.AccountID = accountBalance.AccountID
-	_, err := s.workerRepository.Get(ctx, account)
+	_, err := s.workerRepo.Get(ctx, account)
 	if err != nil {
 		return nil, err
 	}
 
-	res_fundAccountBalance, err := s.workerRepository.GetFundBalanceAccount(ctx, accountBalance)
+	res_fundAccountBalance, err := s.workerRepo.GetFundBalanceAccount(ctx, accountBalance)
 	if err != nil {
 		return nil, err
 	}
@@ -75,31 +75,31 @@ func (s WorkerService) GetMovimentBalanceAccount(ctx context.Context, accountBal
 
 	account := core.Account{}
 	account.AccountID = accountBalance.AccountID
-	_, err := s.workerRepository.Get(ctx, account)
+	_, err := s.workerRepo.Get(ctx, account)
 	if err != nil {
 		return nil, err
 	}
 
-	res_accountBalance, err := s.workerRepository.GetFundBalanceAccount(ctx, accountBalance)
+	res_accountBalance, err := s.workerRepo.GetFundBalanceAccount(ctx, accountBalance)
 	if err != nil {
 		return nil, err
 	}
 
-	res_accountBalanceStatementCredit, err := s.workerRepository.GetFundBalanceAccountStatementMoviment(ctx, "CREDIT", accountBalance)
+	res_accountBalanceStatementCredit, err := s.workerRepo.GetFundBalanceAccountStatementMoviment(ctx, "CREDIT", accountBalance)
 	if err != nil {
 		if (err != erro.ErrNotFound){
 			return nil, err
 		}
 	}
 
-	res_accountBalanceStatementDebit, err := s.workerRepository.GetFundBalanceAccountStatementMoviment(ctx, "DEBIT", accountBalance)
+	res_accountBalanceStatementDebit, err := s.workerRepo.GetFundBalanceAccountStatementMoviment(ctx, "DEBIT", accountBalance)
 	if err != nil {
 		if (err != erro.ErrNotFound){
 			return nil, err
 		}
 	}
 
-	res_list_accountBalance, err := s.workerRepository.ListAccountStatementMoviment(ctx, accountBalance)
+	res_list_accountBalance, err := s.workerRepo.ListAccountStatementMoviment(ctx, accountBalance)
 	if err != nil {
 		return nil, err
 	}
@@ -129,16 +129,16 @@ func (s WorkerService) TransferFundAccount(ctx context.Context, transfer core.Tr
 	span := lib.Span(ctx, "service.TransferFundAccount")
 	defer span.End()
 
-	tx, err := s.workerRepository.StartTx(ctx)
+	tx, err := s.workerRepo.StartTx(ctx)
 	if err != nil {
 		return nil, err
 	}
 	
 	defer func() {
 		if err != nil {
-			tx.Rollback()
+			tx.Rollback(ctx)
 		} else {
-			tx.Commit()
+			tx.Commit(ctx)
 		}
 		span.End()
 	}()
@@ -150,7 +150,7 @@ func (s WorkerService) TransferFundAccount(ctx context.Context, transfer core.Tr
 	}
 
 	transfer.Amount = (transfer.Amount * -1)
-	res, uuid ,err := s.workerRepository.TransferFundAccount(ctx, tx, transfer)
+	res, uuid ,err := s.workerRepo.TransferFundAccount(ctx, tx, transfer)
 	if err != nil {
 		return nil, err
 	}
@@ -165,7 +165,8 @@ func (s WorkerService) TransferFundAccount(ctx context.Context, transfer core.Tr
 	accountStatementFrom.Type = "DEBIT"
 	accountStatementFrom.Currency = transfer.Currency
 	accountStatementFrom.Amount = transfer.Amount
-	_, err = s.workerRepository.AddAccountStatement(ctx, tx, accountStatementFrom)
+
+	_, err = s.workerRepo.AddAccountStatement(ctx, tx, accountStatementFrom)
 	if err != nil {
 		return nil, err
 	}
@@ -176,7 +177,7 @@ func (s WorkerService) TransferFundAccount(ctx context.Context, transfer core.Tr
 	accountBalance.Currency = transfer.Currency
 	accountBalance.FkAccountID = transfer.FkAccountIDTo
 
-	res, err = s.workerRepository.UpdateFundBalanceAccount(ctx, tx, accountBalance)
+	res, err = s.workerRepo.UpdateFundBalanceAccount(ctx, tx, accountBalance)
 	if err != nil {
 		return nil, err
 	}
@@ -190,12 +191,13 @@ func (s WorkerService) TransferFundAccount(ctx context.Context, transfer core.Tr
 	accountStatementTo.Type = "CREDIT"
 	accountStatementTo.Currency = transfer.Currency
 	accountStatementTo.Amount = (transfer.Amount * -1)
-	_, err = s.workerRepository.AddAccountStatement(ctx, tx, accountStatementTo)
+
+	_, err = s.workerRepo.AddAccountStatement(ctx, tx, accountStatementTo)
 	if err != nil {
 		return nil, err
 	}
 
-	res, err = s.workerRepository.CommitTransferFundAccount(ctx, tx, uuid, transfer)
+	res, err = s.workerRepo.CommitTransferFundAccount(ctx, tx, uuid, transfer)
 	if err != nil {
 		return nil, err
 	}

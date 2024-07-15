@@ -10,7 +10,6 @@ import(
 	"github.com/go-account/internal/handler"
 	"github.com/go-account/internal/core"
 	"github.com/go-account/internal/service"
-	"github.com/go-account/internal/repository/postgre"
 	"github.com/go-account/internal/repository/pg"
 )
 
@@ -49,23 +48,9 @@ func main() {
 
 	// Open Database
 	count := 1
-	var databaseHelper	postgre.DatabaseHelper
 	var databasePG	pg.DatabasePG
 	var err error
 	for {
-		databaseHelper, err = postgre.NewDatabaseHelper(ctx, appServer.Database)
-		if err != nil {
-			if count < 3 {
-				log.Error().Err(err).Msg("Erro open Database... trying again !!")
-			} else {
-				log.Error().Err(err).Msg("Fatal erro open Database aborting")
-				panic(err)
-			}
-			time.Sleep(3 * time.Second)
-			count = count + 1
-			continue
-		}
-		//break
 		databasePG, err = pg.NewDatabasePGServer(ctx, appServer.Database)
 		if err != nil {
 			if count < 3 {
@@ -81,10 +66,9 @@ func main() {
 		break
 	}
 
-	repoDB 			:= postgre.NewWorkerRepository(databaseHelper)
 	repoDatabase := pg.NewWorkerRepository(databasePG)
 
-	workerService 	:= service.NewWorkerService(&repoDatabase, &repoDB )
+	workerService 	:= service.NewWorkerService(&repoDatabase)
 	
 	httpWorkerAdapter 	:= handler.NewHttpWorkerAdapter(workerService)
 	httpServer 			:= handler.NewHttpAppServer(appServer.Server)
