@@ -8,18 +8,21 @@ import (
 	"github.com/go-account/internal/erro"
 	"github.com/go-account/internal/core"
 	"github.com/go-account/internal/repository/postgre"
+	"github.com/go-account/internal/repository/pg"
 )
 
 var childLogger = log.With().Str("service", "service").Logger()
 
 type WorkerService struct {
+	workerRepo		 	*pg.WorkerRepository
 	workerRepository 	*postgre.WorkerRepository
 }
 
-func NewWorkerService(workerRepository *postgre.WorkerRepository) *WorkerService{
+func NewWorkerService( workerRepo *pg.WorkerRepository, workerRepository *postgre.WorkerRepository) *WorkerService{
 	childLogger.Debug().Msg("NewWorkerService")
 
 	return &WorkerService{
+		workerRepo:		 	workerRepo,
 		workerRepository:	workerRepository,
 	}
 }
@@ -42,13 +45,7 @@ func (s WorkerService) Add(ctx context.Context, account core.Account) (*core.Acc
 	defer span.End()
 
 	// Create account
-	res, err := s.workerRepository.Add(ctx, account)
-	if err != nil {
-		return nil, err
-	}
-
-	// Get ID account
-	res, err = s.workerRepository.Get(ctx, account)
+	res, err := s.workerRepo.Add(ctx, account)
 	if err != nil {
 		return nil, err
 	}
@@ -75,7 +72,7 @@ func (s WorkerService) Get(ctx context.Context, account core.Account) (*core.Acc
 	span := lib.Span(ctx, "service.Get")
 	defer span.End()
 
-	res, err := s.workerRepository.Get(ctx, account)
+	res, err := s.workerRepo.Get(ctx, account)
 	if err != nil {
 		return nil, err
 	}
@@ -89,13 +86,13 @@ func (s WorkerService) Update(ctx context.Context, account core.Account) (*core.
 	span := lib.Span(ctx, "service.Update")
 	defer span.End()
 
-	res_account, err := s.workerRepository.Get(ctx, account)
+	res_account, err := s.workerRepo.Get(ctx, account)
 	if err != nil {
 		return nil, err
 	}
 
 	account.ID = res_account.ID
-	isUpdated, err := s.workerRepository.Update(ctx, account)
+	isUpdated, err := s.workerRepo.Update(ctx, account)
 	if err != nil {
 		return nil, err
 	}
@@ -103,7 +100,7 @@ func (s WorkerService) Update(ctx context.Context, account core.Account) (*core.
 		return nil, erro.ErrUpdate
 	}
 
-	res_account, err = s.workerRepository.Get(ctx, account)
+	res_account, err = s.workerRepo.Get(ctx, account)
 	if err != nil {
 		return nil, err
 	}
@@ -116,13 +113,13 @@ func (s WorkerService) Delete(ctx context.Context,account core.Account) (bool, e
 	span := lib.Span(ctx, "service.Delete")
 	defer span.End()
 
-	res_account, err := s.workerRepository.Get(ctx,account)
+	res_account, err := s.workerRepo.Get(ctx, account)
 	if err != nil {
 		return false, err
 	}
 
 	account.ID = res_account.ID
-	isDelete, err := s.workerRepository.Delete(ctx, account)
+	isDelete, err := s.workerRepo.Delete(ctx, account)
 	if err != nil {
 		return false, err
 	}
@@ -138,7 +135,7 @@ func (s WorkerService) List(ctx context.Context, account core.Account) (*[]core.
 	span := lib.Span(ctx, "service.List")
 	defer span.End()
 
-	res, err := s.workerRepository.List(ctx, account)
+	res, err := s.workerRepo.List(ctx, account)
 	if err != nil {
 		return nil, err
 	}
@@ -152,7 +149,7 @@ func (s WorkerService) GetId(ctx context.Context, account core.Account) (*core.A
 	span := lib.Span(ctx, "service.GetId")
 	defer span.End()
 
-	res, err := s.workerRepository.GetId(ctx, account)
+	res, err := s.workerRepo.GetId(ctx, account)
 	if err != nil {
 		return nil, err
 	}
