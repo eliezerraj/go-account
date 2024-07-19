@@ -11,7 +11,7 @@ import (
 	"github.com/joho/godotenv"
 
 	"github.com/go-account/internal/core"
-	"github.com/go-account/internal/repository/postgre"
+	"github.com/go-account/internal/repository/pg"
 )
 
 var(
@@ -73,9 +73,9 @@ func TestGetAccount(t *testing.T) {
 										time.Duration( appServer.Server.ReadTimeout ) * time.Second)
 	defer cancel()
 
-	dataBaseHelper, err := postgre.NewDatabaseHelper(ctx, 
-													appServer.Database)
-	repoDB := postgre.NewWorkerRepository(dataBaseHelper)
+	databasePG, err := pg.NewDatabasePGServer(ctx,appServer.Database)
+	repoDB := pg.NewWorkerRepository(databasePG)
+	
 	workerService := NewWorkerService(&repoDB)
 
 	account := core.Account{AccountID: os.Getenv("TST_ACCOUNT_ID") }
