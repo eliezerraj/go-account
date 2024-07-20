@@ -13,7 +13,7 @@ func (s WorkerService) AddFundBalanceAccount(ctx context.Context, accountBalance
 
 	span := lib.Span(ctx, "service.AddFundBalanceAccount")
 	
-	tx, err := s.workerRepo.StartTx(ctx)
+	tx, conn, err := s.workerRepo.StartTx(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -24,6 +24,7 @@ func (s WorkerService) AddFundBalanceAccount(ctx context.Context, accountBalance
 		} else {
 			tx.Commit(ctx)
 		}
+		s.workerRepo.ReleaseTx(conn)
 		span.End()
 	}()
 
@@ -129,7 +130,7 @@ func (s WorkerService) TransferFundAccount(ctx context.Context, transfer core.Tr
 	span := lib.Span(ctx, "service.TransferFundAccount")
 	defer span.End()
 
-	tx, err := s.workerRepo.StartTx(ctx)
+	tx, conn, err := s.workerRepo.StartTx(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -140,6 +141,7 @@ func (s WorkerService) TransferFundAccount(ctx context.Context, transfer core.Tr
 		} else {
 			tx.Commit(ctx)
 		}
+		s.workerRepo.ReleaseTx(conn)
 		span.End()
 	}()
 
