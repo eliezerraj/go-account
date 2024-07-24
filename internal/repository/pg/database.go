@@ -92,9 +92,6 @@ func NewDatabasePGServer(ctx context.Context, databaseRDS *core.DatabaseRDS) (Da
 func (d DatabasePGServer) Acquire(ctx context.Context) (*pgxpool.Conn, error) {
 	childLogger.Debug().Msg("Acquire")
 	
-	span := lib.Span(ctx, "repo.Acquire")
-	defer span.End()
-
 	connection, err := d.connPool.Acquire(ctx)
 	if err != nil {
 		childLogger.Error().Err(err).Msg("Error while acquiring connection from the database pool!!")
@@ -183,12 +180,17 @@ func (w WorkerRepository) GetSessionVariable(ctx context.Context) (*string, erro
 func (w WorkerRepository) StartTx(ctx context.Context) (pgx.Tx, *pgxpool.Conn, error) {
 	childLogger.Debug().Msg("StartTx")
 
+	span := lib.Span(ctx, "repo.StartTx")
+	defer span.End()
+
+	span = lib.Span(ctx, "repo.Acquire")
 	conn, err := w.databasePG.Acquire(ctx)
 	if err != nil {
 		childLogger.Error().Err(err).Msg("Erro Acquire")
 		return nil, nil, errors.New(err.Error())
 	}
-
+	span.End()
+	
 	tx, err := conn.Begin(ctx)
     if err != nil {
         return nil, nil ,errors.New(err.Error())
@@ -209,11 +211,13 @@ func (w WorkerRepository) List(ctx context.Context, account core.Account) (*[]co
 	span := lib.Span(ctx, "repo.List")	
 	defer span.End()
 
+	span = lib.Span(ctx, "repo.Acquire")
 	conn, err := w.databasePG.Acquire(ctx)
 	if err != nil {
 		childLogger.Error().Err(err).Msg("Erro Acquire")
 		return nil, errors.New(err.Error())
 	}
+	span.End()
 	defer w.databasePG.Release(conn)
 
 	result_query := core.Account{}
@@ -261,11 +265,13 @@ func (w WorkerRepository) Get(ctx context.Context, account core.Account) (*core.
 	span := lib.Span(ctx, "repo.Get")	
 	defer span.End()
 
+	span = lib.Span(ctx, "repo.Acquire")
 	conn, err := w.databasePG.Acquire(ctx)
 	if err != nil {
 		childLogger.Error().Err(err).Msg("Erro Acquire")
 		return nil, errors.New(err.Error())
 	}
+	span.End()
 	defer w.databasePG.Release(conn)
 
 	result_query := core.Account{}
@@ -312,11 +318,13 @@ func (w WorkerRepository) GetId(ctx context.Context, account core.Account) (*cor
 	span := lib.Span(ctx, "repo.GetId")	
 	defer span.End()
 
+	span = lib.Span(ctx, "repo.Acquire")
 	conn, err := w.databasePG.Acquire(ctx)
 	if err != nil {
 		childLogger.Error().Err(err).Msg("Erro Acquire")
 		return nil, errors.New(err.Error())
 	}
+	span.End()
 	defer w.databasePG.Release(conn)
 
 	result_query := core.Account{}
@@ -363,11 +371,13 @@ func (w WorkerRepository) Add(ctx context.Context, account core.Account) (*core.
 	span := lib.Span(ctx, "repo.Add")	
 	defer span.End()
 
+	span = lib.Span(ctx, "repo.Acquire")
 	conn, err := w.databasePG.Acquire(ctx)
 	if err != nil {
 		childLogger.Error().Err(err).Msg("Erro Acquire")
 		return nil, errors.New(err.Error())
 	}
+	span.End()
 	defer w.databasePG.Release(conn)
 
 	query := `INSERT INTO account ( account_id, 
@@ -402,11 +412,13 @@ func (w WorkerRepository) Update(ctx context.Context, account core.Account) (boo
 	span := lib.Span(ctx, "repo.Update")	
 	defer span.End()
 
+	span = lib.Span(ctx, "repo.Acquire")
 	conn, err := w.databasePG.Acquire(ctx)
 	if err != nil {
 		childLogger.Error().Err(err).Msg("Erro Acquire")
 		return false, errors.New(err.Error())
 	}
+	span.End()
 	defer w.databasePG.Release(conn)
 
 	query := `Update account
@@ -440,11 +452,13 @@ func (w WorkerRepository) Delete(ctx context.Context, account core.Account) (boo
 	span := lib.Span(ctx, "repo.Delete")	
 	defer span.End()
 
+	span = lib.Span(ctx, "repo.Acquire")
 	conn, err := w.databasePG.Acquire(ctx)
 	if err != nil {
 		childLogger.Error().Err(err).Msg("Erro Acquire")
 		return false, errors.New(err.Error())
 	}
+	span.End()
 	defer w.databasePG.Release(conn)
 
 	query := `Delete from account where id = $1`
@@ -499,11 +513,13 @@ func (w WorkerRepository) GetFundBalanceAccount(ctx context.Context, accountBala
 	span := lib.Span(ctx, "repo.GetFundBalanceAccount")	
     defer span.End()
 
+	span = lib.Span(ctx, "repo.Acquire")
 	conn, err := w.databasePG.Acquire(ctx)
 	if err != nil {
 		childLogger.Error().Err(err).Msg("Erro Acquire")
 		return nil, errors.New(err.Error())
 	}
+	span.End()
 	defer w.databasePG.Release(conn)
 
 	result_accountBalance := core.AccountBalance{}
@@ -549,11 +565,13 @@ func (w WorkerRepository) ListAccountStatementMoviment(ctx context.Context, acco
 	span := lib.Span(ctx, "repo.ListAccountStatementMoviment")	
     defer span.End()
 
+	span = lib.Span(ctx, "repo.Acquire")
 	conn, err := w.databasePG.Acquire(ctx)
 	if err != nil {
 		childLogger.Error().Err(err).Msg("Erro Acquire")
 		return nil, errors.New(err.Error())
 	}
+	span.End()
 	defer w.databasePG.Release(conn)
 
 	result_accountStatement := core.AccountStatement{}
@@ -602,7 +620,14 @@ func (w WorkerRepository) GetFundBalanceAccountStatementMoviment(ctx context.Con
 	span := lib.Span(ctx, "repo.GetFundBalanceAccountStatementMoviment")	
     defer span.End()
 
-	conn := w.databasePG.GetConnection()
+	span = lib.Span(ctx, "repo.Acquire")
+	conn, err := w.databasePG.Acquire(ctx)
+	if err != nil {
+		childLogger.Error().Err(err).Msg("Erro Acquire")
+		return nil, errors.New(err.Error())
+	}
+	span.End()
+	defer w.databasePG.Release(conn)
 
 	result_accountBalance := core.AccountBalance{}
 
