@@ -110,10 +110,6 @@ func (d DatabasePGServer) Release(connection *pgxpool.Conn) {
 
 func (d DatabasePGServer) GetConnection() (*pgxpool.Pool) {
 	childLogger.Debug().Msg("GetConnection")
-	
-	span := lib.Span(ctx, "repo.GetConnection")
-	defer span.End()
-
 	return d.connPool
 }
 
