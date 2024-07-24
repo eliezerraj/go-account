@@ -29,7 +29,7 @@ type DatabasePGServer struct {
 
 func Config(database_url string) (*pgxpool.Config) {
 	const defaultMaxConns = int32(10)
-	const defaultMinConns = int32(0)
+	const defaultMinConns = int32(5)
 	const defaultMaxConnLifetime = time.Hour
 	const defaultMaxConnIdleTime = time.Minute * 30
 	const defaultHealthCheckPeriod = time.Minute
