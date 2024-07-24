@@ -91,6 +91,10 @@ func NewDatabasePGServer(ctx context.Context, databaseRDS *core.DatabaseRDS) (Da
 
 func (d DatabasePGServer) Acquire(ctx context.Context) (*pgxpool.Conn, error) {
 	childLogger.Debug().Msg("Acquire")
+	
+	span := lib.Span(ctx, "repo.Acquire")
+	defer span.End()
+
 	connection, err := d.connPool.Acquire(ctx)
 	if err != nil {
 		childLogger.Error().Err(err).Msg("Error while acquiring connection from the database pool!!")
@@ -106,6 +110,10 @@ func (d DatabasePGServer) Release(connection *pgxpool.Conn) {
 
 func (d DatabasePGServer) GetConnection() (*pgxpool.Pool) {
 	childLogger.Debug().Msg("GetConnection")
+	
+	span := lib.Span(ctx, "repo.GetConnection")
+	defer span.End()
+
 	return d.connPool
 }
 
