@@ -36,9 +36,10 @@ func MiddleWareHandlerHeader(next http.Handler) http.Handler {
 		
 		childLogger.Debug().Msg("---------------------------")
 		childLogger.Debug().Str("Jwtid : ", r.Header.Get("Jwtid") ).Msg("")
-		childLogger.Debug().Str("RequestId : ", r.Header.Get("RequestId") ).Msg("")
+		childLogger.Debug().Str("RequestId : ", r.Header.Get("requestId") ).Msg("")
+
 		ctx := context.WithValue(r.Context(), "jwt_id", r.Header.Get("Jwtid"))
-		ctx = context.WithValue(ctx, "request_id", r.Header.Get("RequestId"))
+		ctx = context.WithValue(ctx, "request_id", r.Header.Get("X-Request-Id"))
 		childLogger.Debug().Msg("--------------------------")
 
 		childLogger.Debug().Msg("-------------- MiddleWareHandlerHeader (FIM) ----------------")
