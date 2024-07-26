@@ -2,7 +2,6 @@ package core
 
 import (
 	"time"
-
 )
 
 type Account struct {
@@ -25,6 +24,8 @@ type AccountBalance struct {
 	CreateAt		time.Time 	`json:"create_at,omitempty"`
 	UpdateAt		*time.Time 	`json:"update_at,omitempty"`
 	UserLastUpdate	*string  	`json:"user_last_update,omitempty"`
+	JwtId			*string  	`json:"jwt_id,omitempty"`
+	RequestId		*string  	`json:"request_id,omitempty"`
 }
 
 type AccountStatement struct {

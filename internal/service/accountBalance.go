@@ -10,7 +10,7 @@ import (
 
 func (s WorkerService) AddFundBalanceAccount(ctx context.Context, accountBalance core.AccountBalance) (*core.AccountBalance, error){
 	childLogger.Debug().Msg("AddFundBalanceAccount")
-
+	
 	span := lib.Span(ctx, "service.AddFundBalanceAccount")
 	
 	tx, conn, err := s.workerRepo.StartTx(ctx)

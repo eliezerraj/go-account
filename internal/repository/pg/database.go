@@ -731,14 +731,18 @@ func (w WorkerRepository) UpdateFundBalanceAccount(ctx context.Context, tx pgx.T
 
 	query := `Update ACCOUNT_BALANCE
 				set amount = amount + $1, 
-					update_at = $2
-			where fk_account_id = $3 `
+					update_at = $2,
+					request_id = $3,
+					jwt_id	= $4
+			where fk_account_id = $5 `
 
 	updateAt := time.Now()
 	accountBalance.UpdateAt = &updateAt
 
 	row, err := tx.Exec(ctx, query, accountBalance.Amount,  
 									accountBalance.UpdateAt,
+									accountBalance.RequestId,
+									accountBalance.JwtId,
 									accountBalance.FkAccountID)
 	if err != nil {
 		childLogger.Error().Err(err).Msg("Update statement")

@@ -2,6 +2,7 @@ package handler
 
 import (	
 	"net/http"
+	"context"
 	"strconv"
 	"encoding/json"
 	"github.com/rs/zerolog/log"
@@ -19,11 +20,11 @@ func MiddleWareHandlerHeader(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		childLogger.Debug().Msg("-------------- MiddleWareHandlerHeader (INICIO)  --------------")
 	
-		/*if reqHeadersBytes, err := json.Marshal(r.Header); err != nil {
+		if reqHeadersBytes, err := json.Marshal(r.Header); err != nil {
 			childLogger.Error().Err(err).Msg("Could not Marshal http headers !!!")
 		} else {
-			//childLogger.Debug().Str("Headers : ", string(reqHeadersBytes) ).Msg("")
-		}*/
+			childLogger.Debug().Str("Headers : ", string(reqHeadersBytes) ).Msg("")
+		}
 
 		//childLogger.Debug().Str("Method : ", r.Method ).Msg("")
 		//childLogger.Debug().Str("URL : ", r.URL.Path ).Msg("")
@@ -32,13 +33,17 @@ func MiddleWareHandlerHeader(next http.Handler) http.Handler {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
 		w.Header().Set("Cache-Control", "max-age=0")
 		w.Header().Set("Access-Control-Allow-Headers","Content-Type,access-control-allow-origin, access-control-allow-headers")
-		//log.Println(r.Header.Get("Host"))
-		//log.Println(r.Header.Get("User-Agent"))
-		//log.Println(r.Header.Get("X-Forwarded-For"))
+		
+		childLogger.Debug().Msg("---------------------------")
+		childLogger.Debug().Str("Jwtid : ", r.Header.Get("Jwtid") ).Msg("")
+		childLogger.Debug().Str("RequestId : ", r.Header.Get("RequestId") ).Msg("")
+		ctx := context.WithValue(r.Context(), "jwt_id", r.Header.Get("Jwtid"))
+		ctx = context.WithValue(ctx, "request_id", r.Header.Get("RequestId"))
+		childLogger.Debug().Msg("--------------------------")
 
 		childLogger.Debug().Msg("-------------- MiddleWareHandlerHeader (FIM) ----------------")
 
-		next.ServeHTTP(w, r)
+		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
 
@@ -286,7 +291,7 @@ func (h *HttpWorkerAdapter) List(rw http.ResponseWriter, req *http.Request) {
 
 //-------------------------
 
-func (h *HttpWorkerAdapter) AddFundBalanceAccount( rw http.ResponseWriter, req *http.Request) {
+func (h *HttpWorkerAdapter) AddFundBalanceAccount(rw http.ResponseWriter, req *http.Request) {
 	childLogger.Debug().Msg("AddFundBalanceAccount")
 
 	span := lib.Span(req.Context(), "handler.AddFundBalanceAccount")
@@ -299,6 +304,19 @@ func (h *HttpWorkerAdapter) AddFundBalanceAccount( rw http.ResponseWriter, req *
 		json.NewEncoder(rw).Encode(erro.ErrUnmarshal.Error())
         return
     }
+
+	childLogger.Debug().Interface("===>jwtid: ", req.Context().Value("jwtid")).Msg("")
+	childLogger.Debug().Interface("===>request_id: ", req.Context().Value("request_id")).Msg("")
+
+	if (req.Context().Value("jwt_id") != nil) {
+		jwtid := req.Context().Value("jwt_id").(string)
+		accountBalance.JwtId = &jwtid
+	}
+
+	if (req.Context().Value("request_id") != nil) {
+		request_id := req.Context().Value("request_id").(string)
+		accountBalance.RequestId = &request_id
+	}
 
 	res, err := h.workerService.AddFundBalanceAccount(req.Context(), accountBalance)
 	if err != nil {

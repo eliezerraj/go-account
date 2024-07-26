@@ -32,7 +32,21 @@ CRUD for account_balance
             tenant_id varchar(200) NULL,
             user_last_update varchar(200) NULL,
             transaction_id uuid NULL,
+            request_id varchar NULL,
+            jwt_id varchar NULL,
             CONSTRAINT account_balance_pkey PRIMARY KEY (id)
+        );
+
+        CREATE TABLE audit_account_balance (
+            id serial4 			NOT NULL,
+            request_id 			varchar NULL,
+            jwt_id 				varchar NULL,
+            user_session 		varchar NOT NULL,
+            create_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,            
+            account_balance_id 	INT NOT NULL,
+            currency 			varchar NULL,
+            old_amount 			float8 NOT NULL,
+            new_amount 			float8 NOT null
         );
 
         CREATE TABLE public.account_statement (
@@ -109,3 +123,39 @@ Create a public apigw
 ## 
 
 cat xxx.key | base64 -w 0
+
+##
+
+        CREATE OR REPLACE FUNCTION func_audit_account_balance() RETURNS trigger as $$
+        DECLARE
+            sess_user text;
+        begin
+            BEGIN
+                sess_user := (SELECT session_user from session_user);
+            EXCEPTION WHEN undefined_table THEN
+                sess_user := 'unknown_user';
+            END;
+            INSERT INTO audit_account_balance (	request_id, 
+                                                jwt_id,
+                                                user_session,
+                                                account_balance_id, 
+                                                currency, 
+                                                old_amount, 
+                                                new_amount)
+            VALUES (OLD.request_id,
+                    OLD.jwt_id,
+                    sess_user,
+                    OLD.id,
+                    OLD.currency, 
+                    OLD.amount, 
+                    NEW.amount);
+            
+            RETURN NEW;
+        END;
+        $$ LANGUAGE plpgsql;
+
+
+        CREATE TRIGGER trg_audit_account_balance
+        AFTER UPDATE OF amount ON account_balance
+        FOR EACH ROW
+        EXECUTE FUNCTION func_audit_account_balance();

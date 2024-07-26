@@ -120,25 +120,25 @@ func (h HttpServer) StartHttpAppServer(	ctx context.Context,
 	addFundAcc := myRouter.Methods(http.MethodPost, http.MethodOptions).Subrouter()
 	addFundAcc.Handle("/add/fund", 
 						http.HandlerFunc(httpWorkerAdapter.AddFundBalanceAccount),)
-	addFundAcc.Use(httpWorkerAdapter.DecoratorDB)
+	//addFundAcc.Use(httpWorkerAdapter.DecoratorDB)
 	addFundAcc.Use(otelmux.Middleware("go-account"))
 
 	getMovAcc := myRouter.Methods(http.MethodGet, http.MethodOptions).Subrouter()
 	getMovAcc.Handle("/get/movimentBalanceAccount/{id}", 
 						http.HandlerFunc(httpWorkerAdapter.GetMovimentBalanceAccount),)
-	getMovAcc.Use(httpWorkerAdapter.DecoratorDB)
+	//getMovAcc.Use(httpWorkerAdapter.DecoratorDB)
 	getMovAcc.Use(otelmux.Middleware("go-account"))
 
 	getFundAcc := myRouter.Methods(http.MethodGet, http.MethodOptions).Subrouter()
 	getFundAcc.Handle("/fundBalanceAccount/{id}", 
 						http.HandlerFunc(httpWorkerAdapter.GetFundBalanceAccount),)
-	getFundAcc.Use(httpWorkerAdapter.DecoratorDB)
+	//getFundAcc.Use(httpWorkerAdapter.DecoratorDB)
 	getFundAcc.Use(otelmux.Middleware("go-account"))
 
 	transferFundAcc := myRouter.Methods(http.MethodPost, http.MethodOptions).Subrouter()
 	transferFundAcc.Handle("/transferFund", 
 						http.HandlerFunc(httpWorkerAdapter.TransferFundAccount),)
-	transferFundAcc.Use(httpWorkerAdapter.DecoratorDB)
+	//transferFundAcc.Use(httpWorkerAdapter.DecoratorDB)
 	transferFundAcc.Use(otelmux.Middleware("go-account"))
 
 	// -------------------
