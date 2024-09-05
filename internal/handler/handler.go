@@ -36,11 +36,10 @@ func MiddleWareHandlerHeader(next http.Handler) http.Handler {
 		
 		childLogger.Debug().Msg("---------------------------")
 		childLogger.Debug().Str("Jwtid : ", r.Header.Get("Jwtid") ).Msg("")
-		childLogger.Debug().Str("RequestId : ", r.Header.Get("requestId") ).Msg("")
+		childLogger.Debug().Str("RequestId : ", r.Header.Get("X-Request-Id") ).Msg("")
 
 		ctx := context.WithValue(r.Context(), "jwt_id", r.Header.Get("Jwtid"))
 		ctx = context.WithValue(ctx, "request_id", r.Header.Get("X-Request-Id"))
-		childLogger.Debug().Msg("--------------------------")
 
 		childLogger.Debug().Msg("-------------- MiddleWareHandlerHeader (FIM) ----------------")
 
@@ -306,7 +305,7 @@ func (h *HttpWorkerAdapter) AddFundBalanceAccount(rw http.ResponseWriter, req *h
         return
     }
 
-	childLogger.Debug().Interface("===>jwtid: ", req.Context().Value("jwtid")).Msg("")
+	childLogger.Debug().Interface("===>jwtid: ", req.Context().Value("jwt_id")).Msg("")
 	childLogger.Debug().Interface("===>request_id: ", req.Context().Value("request_id")).Msg("")
 
 	if (req.Context().Value("jwt_id") != nil) {

@@ -1,0 +1,35 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: aws-logging
+  namespace: aws-observability
+data:
+  filters.conf: |
+    [FILTER]
+        Name                kubernetes
+        Match               kube.*
+        Keep_Log            Off
+        Buffer_Size         0
+        Kube_Meta_Cache_TTL 300s
+        Merge_Log_Key       log_processed
+        Merge_Log           On
+        Labels              On
+        Annotations         On
+    
+    [FILTER]
+        Name                grep
+        Match               *
+        Exclude             $kubernetes['namespace_name'] kube-system
+                
+  output.conf: |
+    [OUTPUT]
+        Name                cloudwatch_logs
+        Match               *
+        region              us-east-2
+        log_retention_days  30
+        log_group_name      /dock/eks-fargate/arch-eks-01
+        log_stream_template $kubernetes['namespace_name'].$kubernetes['pod_name'].$kubernetes['container_name']
+        log_stream_prefix   eks-fargate-
+        log_format          json/emf
+        auto_create_group   true
+        log_key             log
