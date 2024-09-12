@@ -8,7 +8,7 @@ import (
 	"github.com/go-account/internal/core"
 )
 
-func (s WorkerService) AddFundBalanceAccount(ctx context.Context, accountBalance core.AccountBalance) (*core.AccountBalance, error){
+func (s WorkerService) AddFundBalanceAccount(ctx context.Context, accountBalance *core.AccountBalance) (*core.AccountBalance, error){
 	childLogger.Debug().Msg("AddFundBalanceAccount")
 	
 	span := lib.Span(ctx, "service.AddFundBalanceAccount")
@@ -43,10 +43,10 @@ func (s WorkerService) AddFundBalanceAccount(ctx context.Context, accountBalance
 		return res_create, nil
 	}
 
-	return &accountBalance, nil
+	return accountBalance, nil
 }
 
-func (s WorkerService) GetFundBalanceAccount(ctx context.Context, accountBalance core.AccountBalance) (interface{} , error){
+func (s WorkerService) GetFundBalanceAccount(ctx context.Context, accountBalance *core.AccountBalance) (interface{} , error){
 	childLogger.Debug().Msg("GetFundBalanceAccount")
 
 	span := lib.Span(ctx, "service.GetFundBalanceAccount")
@@ -54,7 +54,7 @@ func (s WorkerService) GetFundBalanceAccount(ctx context.Context, accountBalance
 
 	account := core.Account{}
 	account.AccountID = accountBalance.AccountID
-	_, err := s.workerRepo.Get(ctx, account)
+	_, err := s.workerRepo.Get(ctx, &account)
 	if err != nil {
 		return nil, err
 	}
@@ -67,7 +67,7 @@ func (s WorkerService) GetFundBalanceAccount(ctx context.Context, accountBalance
 	return &res_fundAccountBalance, nil
 }
 
-func (s WorkerService) GetMovimentBalanceAccount(ctx context.Context, accountBalance core.AccountBalance) (interface{} , error){
+func (s WorkerService) GetMovimentBalanceAccount(ctx context.Context, accountBalance *core.AccountBalance) (interface{} , error){
 	childLogger.Debug().Msg("GetMovimentBalanceAccount")
 	//childLogger.Debug().Interface("=>accountBalance : ", accountBalance).Msg("")
 
@@ -76,7 +76,7 @@ func (s WorkerService) GetMovimentBalanceAccount(ctx context.Context, accountBal
 
 	account := core.Account{}
 	account.AccountID = accountBalance.AccountID
-	_, err := s.workerRepo.Get(ctx, account)
+	_, err := s.workerRepo.Get(ctx, &account)
 	if err != nil {
 		return nil, err
 	}
@@ -123,7 +123,7 @@ func (s WorkerService) GetMovimentBalanceAccount(ctx context.Context, accountBal
 	return &movimentAccount, nil
 }
 
-func (s WorkerService) TransferFundAccount(ctx context.Context, transfer core.Transfer) (interface{} , error){
+func (s WorkerService) TransferFundAccount(ctx context.Context, transfer *core.Transfer) (interface{} , error){
 	childLogger.Debug().Msg("TransferFundAccount")
 	//childLogger.Debug().Interface("=>transfer : ", transfer).Msg("")
 
@@ -168,7 +168,7 @@ func (s WorkerService) TransferFundAccount(ctx context.Context, transfer core.Tr
 	accountStatementFrom.Currency = transfer.Currency
 	accountStatementFrom.Amount = transfer.Amount
 
-	_, err = s.workerRepo.AddAccountStatement(ctx, tx, accountStatementFrom)
+	_, err = s.workerRepo.AddAccountStatement(ctx, tx, &accountStatementFrom)
 	if err != nil {
 		return nil, err
 	}
@@ -179,7 +179,7 @@ func (s WorkerService) TransferFundAccount(ctx context.Context, transfer core.Tr
 	accountBalance.Currency = transfer.Currency
 	accountBalance.FkAccountID = transfer.FkAccountIDTo
 
-	res, err = s.workerRepo.UpdateFundBalanceAccount(ctx, tx, accountBalance)
+	res, err = s.workerRepo.UpdateFundBalanceAccount(ctx, tx, &accountBalance)
 	if err != nil {
 		return nil, err
 	}
@@ -194,7 +194,7 @@ func (s WorkerService) TransferFundAccount(ctx context.Context, transfer core.Tr
 	accountStatementTo.Currency = transfer.Currency
 	accountStatementTo.Amount = (transfer.Amount * -1)
 
-	_, err = s.workerRepo.AddAccountStatement(ctx, tx, accountStatementTo)
+	_, err = s.workerRepo.AddAccountStatement(ctx, tx, &accountStatementTo)
 	if err != nil {
 		return nil, err
 	}

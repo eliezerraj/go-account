@@ -11,6 +11,7 @@ import (
 	"github.com/joho/godotenv"
 
 	"github.com/go-account/internal/core"
+	"github.com/go-account/internal/repository/storage"
 	"github.com/go-account/internal/repository/pg"
 )
 
@@ -74,13 +75,13 @@ func TestGetAccount(t *testing.T) {
 	defer cancel()
 
 	databasePG, err := pg.NewDatabasePGServer(ctx,appServer.Database)
-	repoDB := pg.NewWorkerRepository(databasePG)
+	repoDB := storage.NewWorkerRepository(databasePG)
 	
 	workerService := NewWorkerService(&repoDB)
 
 	account := core.Account{AccountID: os.Getenv("TST_ACCOUNT_ID") }
 
-	res, err := workerService.Get(ctx, account)
+	res, err := workerService.Get(ctx, &account)
 	if err != nil {
 		t.Errorf("Error -TestGetAccount GET erro: %v ", err)
 	} else {

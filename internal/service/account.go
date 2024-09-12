@@ -7,16 +7,16 @@ import (
 	"github.com/go-account/internal/lib"
 	"github.com/go-account/internal/erro"
 	"github.com/go-account/internal/core"
-	"github.com/go-account/internal/repository/pg"
+	"github.com/go-account/internal/repository/storage"
 )
 
 var childLogger = log.With().Str("service", "service").Logger()
 
 type WorkerService struct {
-	workerRepo		 	*pg.WorkerRepository
+	workerRepo		 	*storage.WorkerRepository
 }
 
-func NewWorkerService( workerRepo *pg.WorkerRepository) *WorkerService{
+func NewWorkerService( workerRepo *storage.WorkerRepository) *WorkerService{
 	childLogger.Debug().Msg("NewWorkerService")
 
 	return &WorkerService{
@@ -35,7 +35,7 @@ func (s WorkerService) SetSessionVariable(ctx context.Context, userCredential st
 	return res, nil
 }
 
-func (s WorkerService) Add(ctx context.Context, account core.Account) (*core.Account, error){
+func (s WorkerService) Add(ctx context.Context, account *core.Account) (*core.Account, error){
 	childLogger.Debug().Msg("Add")
 
 	span := lib.Span(ctx, "service.Add")
@@ -55,7 +55,7 @@ func (s WorkerService) Add(ctx context.Context, account core.Account) (*core.Acc
 	accountBalance.FkAccountID = res.ID
 	accountBalance.TenantID = res.TenantID
 
-	_, err = s.AddFundBalanceAccount(ctx, accountBalance)
+	_, err = s.AddFundBalanceAccount(ctx, &accountBalance)
 	if err != nil {
 		return nil, err
 	}
@@ -63,7 +63,7 @@ func (s WorkerService) Add(ctx context.Context, account core.Account) (*core.Acc
 	return res, nil
 }
 
-func (s WorkerService) Get(ctx context.Context, account core.Account) (*core.Account, error){
+func (s WorkerService) Get(ctx context.Context, account *core.Account) (*core.Account, error){
 	childLogger.Debug().Msg("Get")
 
 	span := lib.Span(ctx, "service.Get")
@@ -77,7 +77,7 @@ func (s WorkerService) Get(ctx context.Context, account core.Account) (*core.Acc
 	return res, nil
 }
 
-func (s WorkerService) Update(ctx context.Context, account core.Account) (*core.Account, error){
+func (s WorkerService) Update(ctx context.Context, account *core.Account) (*core.Account, error){
 	childLogger.Debug().Msg("Update")
 
 	span := lib.Span(ctx, "service.Update")
@@ -104,7 +104,7 @@ func (s WorkerService) Update(ctx context.Context, account core.Account) (*core.
 	return res_account, nil
 }
 
-func (s WorkerService) Delete(ctx context.Context,account core.Account) (bool, error){
+func (s WorkerService) Delete(ctx context.Context,account *core.Account) (bool, error){
 	childLogger.Debug().Msg("Delete")
 
 	span := lib.Span(ctx, "service.Delete")
@@ -126,7 +126,7 @@ func (s WorkerService) Delete(ctx context.Context,account core.Account) (bool, e
 	return true, nil
 }
 
-func (s WorkerService) List(ctx context.Context, account core.Account) (*[]core.Account, error){
+func (s WorkerService) List(ctx context.Context, account *core.Account) (*[]core.Account, error){
 	childLogger.Debug().Msg("List")
 
 	span := lib.Span(ctx, "service.List")
@@ -140,7 +140,7 @@ func (s WorkerService) List(ctx context.Context, account core.Account) (*[]core.
 	return res, nil
 }
 
-func (s WorkerService) GetId(ctx context.Context, account core.Account) (*core.Account, error){
+func (s WorkerService) GetId(ctx context.Context, account *core.Account) (*core.Account, error){
 	childLogger.Debug().Msg("GetId")
 
 	span := lib.Span(ctx, "service.GetId")

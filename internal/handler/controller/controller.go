@@ -1,50 +1,42 @@
-package handler
+package controller
 
 import (	
 	"net/http"
-	"context"
 	"strconv"
 	"encoding/json"
 	"github.com/rs/zerolog/log"
 	"github.com/gorilla/mux"
 
+	"github.com/go-account/internal/service"
 	"github.com/go-account/internal/core"
 	"github.com/go-account/internal/erro"
 	"github.com/go-account/internal/lib"
 )
 
-var childLogger = log.With().Str("handler", "handler").Logger()
+var childLogger = log.With().Str("handler", "controller").Logger()
 
-// Middleware v01
-func MiddleWareHandlerHeader(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		childLogger.Debug().Msg("-------------- MiddleWareHandlerHeader (INICIO)  --------------")
-	
-		if reqHeadersBytes, err := json.Marshal(r.Header); err != nil {
-			childLogger.Error().Err(err).Msg("Could not Marshal http headers !!!")
-		} else {
-			childLogger.Debug().Str("Headers : ", string(reqHeadersBytes) ).Msg("")
-		}
+type HttpWorkerAdapter struct {
+	workerService 	*service.WorkerService
+}
 
-		//childLogger.Debug().Str("Method : ", r.Method ).Msg("")
-		//childLogger.Debug().Str("URL : ", r.URL.Path ).Msg("")
+func NewHttpWorkerAdapter(workerService *service.WorkerService) HttpWorkerAdapter {
+	childLogger.Debug().Msg("NewHttpWorkerAdapter")
 
-		w.Header().Set("Content-Type", "application/json")
-		w.Header().Set("Access-Control-Allow-Origin", "*")
-		w.Header().Set("Cache-Control", "max-age=0")
-		w.Header().Set("Access-Control-Allow-Headers","Content-Type,access-control-allow-origin, access-control-allow-headers")
-		
-		childLogger.Debug().Msg("---------------------------")
-		childLogger.Debug().Str("Jwtid : ", r.Header.Get("Jwtid") ).Msg("")
-		childLogger.Debug().Str("RequestId : ", r.Header.Get("X-Request-Id") ).Msg("")
+	return HttpWorkerAdapter{
+		workerService: workerService,
+	}
+}
 
-		ctx := context.WithValue(r.Context(), "jwt_id", r.Header.Get("Jwtid"))
-		ctx = context.WithValue(ctx, "request_id", r.Header.Get("X-Request-Id"))
+type APIError struct {
+	StatusCode	int  `json:"statusCode"`
+	Msg			any `json:"msg"`
+}
 
-		childLogger.Debug().Msg("-------------- MiddleWareHandlerHeader (FIM) ----------------")
-
-		next.ServeHTTP(w, r.WithContext(ctx))
-	})
+func NewAPIError(statusCode int, err error) APIError {
+	return APIError{
+		StatusCode: statusCode,
+		Msg:		err.Error(),
+	}
 }
 
 // Middleware v02 - with decoratorDB
@@ -112,19 +104,23 @@ func (h *HttpWorkerAdapter) Add( rw http.ResponseWriter, req *http.Request) {
 	account := core.Account{}
 	err := json.NewDecoder(req.Body).Decode(&account)
     if err != nil {
-		rw.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(rw).Encode(erro.ErrUnmarshal.Error())
-        return
+		apiError := NewAPIError(400, erro.ErrUnmarshal)
+		rw.WriteHeader(apiError.StatusCode)
+		json.NewEncoder(rw).Encode(apiError)
+		return
     }
+	defer req.Body.Close()
 
-	res, err := h.workerService.Add(req.Context(), account)
+	res, err := h.workerService.Add(req.Context(), &account)
 	if err != nil {
+		var apiError APIError
 		switch err {
 		default:
-			rw.WriteHeader(400)
-			json.NewEncoder(rw).Encode(err.Error())
-			return
+			apiError = NewAPIError(500, err)
 		}
+		rw.WriteHeader(apiError.StatusCode)
+		json.NewEncoder(rw).Encode(apiError)
+		return
 	}
 
 	json.NewEncoder(rw).Encode(res)
@@ -137,24 +133,24 @@ func (h *HttpWorkerAdapter) Get(rw http.ResponseWriter, req *http.Request) {
 	span := lib.Span(req.Context(), "handler.Get")
 	defer span.End()
 	
+	account := core.Account{}
 	vars := mux.Vars(req)
 	varID := vars["id"]
 
-	account := core.Account{}
 	account.AccountID = varID
 	
-	res, err := h.workerService.Get(req.Context(), account)
+	res, err := h.workerService.Get(req.Context(), &account)
 	if err != nil {
+		var apiError APIError
 		switch err {
-		case erro.ErrNotFound:
-			rw.WriteHeader(404)
-			json.NewEncoder(rw).Encode(err.Error())
-			return
-		default:
-			rw.WriteHeader(500)
-			json.NewEncoder(rw).Encode(err.Error())
-			return
+			case erro.ErrNotFound:
+				apiError = NewAPIError(404, err)
+			default:
+				apiError = NewAPIError(500, err)
 		}
+		rw.WriteHeader(apiError.StatusCode)
+		json.NewEncoder(rw).Encode(apiError)
+		return
 	}
 
 	json.NewEncoder(rw).Encode(res)
@@ -172,26 +168,27 @@ func (h *HttpWorkerAdapter) GetId(rw http.ResponseWriter, req *http.Request) {
 
 	i, err := strconv.Atoi(varID)
 	if err != nil{
-		rw.WriteHeader(400)
-		json.NewEncoder(rw).Encode(erro.ErrConvStrint.Error())
+		apiError := NewAPIError(400, erro.ErrConvStrint)
+		rw.WriteHeader(apiError.StatusCode)
+		json.NewEncoder(rw).Encode(apiError)
 		return
 	}
 
 	account := core.Account{}
 	account.ID = i
 	
-	res, err := h.workerService.GetId(req.Context(), account)
+	res, err := h.workerService.GetId(req.Context(), &account)
 	if err != nil {
+		var apiError APIError
 		switch err {
 		case erro.ErrNotFound:
-			rw.WriteHeader(404)
-			json.NewEncoder(rw).Encode(err.Error())
-			return
+			apiError = NewAPIError(404, err)
 		default:
-			rw.WriteHeader(500)
-			json.NewEncoder(rw).Encode(err.Error())
-			return
+			apiError = NewAPIError(500, err)
 		}
+		rw.WriteHeader(apiError.StatusCode)
+		json.NewEncoder(rw).Encode(apiError)
+		return
 	}
 
 	json.NewEncoder(rw).Encode(res)
@@ -207,27 +204,28 @@ func (h *HttpWorkerAdapter) Update(rw http.ResponseWriter, req *http.Request) {
 	account := core.Account{}
 	err := json.NewDecoder(req.Body).Decode(&account)
     if err != nil {
-		rw.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(rw).Encode(erro.ErrUnmarshal.Error())
-        return
+		apiError := NewAPIError(400, erro.ErrUnmarshal)
+		rw.WriteHeader(apiError.StatusCode)
+		json.NewEncoder(rw).Encode(apiError)
+		return
     }
 	
 	vars := mux.Vars(req)
 	varID := vars["id"]
 	account.AccountID = varID
 
-	res, err := h.workerService.Update(req.Context(), account)
+	res, err := h.workerService.Update(req.Context(), &account)
 	if err != nil {
+		var apiError APIError
 		switch err {
 		case erro.ErrNotFound:
-			rw.WriteHeader(404)
-			json.NewEncoder(rw).Encode(err.Error())
-			return
+			apiError = NewAPIError(404, err)
 		default:
-			rw.WriteHeader(500)
-			json.NewEncoder(rw).Encode(err.Error())
-			return
+			apiError = NewAPIError(500, err)
 		}
+		rw.WriteHeader(apiError.StatusCode)
+		json.NewEncoder(rw).Encode(apiError)
+		return
 	}
 
 	json.NewEncoder(rw).Encode(res)
@@ -245,18 +243,18 @@ func (h *HttpWorkerAdapter) Delete(rw http.ResponseWriter, req *http.Request) {
 	varID := vars["id"]
 	account.AccountID = varID
 	
-	res, err := h.workerService.Delete(req.Context(), account)
+	res, err := h.workerService.Delete(req.Context(), &account)
 	if err != nil {
+		var apiError APIError
 		switch err {
 		case erro.ErrNotFound:
-			rw.WriteHeader(404)
-			json.NewEncoder(rw).Encode(err.Error())
-			return
+			apiError = NewAPIError(404, err)
 		default:
-			rw.WriteHeader(500)
-			json.NewEncoder(rw).Encode(err.Error())
-			return
+			apiError = NewAPIError(500, err)
 		}
+		rw.WriteHeader(apiError.StatusCode)
+		json.NewEncoder(rw).Encode(apiError)
+		return
 	}
 
 	json.NewEncoder(rw).Encode(res)
@@ -275,14 +273,16 @@ func (h *HttpWorkerAdapter) List(rw http.ResponseWriter, req *http.Request) {
 	account := core.Account{}
 	account.PersonID = varID
 	
-	res, err := h.workerService.List(req.Context(), account)
+	res, err := h.workerService.List(req.Context(), &account)
 	if err != nil {
+		var apiError APIError
 		switch err {
 		default:
-			rw.WriteHeader(500)
-			json.NewEncoder(rw).Encode(err.Error())
-			return
+			apiError = NewAPIError(500, err)
 		}
+		rw.WriteHeader(apiError.StatusCode)
+		json.NewEncoder(rw).Encode(apiError)
+		return
 	}
 
 	json.NewEncoder(rw).Encode(res)
@@ -300,9 +300,10 @@ func (h *HttpWorkerAdapter) AddFundBalanceAccount(rw http.ResponseWriter, req *h
 	accountBalance := core.AccountBalance{}
 	err := json.NewDecoder(req.Body).Decode(&accountBalance)
     if err != nil {
-		rw.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(rw).Encode(erro.ErrUnmarshal.Error())
-        return
+		apiError := NewAPIError(400, erro.ErrUnmarshal)
+		rw.WriteHeader(apiError.StatusCode)
+		json.NewEncoder(rw).Encode(apiError)
+		return
     }
 
 	childLogger.Debug().Interface("===>jwtid: ", req.Context().Value("jwt_id")).Msg("")
@@ -318,14 +319,16 @@ func (h *HttpWorkerAdapter) AddFundBalanceAccount(rw http.ResponseWriter, req *h
 		accountBalance.RequestId = &request_id
 	}
 
-	res, err := h.workerService.AddFundBalanceAccount(req.Context(), accountBalance)
+	res, err := h.workerService.AddFundBalanceAccount(req.Context(), &accountBalance)
 	if err != nil {
+		var apiError APIError
 		switch err {
 		default:
-			rw.WriteHeader(400)
-			json.NewEncoder(rw).Encode(err.Error())
-			return
+			apiError = NewAPIError(500, err)
 		}
+		rw.WriteHeader(apiError.StatusCode)
+		json.NewEncoder(rw).Encode(apiError)
+		return
 	}
 
 	json.NewEncoder(rw).Encode(res)
@@ -344,18 +347,18 @@ func (h *HttpWorkerAdapter) GetMovimentBalanceAccount( rw http.ResponseWriter, r
 	accountBalance := core.AccountBalance{}
 	accountBalance.AccountID = varID
 
-	res, err := h.workerService.GetMovimentBalanceAccount(req.Context(), accountBalance)
+	res, err := h.workerService.GetMovimentBalanceAccount(req.Context(), &accountBalance)
 	if err != nil {
+		var apiError APIError
 		switch err {
 		case erro.ErrNotFound:
-			rw.WriteHeader(404)
-			json.NewEncoder(rw).Encode(err.Error())
-			return
+			apiError = NewAPIError(404, err)
 		default:
-			rw.WriteHeader(400)
-			json.NewEncoder(rw).Encode(err.Error())
-			return
+			apiError = NewAPIError(500, err)
 		}
+		rw.WriteHeader(apiError.StatusCode)
+		json.NewEncoder(rw).Encode(apiError)
+		return
 	}
 
 	json.NewEncoder(rw).Encode(res)
@@ -374,18 +377,18 @@ func (h *HttpWorkerAdapter) GetFundBalanceAccount( rw http.ResponseWriter, req *
 	accountBalance := core.AccountBalance{}
 	accountBalance.AccountID = varID
 
-	res, err := h.workerService.GetFundBalanceAccount(req.Context(), accountBalance)
+	res, err := h.workerService.GetFundBalanceAccount(req.Context(), &accountBalance)
 	if err != nil {
+		var apiError APIError
 		switch err {
 		case erro.ErrNotFound:
-			rw.WriteHeader(404)
-			json.NewEncoder(rw).Encode(err.Error())
-			return
+			apiError = NewAPIError(404, err)
 		default:
-			rw.WriteHeader(400)
-			json.NewEncoder(rw).Encode(err.Error())
-			return
+			apiError = NewAPIError(500, err)
 		}
+		rw.WriteHeader(apiError.StatusCode)
+		json.NewEncoder(rw).Encode(apiError)
+		return
 	}
 
 	json.NewEncoder(rw).Encode(res)
@@ -401,19 +404,22 @@ func (h *HttpWorkerAdapter) TransferFundAccount( rw http.ResponseWriter, req *ht
 	transfer := core.Transfer{}
 	err := json.NewDecoder(req.Body).Decode(&transfer)
     if err != nil {
-		rw.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(rw).Encode(erro.ErrUnmarshal.Error())
-        return
+		apiError := NewAPIError(400, erro.ErrUnmarshal)
+		rw.WriteHeader(apiError.StatusCode)
+		json.NewEncoder(rw).Encode(apiError)
+		return
     }
 
-	res, err := h.workerService.TransferFundAccount(req.Context(), transfer)
+	res, err := h.workerService.TransferFundAccount(req.Context(), &transfer)
 	if err != nil {
+		var apiError APIError
 		switch err {
 		default:
-			rw.WriteHeader(400)
-			json.NewEncoder(rw).Encode(err.Error())
-			return
+			apiError = NewAPIError(400, err)
 		}
+		rw.WriteHeader(apiError.StatusCode)
+		json.NewEncoder(rw).Encode(apiError)
+		return
 	}
 
 	json.NewEncoder(rw).Encode(res)
