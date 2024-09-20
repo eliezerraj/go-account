@@ -24,16 +24,6 @@ func NewWorkerService( workerRepo *storage.WorkerRepository) *WorkerService{
 	}
 }
 // -----------------------------------------------
-func (s WorkerService) SetSessionVariable(ctx context.Context, userCredential string) (bool, error){
-	childLogger.Debug().Msg("SetSessionVariable")
-
-	res, err := s.workerRepo.SetSessionVariable(ctx, userCredential)
-	if err != nil {
-		return false, err
-	}
-
-	return res, nil
-}
 
 func (s WorkerService) Add(ctx context.Context, account *core.Account) (*core.Account, error){
 	childLogger.Debug().Msg("Add")
