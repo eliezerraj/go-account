@@ -2,7 +2,6 @@ package util
 
 import(
 	"os"
-	"io/ioutil"
 
 	"github.com/joho/godotenv"
 	"github.com/go-account/internal/core"
@@ -13,7 +12,7 @@ func GetCertEnv() core.Cert {
 
 	err := godotenv.Load(".env")
 	if err != nil {
-		childLogger.Info().Err(err).Msg("No .env File !!!!")
+		childLogger.Info().Err(err).Msg("env file not found!!!")
 	}
 
 	var cert		core.Cert
@@ -22,16 +21,16 @@ func GetCertEnv() core.Cert {
 		cert.IsTLS = true
 		childLogger.Info().Err(err).Msg("*** Loading server_account_B64.crt ***")
 
-		cert.CertPEM, err = ioutil.ReadFile("/var/pod/cert/server_account_B64.crt") // server_account_B64.crt
+		cert.CertPEM, err = os.ReadFile("/var/pod/cert/server_account_B64.crt") // server_account_B64.crt
 		if err != nil {
-			childLogger.Info().Err(err).Msg("Cert certPEM nao encontrado")
+			childLogger.Info().Err(err).Msg("cert certPEM not found")
 		} 
 	
 		childLogger.Info().Err(err).Msg("*** Loading server_account_B64.key ***")
 
-		cert.CertPrivKeyPEM, err = ioutil.ReadFile("/var/pod/cert/server_account_B64.key") // server_account_B64.key
+		cert.CertPrivKeyPEM, err = os.ReadFile("/var/pod/cert/server_account_B64.key") // server_account_B64.key
 		if err != nil {
-			childLogger.Info().Err(err).Msg("Cert CertPrivKeyPEM nao encontrado")
+			childLogger.Info().Err(err).Msg("cert CertPrivKeyPEM not found")
 		}
 	}
 

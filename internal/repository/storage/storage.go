@@ -37,7 +37,7 @@ func (w WorkerRepository) StartTx(ctx context.Context) (pgx.Tx, *pgxpool.Conn, e
 	span = lib.Span(ctx, "storage.Acquire")
 	conn, err := w.databasePG.Acquire(ctx)
 	if err != nil {
-		childLogger.Error().Err(err).Msg("Erro Acquire")
+		childLogger.Error().Err(err).Msg("error acquire")
 		return nil, nil, errors.New(err.Error())
 	}
 	span.End()
@@ -64,7 +64,7 @@ func (w WorkerRepository) List(ctx context.Context, account *core.Account) (*[]c
 
 	conn, err := w.databasePG.Acquire(ctx)
 	if err != nil {
-		childLogger.Error().Err(err).Msg("Erro Acquire")
+		childLogger.Error().Err(err).Msg("error acquire")
 		return nil, errors.New(err.Error())
 	}
 	defer w.databasePG.Release(conn)
@@ -84,7 +84,7 @@ func (w WorkerRepository) List(ctx context.Context, account *core.Account) (*[]c
 
 	rows, err := conn.Query(ctx, query, account.PersonID)
 	if err != nil {
-		childLogger.Error().Err(err).Msg("SELECT statement")
+		childLogger.Error().Err(err).Msg("error select statement")
 		return nil, errors.New(err.Error())
 	}
 
@@ -98,7 +98,7 @@ func (w WorkerRepository) List(ctx context.Context, account *core.Account) (*[]c
 							&result_query.UserLastUpdate,
 						)
 		if err != nil {
-			childLogger.Error().Err(err).Msg("Scan statement")
+			childLogger.Error().Err(err).Msg("error scan statement")
 			return nil, errors.New(err.Error())
         }
 		balance_list = append(balance_list, result_query)
@@ -116,7 +116,7 @@ func (w WorkerRepository) Get(ctx context.Context, account *core.Account) (*core
 
 	conn, err := w.databasePG.Acquire(ctx)
 	if err != nil {
-		childLogger.Error().Err(err).Msg("Erro Acquire")
+		childLogger.Error().Err(err).Msg("error acquire")
 		return nil, errors.New(err.Error())
 	}
 	defer w.databasePG.Release(conn)
@@ -135,7 +135,7 @@ func (w WorkerRepository) Get(ctx context.Context, account *core.Account) (*core
 
 	rows, err := conn.Query(ctx, query, account.AccountID)
 	if err != nil {
-		childLogger.Error().Err(err).Msg("Query statement")
+		childLogger.Error().Err(err).Msg("error query statement")
 		return nil, errors.New(err.Error())
 	}
 	defer rows.Close()
@@ -149,7 +149,7 @@ func (w WorkerRepository) Get(ctx context.Context, account *core.Account) (*core
 							&result_query.TenantID,
 							&result_query.UserLastUpdate)
 		if err != nil {
-			childLogger.Error().Err(err).Msg("Scan statement")
+			childLogger.Error().Err(err).Msg("error scan statement")
 			return nil, errors.New(err.Error())
         }
 
@@ -167,7 +167,7 @@ func (w WorkerRepository) GetId(ctx context.Context, account *core.Account) (*co
 
 	conn, err := w.databasePG.Acquire(ctx)
 	if err != nil {
-		childLogger.Error().Err(err).Msg("Erro Acquire")
+		childLogger.Error().Err(err).Msg("error acquire")
 		return nil, errors.New(err.Error())
 	}
 	defer w.databasePG.Release(conn)
@@ -186,7 +186,7 @@ func (w WorkerRepository) GetId(ctx context.Context, account *core.Account) (*co
 
 	rows, err := conn.Query(ctx, query,  account.ID)
 	if err != nil {
-		childLogger.Error().Err(err).Msg("Query statement")
+		childLogger.Error().Err(err).Msg("error query statement")
 		return nil, errors.New(err.Error())
 	}
 	defer rows.Close()
@@ -201,7 +201,7 @@ func (w WorkerRepository) GetId(ctx context.Context, account *core.Account) (*co
 							&result_query.UserLastUpdate,
 							)
 		if err != nil {
-			childLogger.Error().Err(err).Msg("Scan statement")
+			childLogger.Error().Err(err).Msg("error scan statement")
 			return nil, errors.New(err.Error())
         }
 		return &result_query, nil
@@ -218,7 +218,7 @@ func (w WorkerRepository) Add(ctx context.Context, account *core.Account) (*core
 
 	conn, err := w.databasePG.Acquire(ctx)
 	if err != nil {
-		childLogger.Error().Err(err).Msg("Erro Acquire")
+		childLogger.Error().Err(err).Msg("error acquire")
 		return nil, errors.New(err.Error())
 	}
 	defer w.databasePG.Release(conn)
@@ -241,7 +241,7 @@ func (w WorkerRepository) Add(ctx context.Context, account *core.Account) (*core
 
 	var id int
 	if err := row.Scan(&id); err != nil {
-		childLogger.Error().Err(err).Msg("QueryRow INSERT")
+		childLogger.Error().Err(err).Msg("error queryRow insert")
 		return nil, errors.New(err.Error())
 	}
 
@@ -257,7 +257,7 @@ func (w WorkerRepository) Update(ctx context.Context, account *core.Account) (bo
 
 	conn, err := w.databasePG.Acquire(ctx)
 	if err != nil {
-		childLogger.Error().Err(err).Msg("Erro Acquire")
+		childLogger.Error().Err(err).Msg("error acquire")
 		return false, errors.New(err.Error())
 	}
 	defer w.databasePG.Release(conn)
@@ -278,7 +278,7 @@ func (w WorkerRepository) Update(ctx context.Context, account *core.Account) (bo
 									account.TenantID,
 									account.AccountID)
 	if err != nil {
-		childLogger.Error().Err(err).Msg("QueryRow Update")
+		childLogger.Error().Err(err).Msg("error queryRow update")
 		return false, errors.New(err.Error())
 	}
 
@@ -295,7 +295,7 @@ func (w WorkerRepository) Delete(ctx context.Context, account *core.Account) (bo
 
 	conn, err := w.databasePG.Acquire(ctx)
 	if err != nil {
-		childLogger.Error().Err(err).Msg("Erro Acquire")
+		childLogger.Error().Err(err).Msg("error acquire")
 		return false, errors.New(err.Error())
 	}
 	defer w.databasePG.Release(conn)
@@ -304,7 +304,7 @@ func (w WorkerRepository) Delete(ctx context.Context, account *core.Account) (bo
 
 	_, err = conn.Exec(ctx, query, account.AccountID)
 	if err != nil {
-		childLogger.Error().Err(err).Msg("Exec statement")
+		childLogger.Error().Err(err).Msg("error exec statement")
 		return false, errors.New(err.Error())
 	}
 		
@@ -337,7 +337,7 @@ func (w WorkerRepository) CreateFundBalanceAccount(ctx context.Context, tx pgx.T
 	
 	var id int
 	if err := row.Scan(&id); err != nil {
-		childLogger.Error().Err(err).Msg("INSERT statement")
+		childLogger.Error().Err(err).Msg("error insert statement")
 		return nil, errors.New(err.Error())
 	}
 
@@ -354,7 +354,7 @@ func (w WorkerRepository) GetFundBalanceAccount(ctx context.Context, accountBala
 
 	conn, err := w.databasePG.Acquire(ctx)
 	if err != nil {
-		childLogger.Error().Err(err).Msg("Erro Acquire")
+		childLogger.Error().Err(err).Msg("error acquire")
 		return nil, errors.New(err.Error())
 	}
 	defer w.databasePG.Release(conn)
@@ -368,8 +368,7 @@ func (w WorkerRepository) GetFundBalanceAccount(ctx context.Context, accountBala
 					b.create_at 
 				from account a,
 					account_balance b
-				where account_id = $1
-				and a.id = b.fk_account_id`
+				where account_id = $1 and a.id = b.fk_account_id`
 
 	rows, err := conn.Query(ctx, query, accountBalance.AccountID)
 	if err != nil {
@@ -386,7 +385,7 @@ func (w WorkerRepository) GetFundBalanceAccount(ctx context.Context, accountBala
 							&result_accountBalance.CreateAt, 
 							)
 		if err != nil {
-			childLogger.Error().Err(err).Msg("Scan statement")
+			childLogger.Error().Err(err).Msg("error scan statement")
 			return nil, errors.New(err.Error())
         }
 		return &result_accountBalance, nil
@@ -404,7 +403,7 @@ func (w WorkerRepository) ListAccountStatementMoviment(ctx context.Context, acco
 
 	conn, err := w.databasePG.Acquire(ctx)
 	if err != nil {
-		childLogger.Error().Err(err).Msg("Erro Acquire")
+		childLogger.Error().Err(err).Msg("error acquire")
 		return nil, errors.New(err.Error())
 	}
 	defer w.databasePG.Release(conn)
@@ -420,8 +419,7 @@ func (w WorkerRepository) ListAccountStatementMoviment(ctx context.Context, acco
 					b.charged_at
 				from account a,
 					account_statement b
-				where account_id = $1
-				and a.id = b.fk_account_id
+				where account_id = $1 and a.id = b.fk_account_id
 				order by charged_at desc
 				limit 10 `
 
@@ -440,7 +438,7 @@ func (w WorkerRepository) ListAccountStatementMoviment(ctx context.Context, acco
 							&result_accountStatement.Amount, 
 							&result_accountStatement.ChargeAt )
 		if err != nil {
-			childLogger.Error().Err(err).Msg("Scan statement")
+			childLogger.Error().Err(err).Msg("error scan statement")
 			return nil, errors.New(err.Error())
         }
 		accountStatement_list = append(accountStatement_list, result_accountStatement)
@@ -475,7 +473,7 @@ func (w WorkerRepository) GetFundBalanceAccountStatementMoviment(ctx context.Con
 
 	rows, err := conn.Query(ctx, query, accountBalance.AccountID, type_charge)
 	if err != nil {
-		childLogger.Error().Err(err).Msg("Query statement")
+		childLogger.Error().Err(err).Msg("error query statement")
 		return nil, errors.New(err.Error())
 	}
 	defer rows.Close()
@@ -483,6 +481,7 @@ func (w WorkerRepository) GetFundBalanceAccountStatementMoviment(ctx context.Con
 	if rows == nil {
 		return nil, erro.ErrNotFound
 	}
+
 	for rows.Next() {
 		err := rows.Scan( &result_accountBalance.ID,
 						  &result_accountBalance.Amount )
@@ -597,7 +596,7 @@ func (w WorkerRepository) TransferFundAccount(ctx context.Context, tx pgx.Tx, tr
 
 	rows_uuid, err := tx.Query(ctx, query)
 	if err != nil {
-		childLogger.Error().Err(err).Msg("ERROR QueryContext UUID")
+		childLogger.Error().Err(err).Msg("error queryContext UUID")
 		return 0,"" ,errors.New(err.Error())
 	}
 
@@ -605,7 +604,7 @@ func (w WorkerRepository) TransferFundAccount(ctx context.Context, tx pgx.Tx, tr
 	for rows_uuid.Next() {
 		err := rows_uuid.Scan( &uuid )
 		if err != nil {
-			childLogger.Error().Err(err).Msg("Erro Scan rows_uuid")
+			childLogger.Error().Err(err).Msg("error Scan rows_uuid")
 			return 0, uuid ,errors.New(err.Error())
         }
 	}
@@ -623,7 +622,7 @@ func (w WorkerRepository) TransferFundAccount(ctx context.Context, tx pgx.Tx, tr
 									transfer.TransferAt,
 									transfer.Amount)
 	if err != nil {
-		childLogger.Error().Err(err).Msg("Update statement")
+		childLogger.Error().Err(err).Msg("error update statement")
 		return 0, uuid, errors.New(err.Error())
 	}
 

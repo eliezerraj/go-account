@@ -29,7 +29,11 @@ func NewHttpWorkerAdapter(workerService *service.WorkerService) HttpWorkerAdapte
 
 type APIError struct {
 	StatusCode	int  `json:"statusCode"`
-	Msg			any `json:"msg"`
+	Msg			string `json:"msg"`
+}
+
+func (e APIError) Error() string {
+	return e.Msg
 }
 
 func NewAPIError(statusCode int, err error) APIError {
@@ -39,12 +43,16 @@ func NewAPIError(statusCode int, err error) APIError {
 	}
 }
 
+func WriteJSON(rw http.ResponseWriter, code int, v any) error{
+	rw.WriteHeader(code)
+	return json.NewEncoder(rw).Encode(v)
+}
+
 func (h *HttpWorkerAdapter) Health(rw http.ResponseWriter, req *http.Request) {
 	childLogger.Debug().Msg("Health")
 
 	health := true
 	json.NewEncoder(rw).Encode(health)
-	return
 }
 
 func (h *HttpWorkerAdapter) Live(rw http.ResponseWriter, req *http.Request) {
@@ -52,17 +60,15 @@ func (h *HttpWorkerAdapter) Live(rw http.ResponseWriter, req *http.Request) {
 
 	live := true
 	json.NewEncoder(rw).Encode(live)
-	return
 }
 
 func (h *HttpWorkerAdapter) Header(rw http.ResponseWriter, req *http.Request) {
 	childLogger.Debug().Msg("Header")
 	
 	json.NewEncoder(rw).Encode(req.Header)
-	return
 }
 
-func (h *HttpWorkerAdapter) Add( rw http.ResponseWriter, req *http.Request) {
+func (h *HttpWorkerAdapter) Add( rw http.ResponseWriter, req *http.Request) error {
 	childLogger.Debug().Msg("Add")
 
 	span := lib.Span(req.Context(), "handler.Add")
@@ -71,10 +77,8 @@ func (h *HttpWorkerAdapter) Add( rw http.ResponseWriter, req *http.Request) {
 	account := core.Account{}
 	err := json.NewDecoder(req.Body).Decode(&account)
     if err != nil {
-		apiError := NewAPIError(400, erro.ErrUnmarshal)
-		rw.WriteHeader(apiError.StatusCode)
-		json.NewEncoder(rw).Encode(apiError)
-		return
+		apiError := NewAPIError(http.StatusBadRequest, erro.ErrUnmarshal)
+		return apiError
     }
 	defer req.Body.Close()
 
@@ -83,18 +87,15 @@ func (h *HttpWorkerAdapter) Add( rw http.ResponseWriter, req *http.Request) {
 		var apiError APIError
 		switch err {
 		default:
-			apiError = NewAPIError(500, err)
+			apiError = NewAPIError(http.StatusInternalServerError, err)
 		}
-		rw.WriteHeader(apiError.StatusCode)
-		json.NewEncoder(rw).Encode(apiError)
-		return
+		return apiError
 	}
 
-	json.NewEncoder(rw).Encode(res)
-	return
+	return WriteJSON(rw, http.StatusOK, res)
 }
 
-func (h *HttpWorkerAdapter) Get(rw http.ResponseWriter, req *http.Request) {
+func (h *HttpWorkerAdapter) Get(rw http.ResponseWriter, req *http.Request) error {
 	childLogger.Debug().Msg("Get")
 
 	span := lib.Span(req.Context(), "handler.Get")
@@ -111,20 +112,17 @@ func (h *HttpWorkerAdapter) Get(rw http.ResponseWriter, req *http.Request) {
 		var apiError APIError
 		switch err {
 			case erro.ErrNotFound:
-				apiError = NewAPIError(404, err)
+				apiError = NewAPIError(http.StatusNotFound, err)
 			default:
-				apiError = NewAPIError(500, err)
+				apiError = NewAPIError(http.StatusInternalServerError, err)
 		}
-		rw.WriteHeader(apiError.StatusCode)
-		json.NewEncoder(rw).Encode(apiError)
-		return
+		return apiError
 	}
 
-	json.NewEncoder(rw).Encode(res)
-	return
+	return WriteJSON(rw, http.StatusOK, res)
 }
 
-func (h *HttpWorkerAdapter) GetId(rw http.ResponseWriter, req *http.Request) {
+func (h *HttpWorkerAdapter) GetId(rw http.ResponseWriter, req *http.Request) error {
 	childLogger.Debug().Msg("GetId")
 	
 	span := lib.Span(req.Context(), "handler.GetId")
@@ -135,10 +133,8 @@ func (h *HttpWorkerAdapter) GetId(rw http.ResponseWriter, req *http.Request) {
 
 	i, err := strconv.Atoi(varID)
 	if err != nil{
-		apiError := NewAPIError(400, erro.ErrConvStrint)
-		rw.WriteHeader(apiError.StatusCode)
-		json.NewEncoder(rw).Encode(apiError)
-		return
+		apiError := NewAPIError(http.StatusBadRequest, erro.ErrConvStrint)
+		return apiError
 	}
 
 	account := core.Account{}
@@ -149,20 +145,17 @@ func (h *HttpWorkerAdapter) GetId(rw http.ResponseWriter, req *http.Request) {
 		var apiError APIError
 		switch err {
 		case erro.ErrNotFound:
-			apiError = NewAPIError(404, err)
+			apiError = NewAPIError(http.StatusNotFound, err)
 		default:
-			apiError = NewAPIError(500, err)
+			apiError = NewAPIError(http.StatusInternalServerError, err)
 		}
-		rw.WriteHeader(apiError.StatusCode)
-		json.NewEncoder(rw).Encode(apiError)
-		return
+		return apiError
 	}
 
-	json.NewEncoder(rw).Encode(res)
-	return
+	return WriteJSON(rw, http.StatusOK, res)
 }
 
-func (h *HttpWorkerAdapter) Update(rw http.ResponseWriter, req *http.Request) {
+func (h *HttpWorkerAdapter) Update(rw http.ResponseWriter, req *http.Request) error {
 	childLogger.Debug().Msg("Update")
 	
 	span := lib.Span(req.Context(), "handler.Update")
@@ -171,10 +164,8 @@ func (h *HttpWorkerAdapter) Update(rw http.ResponseWriter, req *http.Request) {
 	account := core.Account{}
 	err := json.NewDecoder(req.Body).Decode(&account)
     if err != nil {
-		apiError := NewAPIError(400, erro.ErrUnmarshal)
-		rw.WriteHeader(apiError.StatusCode)
-		json.NewEncoder(rw).Encode(apiError)
-		return
+		apiError := NewAPIError(http.StatusBadRequest, erro.ErrUnmarshal)
+		return apiError
     }
 	
 	vars := mux.Vars(req)
@@ -186,20 +177,17 @@ func (h *HttpWorkerAdapter) Update(rw http.ResponseWriter, req *http.Request) {
 		var apiError APIError
 		switch err {
 		case erro.ErrNotFound:
-			apiError = NewAPIError(404, err)
+			apiError = NewAPIError(http.StatusNotFound, err)
 		default:
-			apiError = NewAPIError(500, err)
+			apiError = NewAPIError(http.StatusInternalServerError, err)
 		}
-		rw.WriteHeader(apiError.StatusCode)
-		json.NewEncoder(rw).Encode(apiError)
-		return
+		return apiError
 	}
 
-	json.NewEncoder(rw).Encode(res)
-	return
+	return WriteJSON(rw, http.StatusOK, res)
 }
 
-func (h *HttpWorkerAdapter) Delete(rw http.ResponseWriter, req *http.Request) {
+func (h *HttpWorkerAdapter) Delete(rw http.ResponseWriter, req *http.Request) error {
 	childLogger.Debug().Msg("Delete")
 
 	span := lib.Span(req.Context(), "handler.Delete")
@@ -215,20 +203,17 @@ func (h *HttpWorkerAdapter) Delete(rw http.ResponseWriter, req *http.Request) {
 		var apiError APIError
 		switch err {
 		case erro.ErrNotFound:
-			apiError = NewAPIError(404, err)
+			apiError = NewAPIError(http.StatusNotFound, err)
 		default:
-			apiError = NewAPIError(500, err)
+			apiError = NewAPIError(http.StatusInternalServerError, err)
 		}
-		rw.WriteHeader(apiError.StatusCode)
-		json.NewEncoder(rw).Encode(apiError)
-		return
+		return apiError
 	}
 
-	json.NewEncoder(rw).Encode(res)
-	return
+	return WriteJSON(rw, http.StatusOK, res)
 }
 
-func (h *HttpWorkerAdapter) List(rw http.ResponseWriter, req *http.Request) {
+func (h *HttpWorkerAdapter) List(rw http.ResponseWriter, req *http.Request) error {
 	childLogger.Debug().Msg("List")
 	
 	span := lib.Span(req.Context(), "handler.List")
@@ -245,20 +230,17 @@ func (h *HttpWorkerAdapter) List(rw http.ResponseWriter, req *http.Request) {
 		var apiError APIError
 		switch err {
 		default:
-			apiError = NewAPIError(500, err)
+			apiError = NewAPIError(http.StatusInternalServerError, err)
 		}
-		rw.WriteHeader(apiError.StatusCode)
-		json.NewEncoder(rw).Encode(apiError)
-		return
+		return apiError
 	}
 
-	json.NewEncoder(rw).Encode(res)
-	return
+	return WriteJSON(rw, http.StatusOK, res)
 }
 
 //-------------------------
 
-func (h *HttpWorkerAdapter) AddFundBalanceAccount(rw http.ResponseWriter, req *http.Request) {
+func (h *HttpWorkerAdapter) AddFundBalanceAccount(rw http.ResponseWriter, req *http.Request) error {
 	childLogger.Debug().Msg("AddFundBalanceAccount")
 
 	span := lib.Span(req.Context(), "handler.AddFundBalanceAccount")
@@ -267,10 +249,8 @@ func (h *HttpWorkerAdapter) AddFundBalanceAccount(rw http.ResponseWriter, req *h
 	accountBalance := core.AccountBalance{}
 	err := json.NewDecoder(req.Body).Decode(&accountBalance)
     if err != nil {
-		apiError := NewAPIError(400, erro.ErrUnmarshal)
-		rw.WriteHeader(apiError.StatusCode)
-		json.NewEncoder(rw).Encode(apiError)
-		return
+		apiError := NewAPIError(http.StatusBadRequest, erro.ErrUnmarshal)
+		return apiError
     }
 
 	childLogger.Debug().Interface("===>jwtid: ", req.Context().Value("jwt_id")).Msg("")
@@ -291,18 +271,15 @@ func (h *HttpWorkerAdapter) AddFundBalanceAccount(rw http.ResponseWriter, req *h
 		var apiError APIError
 		switch err {
 		default:
-			apiError = NewAPIError(500, err)
+			apiError = NewAPIError(http.StatusInternalServerError, err)
 		}
-		rw.WriteHeader(apiError.StatusCode)
-		json.NewEncoder(rw).Encode(apiError)
-		return
+		return apiError
 	}
 
-	json.NewEncoder(rw).Encode(res)
-	return
+	return WriteJSON(rw, http.StatusOK, res)
 }
 
-func (h *HttpWorkerAdapter) GetMovimentBalanceAccount( rw http.ResponseWriter, req *http.Request) {
+func (h *HttpWorkerAdapter) GetMovimentBalanceAccount( rw http.ResponseWriter, req *http.Request) error {
 	childLogger.Debug().Msg("GetMovimentBalanceAccount")
 
 	span := lib.Span(req.Context(), "handler.GetMovimentBalanceAccount")
@@ -319,20 +296,17 @@ func (h *HttpWorkerAdapter) GetMovimentBalanceAccount( rw http.ResponseWriter, r
 		var apiError APIError
 		switch err {
 		case erro.ErrNotFound:
-			apiError = NewAPIError(404, err)
+			apiError = NewAPIError(http.StatusNotFound, err)
 		default:
-			apiError = NewAPIError(500, err)
+			apiError = NewAPIError(http.StatusInternalServerError, err)
 		}
-		rw.WriteHeader(apiError.StatusCode)
-		json.NewEncoder(rw).Encode(apiError)
-		return
+		return apiError
 	}
 
-	json.NewEncoder(rw).Encode(res)
-	return
+	return WriteJSON(rw, http.StatusOK, res)
 }
 
-func (h *HttpWorkerAdapter) GetFundBalanceAccount( rw http.ResponseWriter, req *http.Request) {
+func (h *HttpWorkerAdapter) GetFundBalanceAccount( rw http.ResponseWriter, req *http.Request) error {
 	childLogger.Debug().Msg("GetFundBalanceAccount")
 
 	span := lib.Span(req.Context(), "handler.GetFundBalanceAccount")
@@ -349,20 +323,17 @@ func (h *HttpWorkerAdapter) GetFundBalanceAccount( rw http.ResponseWriter, req *
 		var apiError APIError
 		switch err {
 		case erro.ErrNotFound:
-			apiError = NewAPIError(404, err)
+			apiError = NewAPIError(http.StatusNotFound, err)
 		default:
-			apiError = NewAPIError(500, err)
+			apiError = NewAPIError(http.StatusInternalServerError, err)
 		}
-		rw.WriteHeader(apiError.StatusCode)
-		json.NewEncoder(rw).Encode(apiError)
-		return
+		return apiError
 	}
 
-	json.NewEncoder(rw).Encode(res)
-	return
+	return WriteJSON(rw, http.StatusOK, res)
 }
 
-func (h *HttpWorkerAdapter) TransferFundAccount( rw http.ResponseWriter, req *http.Request) {
+func (h *HttpWorkerAdapter) TransferFundAccount( rw http.ResponseWriter, req *http.Request) error {
 	childLogger.Debug().Msg("TransferFundAccount")
 
 	span := lib.Span(req.Context(), "handler.TransferFundAccount")
@@ -371,10 +342,8 @@ func (h *HttpWorkerAdapter) TransferFundAccount( rw http.ResponseWriter, req *ht
 	transfer := core.Transfer{}
 	err := json.NewDecoder(req.Body).Decode(&transfer)
     if err != nil {
-		apiError := NewAPIError(400, erro.ErrUnmarshal)
-		rw.WriteHeader(apiError.StatusCode)
-		json.NewEncoder(rw).Encode(apiError)
-		return
+		apiError := NewAPIError(http.StatusBadRequest, erro.ErrUnmarshal)
+		return apiError
     }
 
 	res, err := h.workerService.TransferFundAccount(req.Context(), &transfer)
@@ -382,13 +351,10 @@ func (h *HttpWorkerAdapter) TransferFundAccount( rw http.ResponseWriter, req *ht
 		var apiError APIError
 		switch err {
 		default:
-			apiError = NewAPIError(400, err)
+			apiError = NewAPIError(http.StatusNotFound, err)
 		}
-		rw.WriteHeader(apiError.StatusCode)
-		json.NewEncoder(rw).Encode(apiError)
-		return
+		return apiError
 	}
 
-	json.NewEncoder(rw).Encode(res)
-	return
+	return WriteJSON(rw, http.StatusOK, res)
 }

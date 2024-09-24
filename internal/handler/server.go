@@ -78,60 +78,50 @@ func (h HttpServer) StartHttpAppServer(	ctx context.Context,
     header.HandleFunc("/header", httpWorkerAdapter.Header)
 
 	addAccount := myRouter.Methods(http.MethodPost, http.MethodOptions).Subrouter()
-	addAccount.Handle("/add", 
-						http.HandlerFunc(httpWorkerAdapter.Add),)
+	addAccount.HandleFunc("/add", middleware.MiddleWareErrorHandler(httpWorkerAdapter.Add))
 	addAccount.Use(otelmux.Middleware("go-account"))
 
 	getAccount := myRouter.Methods(http.MethodGet, http.MethodOptions).Subrouter()
-	getAccount.Handle("/get/{id}",
-						http.HandlerFunc(httpWorkerAdapter.Get),)
+	getAccount.HandleFunc("/get/{id}",	middleware.MiddleWareErrorHandler(httpWorkerAdapter.Get))
 	getAccount.Use(otelmux.Middleware("go-account"))
 
 	getIdAccount := myRouter.Methods(http.MethodGet, http.MethodOptions).Subrouter()
-	getIdAccount.Handle("/getId/{id}",
-						http.HandlerFunc(httpWorkerAdapter.GetId),)
+	getIdAccount.HandleFunc("/getId/{id}",	middleware.MiddleWareErrorHandler(httpWorkerAdapter.GetId))
 	getIdAccount.Use(otelmux.Middleware("go-account"))
 
 	updateAccount := myRouter.Methods(http.MethodPost, http.MethodOptions).Subrouter()
-	updateAccount.Handle("/update/{id}", 
-						http.HandlerFunc(httpWorkerAdapter.Update),)
+	updateAccount.HandleFunc("/update/{id}",middleware.MiddleWareErrorHandler(httpWorkerAdapter.Update))
 	updateAccount.Use(otelmux.Middleware("go-account"))
 
 	listAccount := myRouter.Methods(http.MethodGet, http.MethodOptions).Subrouter()
-	listAccount.Handle("/list/{id}", 
-						http.HandlerFunc(httpWorkerAdapter.List),)
+	listAccount.HandleFunc("/list/{id}", middleware.MiddleWareErrorHandler(httpWorkerAdapter.List))
 	listAccount.Use(otelmux.Middleware("go-account"))
 
 	deleteAccount := myRouter.Methods(http.MethodDelete, http.MethodOptions).Subrouter()
-    deleteAccount.HandleFunc("/delete/{id}", httpWorkerAdapter.Delete)
+    deleteAccount.HandleFunc("/delete/{id}", middleware.MiddleWareErrorHandler(httpWorkerAdapter.Delete))
 	deleteAccount.Use(otelmux.Middleware("go-account"))
 
 	//---------------
 	addFundAcc := myRouter.Methods(http.MethodPost, http.MethodOptions).Subrouter()
-	addFundAcc.Handle("/add/fund", 
-						http.HandlerFunc(httpWorkerAdapter.AddFundBalanceAccount),)
+	addFundAcc.HandleFunc("/add/fund", middleware.MiddleWareErrorHandler(httpWorkerAdapter.AddFundBalanceAccount))
 	addFundAcc.Use(otelmux.Middleware("go-account"))
 
 	getMovAcc := myRouter.Methods(http.MethodGet, http.MethodOptions).Subrouter()
-	getMovAcc.Handle("/get/movimentBalanceAccount/{id}", 
-						http.HandlerFunc(httpWorkerAdapter.GetMovimentBalanceAccount),)
+	getMovAcc.HandleFunc("/get/movimentBalanceAccount/{id}",middleware.MiddleWareErrorHandler(httpWorkerAdapter.GetMovimentBalanceAccount))
 	getMovAcc.Use(otelmux.Middleware("go-account"))
 
 	getFundAcc := myRouter.Methods(http.MethodGet, http.MethodOptions).Subrouter()
-	getFundAcc.Handle("/fundBalanceAccount/{id}", 
-						http.HandlerFunc(httpWorkerAdapter.GetFundBalanceAccount),)
+	getFundAcc.HandleFunc("/fundBalanceAccount/{id}", middleware.MiddleWareErrorHandler(httpWorkerAdapter.GetFundBalanceAccount))
 	getFundAcc.Use(otelmux.Middleware("go-account"))
 
 	transferFundAcc := myRouter.Methods(http.MethodPost, http.MethodOptions).Subrouter()
-	transferFundAcc.Handle("/transferFund", 
-						http.HandlerFunc(httpWorkerAdapter.TransferFundAccount),)
+	transferFundAcc.HandleFunc("/transferFund", middleware.MiddleWareErrorHandler(httpWorkerAdapter.TransferFundAccount))
 	transferFundAcc.Use(otelmux.Middleware("go-account"))
 
 	// -------------------
 
 	var serverTLSConf *tls.Config
-	if h.httpServer.Cert.IsTLS == true {
-
+	if h.httpServer.Cert.IsTLS {
 		certPEM_Raw, err := base64.StdEncoding.DecodeString(string(h.httpServer.Cert.CertPEM))
 		if err != nil {
 			panic(err)
@@ -149,7 +139,7 @@ func (h HttpServer) StartHttpAppServer(	ctx context.Context,
 
 		serverCert, err := tls.X509KeyPair( certPEM_Raw, certPrivKeyPEM_Raw)
 		if err != nil {
-			childLogger.Error().Err(err).Msg("Erro Load X509 KeyPair")
+			childLogger.Error().Err(err).Msg("error load X509 keyPair")
 		}
 		serverTLSConf = &tls.Config{
 			Certificates: []tls.Certificate{serverCert},
@@ -178,7 +168,7 @@ func (h HttpServer) StartHttpAppServer(	ctx context.Context,
 			err = srv.ListenAndServeTLS("","")
 		}
 		if err != nil {
-			childLogger.Error().Err(err).Msg("Cancel http mux server !!!")
+			childLogger.Error().Err(err).Msg("canceling http mux server !!!")
 		}
 	}()
 
@@ -187,8 +177,8 @@ func (h HttpServer) StartHttpAppServer(	ctx context.Context,
 	<-ch
 
 	if err := srv.Shutdown(ctx); err != nil && err != http.ErrServerClosed {
-		childLogger.Error().Err(err).Msg("WARNING Dirty Shutdown !!!")
+		childLogger.Error().Err(err).Msg("warning dirty shutdown !!!")
 		return
 	}
-	childLogger.Info().Msg("Stop Done !!!!")
+	childLogger.Info().Msg("stop done !!!")
 }

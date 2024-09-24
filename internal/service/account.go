@@ -133,7 +133,7 @@ func (s WorkerService) List(ctx context.Context, account *core.Account) (*[]core
 func (s WorkerService) GetId(ctx context.Context, account *core.Account) (*core.Account, error){
 	childLogger.Debug().Msg("GetId")
 
-	span := lib.Span(ctx, "service.GetId")
+	span := lib.Span(ctx, "service.getId")
 	defer span.End()
 
 	res, err := s.workerRepo.GetId(ctx, account)
