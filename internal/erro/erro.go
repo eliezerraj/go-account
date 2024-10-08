@@ -2,7 +2,6 @@ package erro
 
 import (
 	"errors"
-
 )
 
 var (
