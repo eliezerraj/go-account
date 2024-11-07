@@ -9,7 +9,7 @@ genPerson(){
 
 # --------------------Load 1 per 1-------------------------
 domain=https://go-account.architecture.caradhras.io/add
-domain=http://localhost:5000/add
+#domain=http://localhost:5000/add
 
 TOKEN=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImFkbWluIiwic2NvcGUiOlsiYWRtaW4iXSwiZXhwIjoxNzA4MDIyODc2fQ.jFrkyd7emiDfz6s_T7UCJ2lsJLOHThUi0bbgumBP6Jg
 
@@ -24,7 +24,7 @@ done
 
 # --------------------Load n per 1-------------------------
 domain=https://go-account.architecture.caradhras.io/add
-domain=http://localhost:5000/add
+#domain=http://localhost:5000/add
 
 min=1 # start range acc number
 max=2500 # finish range acc number
