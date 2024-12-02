@@ -125,7 +125,7 @@ func (s WorkerService) GetMovimentBalanceAccount(ctx context.Context, accountBal
 
 func (s WorkerService) TransferFundAccount(ctx context.Context, transfer *core.Transfer) (interface{} , error){
 	childLogger.Debug().Msg("TransferFundAccount")
-	//childLogger.Debug().Interface("=>transfer : ", transfer).Msg("")
+	childLogger.Debug().Interface("=>transfer : ", transfer).Msg("")
 
 	span := lib.Span(ctx, "service.TransferFundAccount")
 	defer span.End()

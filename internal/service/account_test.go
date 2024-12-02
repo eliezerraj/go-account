@@ -74,7 +74,7 @@ func TestGetAccount(t *testing.T) {
 										time.Duration( appServer.Server.ReadTimeout ) * time.Second)
 	defer cancel()
 
-	databasePG, err := pg.NewDatabasePGServer(ctx,appServer.Database)
+	databasePG, _ := pg.NewDatabasePGServer(ctx,appServer.Database)
 	repoDB := storage.NewWorkerRepository(databasePG)
 	
 	workerService := NewWorkerService(&repoDB)

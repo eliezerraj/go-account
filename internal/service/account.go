@@ -83,7 +83,7 @@ func (s WorkerService) Update(ctx context.Context, account *core.Account) (*core
 	if err != nil {
 		return nil, err
 	}
-	if (isUpdated == false) {
+	if (!isUpdated) {
 		return nil, erro.ErrUpdate
 	}
 
@@ -110,7 +110,7 @@ func (s WorkerService) Delete(ctx context.Context,account *core.Account) (bool, 
 	if err != nil {
 		return false, err
 	}
-	if (isDelete == false) {
+	if (!isDelete) {
 		return false, erro.ErrDelete
 	}
 	return true, nil
