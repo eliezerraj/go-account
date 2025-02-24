@@ -29,4 +29,4 @@ phases:
   build:
     commands:
       - echo Test our go application on `date`
-      - go test -v ./internal/service/
+      - go test -v ./internal/core/service/
