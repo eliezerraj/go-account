@@ -109,35 +109,3 @@ func (h *HttpRouters) GetMovimentAccountBalance(rw http.ResponseWriter, req *htt
 	
 	return core_json.WriteJSON(rw, http.StatusOK, res)
 }
-
-func (h *HttpRouters) TransferAccountBalance(rw http.ResponseWriter, req *http.Request) error {
-	childLogger.Debug().Msg("TransferAccountBalance")
-
-	// trace
-	span := tracerProvider.Span(req.Context(), "adapter.api.TransferAccountBalance")
-	defer span.End()
-
-	//parameters
-	transfer := model.Transfer{}
-	err := json.NewDecoder(req.Body).Decode(&transfer)
-    if err != nil {
-		core_apiError = core_apiError.NewAPIError(erro.ErrUnmarshal, http.StatusBadRequest)
-		return &core_apiError
-    }
-
-	// call service
-	res, err := h.workerService.TransferAccountBalance(req.Context(), &transfer)
-	if err != nil {
-		switch err {
-		case erro.ErrNotFound:
-			core_apiError = core_apiError.NewAPIError(err, http.StatusNotFound)
-		case erro.ErrTransInvalid:
-			core_apiError = core_apiError.NewAPIError(err, http.StatusConflict)
-		default:
-			core_apiError = core_apiError.NewAPIError(err, http.StatusInternalServerError)
-		}
-		return &core_apiError
-	}
-	
-	return core_json.WriteJSON(rw, http.StatusOK, res)
-}

@@ -76,6 +76,7 @@ func (w WorkerRepository) GetAccount(ctx context.Context, account *model.Account
 	}
 	defer w.DatabasePGServer.Release(conn)
 
+	// Prepare
 	res_account := model.Account{}
 
 	// Query and Execute
