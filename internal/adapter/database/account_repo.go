@@ -137,8 +137,8 @@ func (w WorkerRepository) ListAccountPerPerson(ctx context.Context, account *mod
 						person_id, 
 						create_at, 
 						update_at, 
-						tenant_id, 
-						user_last_update 
+						user_last_update,
+						tenant_id 
 						FROM account 
 						WHERE person_id =$1 order by id desc`
 
