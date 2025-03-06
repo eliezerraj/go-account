@@ -118,7 +118,7 @@ func (h HttpServer) StartHttpAppServer(	ctx context.Context,
 	getAccountBalance.Use(otelmux.Middleware("go-account"))
 
 	getMovimentAccountBalance := myRouter.Methods(http.MethodGet, http.MethodOptions).Subrouter()
-	getMovimentAccountBalance.HandleFunc("/get/movimentAccountBalance/{id}", core_middleware.MiddleWareErrorHandler(httpRouters.GetMovimentAccountBalance))		
+	getMovimentAccountBalance.HandleFunc("/movimentAccountBalance/{id}", core_middleware.MiddleWareErrorHandler(httpRouters.GetMovimentAccountBalance))		
 	getMovimentAccountBalance.Use(otelmux.Middleware("go-account"))
 
 	srv := http.Server{
