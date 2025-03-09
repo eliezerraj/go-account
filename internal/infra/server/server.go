@@ -42,7 +42,7 @@ func (h HttpServer) StartHttpAppServer(	ctx context.Context,
 										appServer *model.AppServer) {
 	childLogger.Info().Msg("StartHttpAppServer")
 			
-	// ---------------------- OTEL ---------------
+	// Otel
 	childLogger.Info().Str("OTEL_EXPORTER_OTLP_ENDPOINT :", appServer.ConfigOTEL.OtelExportEndpoint).Msg("")
 	
 	infoTrace.PodName = appServer.InfoPod.PodName
@@ -54,16 +54,20 @@ func (h HttpServer) StartHttpAppServer(	ctx context.Context,
 	tp := tracerProvider.NewTracerProvider(	ctx, 
 											appServer.ConfigOTEL, 
 											&infoTrace)
+
+	otel.SetTextMapPropagator(xray.Propagator{})
+	otel.SetTracerProvider(tp)
+
+	// handle defer
 	defer func() { 
 		err := tp.Shutdown(ctx)
 		if err != nil{
 			childLogger.Error().Err(err).Msg("error closing OTEL tracer !!!")
 		}
+		childLogger.Info().Msg("stop done !!!")
 	}()
-	
-	otel.SetTextMapPropagator(xray.Propagator{})
-	otel.SetTracerProvider(tp)
 
+	// Router
 	myRouter := mux.NewRouter().StrictSlash(true)
 	myRouter.Use(core_middleware.MiddleWareHandlerHeader)
 
@@ -146,5 +150,4 @@ func (h HttpServer) StartHttpAppServer(	ctx context.Context,
 		childLogger.Error().Err(err).Msg("warning dirty shutdown !!!")
 		return
 	}
-	childLogger.Info().Msg("stop done !!!")
 }

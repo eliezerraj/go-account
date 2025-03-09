@@ -37,7 +37,6 @@ func (s *WorkerService) AddAccountBalance(ctx context.Context, accountBalance *m
 
 	// Trace
 	span := tracerProvider.Span(ctx, "service.AddAccountBalance")
-	defer span.End()
 	
 	// Get the database connection
 	tx, conn, err := s.workerRepository.DatabasePGServer.StartTx(ctx)

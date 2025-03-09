@@ -18,7 +18,6 @@ func (s *WorkerService) AddAccount(ctx context.Context, account *model.Account) 
 
 	// Trace
 	span := tracerProvider.Span(ctx, "service.AddAccount")
-	defer span.End()
 	
 	// Get the database connection
 	tx, conn, err := s.workerRepository.DatabasePGServer.StartTx(ctx)
@@ -74,7 +73,6 @@ func (s *WorkerService) UpdateAccount(ctx context.Context, account *model.Accoun
 
 	// Trace
 	span := tracerProvider.Span(ctx, "service.UpdateAccount")
-	defer span.End()
 	
 	// Get the database connection
 	tx, conn, err := s.workerRepository.DatabasePGServer.StartTx(ctx)
