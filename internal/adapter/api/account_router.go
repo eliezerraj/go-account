@@ -30,6 +30,7 @@ func NewHttpRouters(workerService *service.WorkerService) HttpRouters {
 	}
 }
 
+// About return a health
 func (h *HttpRouters) Health(rw http.ResponseWriter, req *http.Request) {
 	childLogger.Debug().Msg("Health")
 
@@ -37,6 +38,7 @@ func (h *HttpRouters) Health(rw http.ResponseWriter, req *http.Request) {
 	json.NewEncoder(rw).Encode(health)
 }
 
+// About return a live
 func (h *HttpRouters) Live(rw http.ResponseWriter, req *http.Request) {
 	childLogger.Debug().Msg("Live")
 
@@ -44,12 +46,14 @@ func (h *HttpRouters) Live(rw http.ResponseWriter, req *http.Request) {
 	json.NewEncoder(rw).Encode(live)
 }
 
+// About show all header received
 func (h *HttpRouters) Header(rw http.ResponseWriter, req *http.Request) {
 	childLogger.Debug().Msg("Header")
 	
 	json.NewEncoder(rw).Encode(req.Header)
 }
 
+// About add an account
 func (h *HttpRouters) AddAccount(rw http.ResponseWriter, req *http.Request) error {
 	childLogger.Debug().Msg("AddAccount")
 
@@ -85,6 +89,7 @@ func (h *HttpRouters) AddAccount(rw http.ResponseWriter, req *http.Request) erro
 	return core_json.WriteJSON(rw, http.StatusOK, res)
 }
 
+// About get an account
 func (h *HttpRouters) GetAccount(rw http.ResponseWriter, req *http.Request) error {
 	childLogger.Debug().Msg("GetAccount")
 
@@ -114,6 +119,7 @@ func (h *HttpRouters) GetAccount(rw http.ResponseWriter, req *http.Request) erro
 	return core_json.WriteJSON(rw, http.StatusOK, res)
 }
 
+// About update an account
 func (h *HttpRouters) UpdateAccount(rw http.ResponseWriter, req *http.Request) error {
 	childLogger.Debug().Msg("UpdateAccount")
 
@@ -149,6 +155,7 @@ func (h *HttpRouters) UpdateAccount(rw http.ResponseWriter, req *http.Request) e
 	return core_json.WriteJSON(rw, http.StatusOK, res)
 }
 
+// About delete an account
 func (h *HttpRouters) DeleteAccount(rw http.ResponseWriter, req *http.Request) error {
 	childLogger.Debug().Msg("DeleteAccount")
 
@@ -177,6 +184,7 @@ func (h *HttpRouters) DeleteAccount(rw http.ResponseWriter, req *http.Request) e
 	return core_json.WriteJSON(rw, http.StatusOK, res)
 }
 
+// About list all person´s account
 func (h *HttpRouters) ListAccountPerPerson(rw http.ResponseWriter, req *http.Request) error {
 	childLogger.Debug().Msg("ListAccountPerPerson")
 

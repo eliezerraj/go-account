@@ -6,6 +6,7 @@ import(
 	"github.com/go-account/internal/core/model"
 )
 
+// Abount get the account balance
 func (s *WorkerService) GetAccountBalance(ctx context.Context, accountBalance *model.AccountBalance) (*model.AccountBalance, error){
 	childLogger.Debug().Msg("GetAccountBalance")
 	childLogger.Debug().Interface("accountBalance: ", accountBalance).Msg("")
@@ -31,6 +32,7 @@ func (s *WorkerService) GetAccountBalance(ctx context.Context, accountBalance *m
 	return res_accountBalance, nil
 }
 
+// Abount add an account balance
 func (s *WorkerService) AddAccountBalance(ctx context.Context, accountBalance *model.AccountBalance) (*model.AccountBalance, error){
 	childLogger.Debug().Msg("AddAccountBalance")
 	childLogger.Debug().Interface("accountBalance: ", accountBalance).Msg("")
@@ -72,6 +74,7 @@ func (s *WorkerService) AddAccountBalance(ctx context.Context, accountBalance *m
 	return accountBalance, nil
 }
 
+// Get all moviment transactions an account
 func (s *WorkerService) GetMovimentAccountBalance(ctx context.Context, accountBalance *model.AccountBalance) (*model.MovimentAccount, error){
 	childLogger.Debug().Msg("GetMovimentAccountBalance")
 	childLogger.Debug().Interface("accountBalance: ", accountBalance).Msg("")
@@ -110,11 +113,13 @@ func (s *WorkerService) GetMovimentAccountBalance(ctx context.Context, accountBa
 		}
 	}
 
+	// Get all account stalments
 	res_list_accountBalance, err := s.workerRepository.ListAccountBalance(ctx, accountBalance)
 	if err != nil {
 		return nil, err
 	}
 
+	// prepare the account summary
 	movimentAccount := model.MovimentAccount{}
 	movimentAccount.AccountBalance = res_accountBalance
 	if (res_accountBalanceStatementCredit != nil){

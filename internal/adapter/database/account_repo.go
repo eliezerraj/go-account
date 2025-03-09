@@ -30,6 +30,7 @@ func NewWorkerRepository(databasePGServer *go_core_pg.DatabasePGServer) *WorkerR
 	}
 }
 
+// About create a account
 func (w WorkerRepository) AddAccount(ctx context.Context, tx pgx.Tx, account *model.Account) (*model.Account, error){
 	childLogger.Debug().Msg("AddAccount")
 
@@ -63,6 +64,7 @@ func (w WorkerRepository) AddAccount(ctx context.Context, tx pgx.Tx, account *mo
 	return account , nil
 }
 
+// About get an account
 func (w WorkerRepository) GetAccount(ctx context.Context, account *model.Account) (*model.Account, error){
 	childLogger.Debug().Msg("GetAccount")
 	
@@ -70,6 +72,7 @@ func (w WorkerRepository) GetAccount(ctx context.Context, account *model.Account
 	span := tracerProvider.Span(ctx, "database.GetAccount")
 	defer span.End()
 
+	// db connection
 	conn, err := w.DatabasePGServer.Acquire(ctx)
 	if err != nil {
 		return nil, errors.New(err.Error())
@@ -114,6 +117,7 @@ func (w WorkerRepository) GetAccount(ctx context.Context, account *model.Account
 	return nil, erro.ErrNotFound
 }
 
+// About get all account per person
 func (w WorkerRepository) ListAccountPerPerson(ctx context.Context, account *model.Account) (*[]model.Account, error){
 	childLogger.Debug().Msg("ListAccount")
 	
@@ -125,6 +129,7 @@ func (w WorkerRepository) ListAccountPerPerson(ctx context.Context, account *mod
 	res_account := model.Account{}
 	res_account_list := []model.Account{}
 
+	// db connection
 	conn, err := w.DatabasePGServer.Acquire(ctx)
 	if err != nil {
 		return nil, errors.New(err.Error())
@@ -166,6 +171,7 @@ func (w WorkerRepository) ListAccountPerPerson(ctx context.Context, account *mod
 	return &res_account_list , nil
 }
 
+// About update an account
 func (w WorkerRepository) UpdateAccount(ctx context.Context, tx pgx.Tx, account *model.Account) (int64, error){
 	childLogger.Debug().Msg("UpdateAccount")
 
@@ -199,6 +205,7 @@ func (w WorkerRepository) UpdateAccount(ctx context.Context, tx pgx.Tx, account 
 	return row.RowsAffected() , nil
 }
 
+// About delete an account
 func (w WorkerRepository) DeleteAccount(ctx context.Context, account *model.Account) (bool, error){
 	childLogger.Debug().Msg("Delete")
 

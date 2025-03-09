@@ -16,7 +16,7 @@ import(
 
 var childLogger = log.With().Str("infra", "configuration").Logger()
 
-// Load the Pod configuration
+// About get all pod env var
 func GetInfoPod() (	model.InfoPod, model.Server) {
 	childLogger.Debug().Msg("GetInfoPod")
 

@@ -10,6 +10,7 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
+// About add a account balance
 func (w WorkerRepository) AddAccountBalance(ctx context.Context, tx pgx.Tx, accountBalance *model.AccountBalance) (*model.AccountBalance, error){
 	childLogger.Debug().Msg("AddAccountBalance")
 
@@ -47,6 +48,7 @@ func (w WorkerRepository) AddAccountBalance(ctx context.Context, tx pgx.Tx, acco
 	return accountBalance , nil
 }
 
+// About update the account balance
 func (w WorkerRepository) UpdateAccountBalance(ctx context.Context, tx pgx.Tx, accountBalance *model.AccountBalance) (int64, error){
 	childLogger.Debug().Msg("UpateAccountBalance")
 
@@ -82,6 +84,7 @@ func (w WorkerRepository) UpdateAccountBalance(ctx context.Context, tx pgx.Tx, a
 	return row.RowsAffected() , nil
 }
 
+// About get all account balance
 func (w WorkerRepository) GetAccountBalance(ctx context.Context, accountBalance *model.AccountBalance) (*model.AccountBalance, error){
 	childLogger.Debug().Msg("GetAccountBalance")
 	
@@ -89,6 +92,7 @@ func (w WorkerRepository) GetAccountBalance(ctx context.Context, accountBalance 
 	span := tracerProvider.Span(ctx, "database.GetAccountBalance")
 	defer span.End()
 
+	// db connetion
 	conn, err := w.DatabasePGServer.Acquire(ctx)
 	if err != nil {
 		return nil, errors.New(err.Error())
@@ -130,6 +134,7 @@ func (w WorkerRepository) GetAccountBalance(ctx context.Context, accountBalance 
 	return accountBalance, nil
 }
 
+// About get the sum of all stalments of a account
 func (w WorkerRepository) GetSumAccountBalance(ctx context.Context, type_charge string, accountBalance *model.AccountBalance) (*model.AccountBalance, error){
 	childLogger.Debug().Msg("GetSumAccountBalance")
 	
@@ -137,6 +142,7 @@ func (w WorkerRepository) GetSumAccountBalance(ctx context.Context, type_charge 
 	span := tracerProvider.Span(ctx, "database.GetSumAccountBalance")
 	defer span.End()
 
+	// db connection
 	conn, err := w.DatabasePGServer.Acquire(ctx)
 	if err != nil {
 		return nil, errors.New(err.Error())
@@ -179,6 +185,7 @@ func (w WorkerRepository) GetSumAccountBalance(ctx context.Context, type_charge 
 	return nil, erro.ErrNotFound
 }
 
+// About list all account stalements from account
 func (w WorkerRepository) ListAccountBalance(ctx context.Context, accountBalance *model.AccountBalance) (*[]model.AccountStatement, error){
 	childLogger.Debug().Msg("ListAccountBalance")
 	
@@ -186,6 +193,7 @@ func (w WorkerRepository) ListAccountBalance(ctx context.Context, accountBalance
 	span := tracerProvider.Span(ctx, "database.ListAccountBalance")
 	defer span.End()
 
+	// db connection
 	conn, err := w.DatabasePGServer.Acquire(ctx)
 	if err != nil {
 		return nil, errors.New(err.Error())
@@ -234,6 +242,7 @@ func (w WorkerRepository) ListAccountBalance(ctx context.Context, accountBalance
 	return &res_accountStatement_list, nil
 }
 
+// About create a uuid transaction
 func (w WorkerRepository) GetTransactionUUID(ctx context.Context) (*string, error){
 	childLogger.Debug().Msg("GetTransactionUUID")
 	
@@ -241,6 +250,7 @@ func (w WorkerRepository) GetTransactionUUID(ctx context.Context) (*string, erro
 	span := tracerProvider.Span(ctx, "database.GetTransactionUUID")
 	defer span.End()
 
+	//db connection
 	conn, err := w.DatabasePGServer.Acquire(ctx)
 	if err != nil {
 		return nil, errors.New(err.Error())

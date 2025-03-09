@@ -11,6 +11,7 @@ type WorkerService struct {
 	workerRepository *database.WorkerRepository
 }
 
+// About new worker service
 func NewWorkerService(workerRepository *database.WorkerRepository) *WorkerService{
 	childLogger.Debug().Msg("NewWorkerService")
 

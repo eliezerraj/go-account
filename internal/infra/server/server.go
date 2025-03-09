@@ -37,6 +37,7 @@ func NewHttpAppServer(httpServer *model.Server) HttpServer {
 	return HttpServer{httpServer: httpServer }
 }
 
+// About start http server
 func (h HttpServer) StartHttpAppServer(	ctx context.Context, 
 										httpRouters *api.HttpRouters,
 										appServer *model.AppServer) {
@@ -125,6 +126,7 @@ func (h HttpServer) StartHttpAppServer(	ctx context.Context,
 	getMovimentAccountBalance.HandleFunc("/movimentAccountBalance/{id}", core_middleware.MiddleWareErrorHandler(httpRouters.GetMovimentAccountBalance))		
 	getMovimentAccountBalance.Use(otelmux.Middleware("go-account"))
 
+	// start http server
 	srv := http.Server{
 		Addr:         ":" +  strconv.Itoa(h.httpServer.Port),      	
 		Handler:      myRouter,                	          
@@ -142,6 +144,7 @@ func (h HttpServer) StartHttpAppServer(	ctx context.Context,
 		}
 	}()
 
+	// Get terl SIGNALS
 	ch := make(chan os.Signal, 1)
 	signal.Notify(ch, os.Interrupt, syscall.SIGTERM)
 	<-ch

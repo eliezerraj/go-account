@@ -12,6 +12,7 @@ import(
 var tracerProvider go_core_observ.TracerProvider
 var apiService go_core_api.ApiService
 
+// About add an account
 func (s *WorkerService) AddAccount(ctx context.Context, account *model.Account) (*model.Account, error){
 	childLogger.Debug().Msg("AddAccount")
 	childLogger.Debug().Interface("account: ", account).Msg("")
@@ -67,6 +68,7 @@ func (s *WorkerService) AddAccount(ctx context.Context, account *model.Account) 
 	return res, nil
 }
 
+// About update an account
 func (s *WorkerService) UpdateAccount(ctx context.Context, account *model.Account) (*model.Account, error){
 	childLogger.Debug().Msg("UpdateAccount")
 	childLogger.Debug().Interface("account: ", account).Msg("")
@@ -109,6 +111,7 @@ func (s *WorkerService) UpdateAccount(ctx context.Context, account *model.Accoun
 	return res, nil
 }
 
+// About delete an account
 func (s *WorkerService) DeleteAccount(ctx context.Context, account *model.Account) (*model.Account, error){
 	childLogger.Debug().Msg("DeleteAccount")
 	childLogger.Debug().Interface("account: ", account).Msg("")
@@ -132,6 +135,7 @@ func (s *WorkerService) DeleteAccount(ctx context.Context, account *model.Accoun
 	return res, nil
 }
 
+// About get an account
 func (s *WorkerService) GetAccount(ctx context.Context, account *model.Account) (*model.Account, error){
 	childLogger.Debug().Msg("GetAccount")
 	childLogger.Debug().Interface("account: ", account).Msg("")
@@ -148,6 +152,7 @@ func (s *WorkerService) GetAccount(ctx context.Context, account *model.Account) 
 	return res, nil
 }
 
+// About list all person´s account
 func (s *WorkerService) ListAccountPerPerson(ctx context.Context, account *model.Account) (*[]model.Account, error){
 	childLogger.Debug().Msg("ListAccountPerPerson")
 	childLogger.Debug().Interface("account: ", account).Msg("")
