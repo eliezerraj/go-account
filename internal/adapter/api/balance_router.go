@@ -49,7 +49,7 @@ func (h *HttpRouters) AddAccountBalance(rw http.ResponseWriter, req *http.Reques
 	accountBalance := model.AccountBalance{}
 	err := json.NewDecoder(req.Body).Decode(&accountBalance)
     if err != nil {
-		core_apiError = core_apiError.NewAPIError(erro.ErrUnmarshal, http.StatusBadRequest)
+		core_apiError = core_apiError.NewAPIError(err, http.StatusBadRequest)
 		return &core_apiError
     }
 
