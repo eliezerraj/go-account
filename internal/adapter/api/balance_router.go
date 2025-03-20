@@ -10,7 +10,7 @@ import (
 )
 
 func (h *HttpRouters) GetAccountBalance(rw http.ResponseWriter, req *http.Request) error {
-	childLogger.Debug().Msg("GetAccountBalance")
+	childLogger.Info().Interface("trace-resquest-id", req.Context().Value("trace-request-id")).Msg("GetAccountBalance")
 
 	// trace
 	span := tracerProvider.Span(req.Context(), "adapter.api.GetAccountBalance")
@@ -39,7 +39,7 @@ func (h *HttpRouters) GetAccountBalance(rw http.ResponseWriter, req *http.Reques
 }
 
 func (h *HttpRouters) AddAccountBalance(rw http.ResponseWriter, req *http.Request) error {
-	childLogger.Debug().Msg("AddAccountBalance")
+	childLogger.Info().Interface("trace-resquest-id", req.Context().Value("trace-request-id")).Msg("AddAccountBalance")
 
 	// trace
 	span := tracerProvider.Span(req.Context(), "adapter.api.AddAccountBalance")
@@ -54,8 +54,8 @@ func (h *HttpRouters) AddAccountBalance(rw http.ResponseWriter, req *http.Reques
     }
 
 	// Add jwt-id and request-id injected by authorizer
-	childLogger.Debug().Interface("===>jwtid: ", req.Context().Value("jwt_id")).Msg("")
-	childLogger.Debug().Interface("===>request_id: ", req.Context().Value("request_id")).Msg("")
+	//childLogger.Debug().Interface("===>jwtid: ", req.Context().Value("jwt_id")).Msg("")
+	//childLogger.Debug().Interface("===>request_id: ", req.Context().Value("request_id")).Msg("")
 
 	if (req.Context().Value("jwt_id") != nil) {
 		jwtid := req.Context().Value("jwt_id").(string)
@@ -82,7 +82,7 @@ func (h *HttpRouters) AddAccountBalance(rw http.ResponseWriter, req *http.Reques
 }
 
 func (h *HttpRouters) GetMovimentAccountBalance(rw http.ResponseWriter, req *http.Request) error {
-	childLogger.Debug().Msg("GetMovimentAccountBalance")
+	childLogger.Info().Interface("trace-resquest-id", req.Context().Value("trace-request-id")).Msg("GetMovimentAccountBalance")
 
 	// trace
 	span := tracerProvider.Span(req.Context(), "adapter.api.GetMovimentAccountBalance")

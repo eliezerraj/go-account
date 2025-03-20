@@ -32,7 +32,7 @@ func NewHttpRouters(workerService *service.WorkerService) HttpRouters {
 
 // About return a health
 func (h *HttpRouters) Health(rw http.ResponseWriter, req *http.Request) {
-	childLogger.Debug().Msg("Health")
+	childLogger.Info().Interface("trace-resquest-id", req.Context().Value("trace-request-id")).Msg("Health")
 
 	health := true
 	json.NewEncoder(rw).Encode(health)
@@ -40,7 +40,7 @@ func (h *HttpRouters) Health(rw http.ResponseWriter, req *http.Request) {
 
 // About return a live
 func (h *HttpRouters) Live(rw http.ResponseWriter, req *http.Request) {
-	childLogger.Debug().Msg("Live")
+	childLogger.Info().Str("trace-resquest-id", req.Context().Value("trace-request-id").(string)).Msg("Live")
 
 	live := true
 	json.NewEncoder(rw).Encode(live)
@@ -48,14 +48,14 @@ func (h *HttpRouters) Live(rw http.ResponseWriter, req *http.Request) {
 
 // About show all header received
 func (h *HttpRouters) Header(rw http.ResponseWriter, req *http.Request) {
-	childLogger.Debug().Msg("Header")
+	childLogger.Info().Str("trace-resquest-id", req.Context().Value("trace-request-id").(string)).Msg("Header")
 	
 	json.NewEncoder(rw).Encode(req.Header)
 }
 
 // About add an account
 func (h *HttpRouters) AddAccount(rw http.ResponseWriter, req *http.Request) error {
-	childLogger.Debug().Msg("AddAccount")
+	childLogger.Info().Str("trace-resquest-id", req.Context().Value("trace-request-id").(string)).Msg("AddAccount")
 
 	//trace
 	span := tracerProvider.Span(req.Context(), "adapter.api.AddAccount")
@@ -91,7 +91,7 @@ func (h *HttpRouters) AddAccount(rw http.ResponseWriter, req *http.Request) erro
 
 // About get an account
 func (h *HttpRouters) GetAccount(rw http.ResponseWriter, req *http.Request) error {
-	childLogger.Debug().Msg("GetAccount")
+	childLogger.Info().Str("trace-resquest-id", req.Context().Value("trace-request-id").(string)).Msg("GetAccount")
 
 	// trace
 	span := tracerProvider.Span(req.Context(), "adapter.api.GetAccount")
@@ -121,7 +121,7 @@ func (h *HttpRouters) GetAccount(rw http.ResponseWriter, req *http.Request) erro
 
 // About update an account
 func (h *HttpRouters) UpdateAccount(rw http.ResponseWriter, req *http.Request) error {
-	childLogger.Debug().Msg("UpdateAccount")
+	childLogger.Info().Str("trace-resquest-id", req.Context().Value("trace-request-id").(string)).Msg("UpdateAccount")
 
 	// trace
 	span := tracerProvider.Span(req.Context(), "adapter.api.UpdateAccount")
@@ -157,7 +157,7 @@ func (h *HttpRouters) UpdateAccount(rw http.ResponseWriter, req *http.Request) e
 
 // About delete an account
 func (h *HttpRouters) DeleteAccount(rw http.ResponseWriter, req *http.Request) error {
-	childLogger.Debug().Msg("DeleteAccount")
+	childLogger.Info().Str("trace-resquest-id", req.Context().Value("trace-request-id").(string)).Msg("DeleteAccount")
 
 	// trace
 	span := tracerProvider.Span(req.Context(), "adapter.api.DeleteAccount")
@@ -186,7 +186,7 @@ func (h *HttpRouters) DeleteAccount(rw http.ResponseWriter, req *http.Request) e
 
 // About list all person´s account
 func (h *HttpRouters) ListAccountPerPerson(rw http.ResponseWriter, req *http.Request) error {
-	childLogger.Debug().Msg("ListAccountPerPerson")
+	childLogger.Info().Str("trace-resquest-id", req.Context().Value("trace-request-id").(string)).Msg("ListAccountPerPerson")
 
 	// trace
 	span := tracerProvider.Span(req.Context(), "adapter.api.ListAccountPerPerson")

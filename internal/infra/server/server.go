@@ -73,7 +73,7 @@ func (h HttpServer) StartHttpAppServer(	ctx context.Context,
 	myRouter.Use(core_middleware.MiddleWareHandlerHeader)
 
 	myRouter.HandleFunc("/", func(rw http.ResponseWriter, req *http.Request) {
-		childLogger.Debug().Msg("/")
+		childLogger.Info().Msg("/")
 		json.NewEncoder(rw).Encode(appServer)
 	})
 
@@ -87,7 +87,7 @@ func (h HttpServer) StartHttpAppServer(	ctx context.Context,
     header.HandleFunc("/header", httpRouters.Header)
 
 	myRouter.HandleFunc("/info", func(rw http.ResponseWriter, req *http.Request) {
-		childLogger.Debug().Msg("/info")
+		childLogger.Info().Msg("/info")
 		rw.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(rw).Encode(appServer)
 	})

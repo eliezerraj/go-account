@@ -5,7 +5,7 @@ import(
 	"github.com/rs/zerolog/log"
 )
 
-var childLogger = log.With().Str("core", "service").Logger()
+var childLogger = log.With().Str("core.service", "service").Logger()
 
 type WorkerService struct {
 	workerRepository *database.WorkerRepository
@@ -13,7 +13,7 @@ type WorkerService struct {
 
 // About new worker service
 func NewWorkerService(workerRepository *database.WorkerRepository) *WorkerService{
-	childLogger.Debug().Msg("NewWorkerService")
+	childLogger.Info().Msg("NewWorkerService")
 
 	return &WorkerService{
 		workerRepository: workerRepository,

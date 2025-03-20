@@ -8,8 +8,8 @@ import(
 
 // Abount get the account balance
 func (s *WorkerService) GetAccountBalance(ctx context.Context, accountBalance *model.AccountBalance) (*model.AccountBalance, error){
-	childLogger.Debug().Msg("GetAccountBalance")
-	childLogger.Debug().Interface("accountBalance: ", accountBalance).Msg("")
+	childLogger.Info().Str("trace-resquest-id", ctx.Value("trace-request-id").(string)).Msg("GetAccountBalance")
+	childLogger.Info().Str("trace-resquest-id", ctx.Value("trace-request-id").(string)).Interface("accountBalance: ", accountBalance).Msg("")
 
 	// Trace
 	span := tracerProvider.Span(ctx, "service.GetAccountBalance")
@@ -34,8 +34,8 @@ func (s *WorkerService) GetAccountBalance(ctx context.Context, accountBalance *m
 
 // Abount add an account balance
 func (s *WorkerService) AddAccountBalance(ctx context.Context, accountBalance *model.AccountBalance) (*model.AccountBalance, error){
-	childLogger.Debug().Msg("AddAccountBalance")
-	childLogger.Debug().Interface("accountBalance: ", accountBalance).Msg("")
+	childLogger.Info().Str("trace-resquest-id", ctx.Value("trace-request-id").(string)).Msg("AddAccountBalance")
+	childLogger.Info().Str("trace-resquest-id", ctx.Value("trace-request-id").(string)).Interface("accountBalance: ", accountBalance).Msg("")
 
 	// Trace
 	span := tracerProvider.Span(ctx, "service.AddAccountBalance")
@@ -76,8 +76,8 @@ func (s *WorkerService) AddAccountBalance(ctx context.Context, accountBalance *m
 
 // Get all moviment transactions an account
 func (s *WorkerService) GetMovimentAccountBalance(ctx context.Context, accountBalance *model.AccountBalance) (*model.MovimentAccount, error){
-	childLogger.Debug().Msg("GetMovimentAccountBalance")
-	childLogger.Debug().Interface("accountBalance: ", accountBalance).Msg("")
+	childLogger.Info().Str("trace-resquest-id", ctx.Value("trace-request-id").(string)).Msg("GetMovimentAccountBalance")
+	childLogger.Info().Str("trace-resquest-id", ctx.Value("trace-request-id").(string)).Interface("accountBalance: ", accountBalance).Msg("")
 
 	// Trace
 	span := tracerProvider.Span(ctx, "service.GetMovimentAccountBalance")
