@@ -5,7 +5,7 @@ import(
 	"github.com/rs/zerolog/log"
 )
 
-var childLogger = log.With().Str("core.service", "service").Logger()
+var childLogger = log.With().Str("component","go-account").Str("package","internal.core.service").Logger()
 
 type WorkerService struct {
 	workerRepository *database.WorkerRepository
@@ -13,7 +13,7 @@ type WorkerService struct {
 
 // About new worker service
 func NewWorkerService(workerRepository *database.WorkerRepository) *WorkerService{
-	childLogger.Info().Msg("NewWorkerService")
+	childLogger.Info().Str("func","NewWorkerService").Send()
 
 	return &WorkerService{
 		workerRepository: workerRepository,

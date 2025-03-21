@@ -15,15 +15,16 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+var childLogger = log.With().Str("component","go-account").Str("package","internal.adapter.database").Logger()
+
 var tracerProvider go_core_observ.TracerProvider
-var childLogger = log.With().Str("adapter", "database").Logger()
 
 type WorkerRepository struct {
 	DatabasePGServer *go_core_pg.DatabasePGServer
 }
 
 func NewWorkerRepository(databasePGServer *go_core_pg.DatabasePGServer) *WorkerRepository{
-	childLogger.Info().Msg("NewWorkerRepository")
+	childLogger.Info().Str("func","NewWorkerRepository").Send()
 
 	return &WorkerRepository{
 		DatabasePGServer: databasePGServer,
@@ -32,7 +33,7 @@ func NewWorkerRepository(databasePGServer *go_core_pg.DatabasePGServer) *WorkerR
 
 // About create a account
 func (w WorkerRepository) AddAccount(ctx context.Context, tx pgx.Tx, account *model.Account) (*model.Account, error){
-	childLogger.Info().Interface("trace-resquest-id", ctx.Value("trace-request-id")).Msg("AddAccount")
+	childLogger.Info().Str("func","AddAccount").Interface("trace-resquest-id", ctx.Value("trace-request-id")).Send()
 
 	// trace
 	span := tracerProvider.Span(ctx, "database.AddAccount")
@@ -66,8 +67,8 @@ func (w WorkerRepository) AddAccount(ctx context.Context, tx pgx.Tx, account *mo
 
 // About get an account
 func (w WorkerRepository) GetAccount(ctx context.Context, account *model.Account) (*model.Account, error){
-	childLogger.Info().Interface("trace-resquest-id", ctx.Value("trace-request-id")).Msg("GetAccount")
-	
+	childLogger.Info().Str("func","GetAccount").Interface("trace-resquest-id", ctx.Value("trace-request-id")).Send()
+
 	// Trace
 	span := tracerProvider.Span(ctx, "database.GetAccount")
 	defer span.End()
@@ -119,7 +120,7 @@ func (w WorkerRepository) GetAccount(ctx context.Context, account *model.Account
 
 // About get all account per person
 func (w WorkerRepository) ListAccountPerPerson(ctx context.Context, account *model.Account) (*[]model.Account, error){
-	childLogger.Info().Interface("trace-resquest-id", ctx.Value("trace-request-id")).Msg("ListAccount")
+	childLogger.Info().Str("func","ListAccountPerPerson").Interface("trace-resquest-id", ctx.Value("trace-request-id")).Send()
 	
 	// Trace
 	span := tracerProvider.Span(ctx, "database.ListAccount")
@@ -173,7 +174,7 @@ func (w WorkerRepository) ListAccountPerPerson(ctx context.Context, account *mod
 
 // About update an account
 func (w WorkerRepository) UpdateAccount(ctx context.Context, tx pgx.Tx, account *model.Account) (int64, error){
-	childLogger.Info().Interface("trace-resquest-id", ctx.Value("trace-request-id")).Msg("UpdateAccount")
+	childLogger.Info().Str("func","UpdateAccount").Interface("trace-resquest-id", ctx.Value("trace-request-id")).Send()
 
 	// trace
 	span := tracerProvider.Span(ctx, "database.UpdateAccount")
@@ -207,7 +208,7 @@ func (w WorkerRepository) UpdateAccount(ctx context.Context, tx pgx.Tx, account 
 
 // About delete an account
 func (w WorkerRepository) DeleteAccount(ctx context.Context, account *model.Account) (bool, error){
-	childLogger.Info().Interface("trace-resquest-id", ctx.Value("trace-request-id")).Msg("Delete")
+	childLogger.Info().Str("func","DeleteAccount").Interface("trace-resquest-id", ctx.Value("trace-request-id")).Send()
 
 	span := tracerProvider.Span(ctx, "storage.DeleteAccount")	
 	defer span.End()

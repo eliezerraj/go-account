@@ -25,7 +25,11 @@ var(
 
 // About initialize the enviroment var
 func init(){
-	log.Info().Msg("init")
+	log.Info().
+		Str("component", "go-account").
+		Str("package", "main").
+		Str("func", "init").Send()
+
 	zerolog.SetGlobalLevel(logLevel)
 
 	infoPod, server := configuration.GetInfoPod()
@@ -40,11 +44,12 @@ func init(){
 
 // About main
 func main (){
-	log.Info().Msg("----------------------------------------------------")
-	log.Info().Msg("main")
-	log.Info().Msg("----------------------------------------------------")
-	log.Info().Interface("appServer :",appServer).Msg("")
-	log.Info().Msg("----------------------------------------------------")
+	log.Info().
+		Str("component", "go-account").
+		Str("package", "main").
+		Str("func", "main").
+		Interface("appServer :",appServer).
+		Send()
 
 	ctx, cancel := context.WithTimeout(	context.Background(), 
 										time.Duration( appServer.Server.ReadTimeout ) * time.Second)
@@ -57,9 +62,9 @@ func main (){
 		databasePGServer, err = databasePGServer.NewDatabasePGServer(ctx, *appServer.DatabaseConfig)
 		if err != nil {
 			if count < 3 {
-				log.Error().Err(err).Msg("error open database... trying again !!")
+				log.Error().Err(err).Send()
 			} else {
-				log.Error().Err(err).Msg("fatal error open Database aborting")
+				log.Error().Err(err).Send()
 				panic(err)
 			}
 			time.Sleep(3 * time.Second) //backoff

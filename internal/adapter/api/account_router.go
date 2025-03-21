@@ -13,7 +13,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
-var childLogger = log.With().Str("adapter", "api.router").Logger()
+var childLogger = log.With().Str("component", "go-account").Str("package", "internal.adapter.api").Logger()
 
 var core_json coreJson.CoreJson
 var core_apiError coreJson.APIError
@@ -32,7 +32,7 @@ func NewHttpRouters(workerService *service.WorkerService) HttpRouters {
 
 // About return a health
 func (h *HttpRouters) Health(rw http.ResponseWriter, req *http.Request) {
-	childLogger.Info().Interface("trace-resquest-id", req.Context().Value("trace-request-id")).Msg("Health")
+	childLogger.Info().Str("func","Health").Interface("trace-resquest-id", req.Context().Value("trace-request-id")).Send()
 
 	health := true
 	json.NewEncoder(rw).Encode(health)
@@ -40,7 +40,7 @@ func (h *HttpRouters) Health(rw http.ResponseWriter, req *http.Request) {
 
 // About return a live
 func (h *HttpRouters) Live(rw http.ResponseWriter, req *http.Request) {
-	childLogger.Info().Interface("trace-resquest-id", req.Context().Value("trace-request-id")).Msg("Live")
+	childLogger.Info().Str("func","Live").Interface("trace-resquest-id", req.Context().Value("trace-request-id")).Send()
 
 	live := true
 	json.NewEncoder(rw).Encode(live)
@@ -48,14 +48,14 @@ func (h *HttpRouters) Live(rw http.ResponseWriter, req *http.Request) {
 
 // About show all header received
 func (h *HttpRouters) Header(rw http.ResponseWriter, req *http.Request) {
-	childLogger.Info().Interface("trace-resquest-id", req.Context().Value("trace-request-id")).Msg("Header")
+	childLogger.Info().Str("func","Header").Interface("trace-resquest-id", req.Context().Value("trace-request-id")).Send()
 	
 	json.NewEncoder(rw).Encode(req.Header)
 }
 
 // About add an account
 func (h *HttpRouters) AddAccount(rw http.ResponseWriter, req *http.Request) error {
-	childLogger.Info().Interface("trace-resquest-id", req.Context().Value("trace-request-id")).Msg("AddAccount")
+	childLogger.Info().Str("func","AddAccount").Interface("trace-resquest-id", req.Context().Value("trace-request-id")).Send()
 
 	//trace
 	span := tracerProvider.Span(req.Context(), "adapter.api.AddAccount")
@@ -91,7 +91,7 @@ func (h *HttpRouters) AddAccount(rw http.ResponseWriter, req *http.Request) erro
 
 // About get an account
 func (h *HttpRouters) GetAccount(rw http.ResponseWriter, req *http.Request) error {
-	childLogger.Info().Interface("trace-resquest-id", req.Context().Value("trace-request-id")).Msg("GetAccount")
+	childLogger.Info().Str("func","GetAccount").Interface("trace-resquest-id", req.Context().Value("trace-request-id")).Send()
 
 	// trace
 	span := tracerProvider.Span(req.Context(), "adapter.api.GetAccount")
@@ -121,7 +121,7 @@ func (h *HttpRouters) GetAccount(rw http.ResponseWriter, req *http.Request) erro
 
 // About update an account
 func (h *HttpRouters) UpdateAccount(rw http.ResponseWriter, req *http.Request) error {
-	childLogger.Info().Interface("trace-resquest-id", req.Context().Value("trace-request-id")).Msg("UpdateAccount")
+	childLogger.Info().Str("func","UpdateAccount").Interface("trace-resquest-id", req.Context().Value("trace-request-id")).Send()
 
 	// trace
 	span := tracerProvider.Span(req.Context(), "adapter.api.UpdateAccount")
@@ -157,7 +157,7 @@ func (h *HttpRouters) UpdateAccount(rw http.ResponseWriter, req *http.Request) e
 
 // About delete an account
 func (h *HttpRouters) DeleteAccount(rw http.ResponseWriter, req *http.Request) error {
-	childLogger.Info().Interface("trace-resquest-id", req.Context().Value("trace-request-id")).Msg("DeleteAccount")
+	childLogger.Info().Str("func","DeleteAccount").Interface("trace-resquest-id", req.Context().Value("trace-request-id")).Send()
 
 	// trace
 	span := tracerProvider.Span(req.Context(), "adapter.api.DeleteAccount")
@@ -186,7 +186,7 @@ func (h *HttpRouters) DeleteAccount(rw http.ResponseWriter, req *http.Request) e
 
 // About list all person´s account
 func (h *HttpRouters) ListAccountPerPerson(rw http.ResponseWriter, req *http.Request) error {
-	childLogger.Info().Interface("trace-resquest-id", req.Context().Value("trace-request-id")).Msg("ListAccountPerPerson")
+	childLogger.Info().Str("func","ListAccountPerPerson").Interface("trace-resquest-id", req.Context().Value("trace-request-id")).Send()
 
 	// trace
 	span := tracerProvider.Span(req.Context(), "adapter.api.ListAccountPerPerson")

@@ -12,7 +12,7 @@ import (
 
 // About add a account balance
 func (w WorkerRepository) AddAccountBalance(ctx context.Context, tx pgx.Tx, accountBalance *model.AccountBalance) (*model.AccountBalance, error){
-	childLogger.Info().Str("trace-resquest-id", ctx.Value("trace-request-id").(string)).Msg("AddAccountBalance")
+	childLogger.Info().Str("func","AddAccountBalance").Interface("trace-resquest-id", ctx.Value("trace-request-id")).Send()
 
 	//Trace
 	span := tracerProvider.Span(ctx, "database.AddAccountBalance")
@@ -50,7 +50,7 @@ func (w WorkerRepository) AddAccountBalance(ctx context.Context, tx pgx.Tx, acco
 
 // About update the account balance
 func (w WorkerRepository) UpdateAccountBalance(ctx context.Context, tx pgx.Tx, accountBalance *model.AccountBalance) (int64, error){
-	childLogger.Info().Str("trace-resquest-id", ctx.Value("trace-request-id").(string)).Msg("UpateAccountBalance")
+	childLogger.Info().Str("func","UpdateAccountBalance").Interface("trace-resquest-id", ctx.Value("trace-request-id")).Send()
 
 	// Trace
 	span := tracerProvider.Span(ctx, "database.UpateAccountBalance")
@@ -86,7 +86,7 @@ func (w WorkerRepository) UpdateAccountBalance(ctx context.Context, tx pgx.Tx, a
 
 // About get all account balance
 func (w WorkerRepository) GetAccountBalance(ctx context.Context, accountBalance *model.AccountBalance) (*model.AccountBalance, error){
-	childLogger.Info().Str("trace-resquest-id", ctx.Value("trace-request-id").(string)).Msg("GetAccountBalance")
+	childLogger.Info().Str("func","GetAccountBalance").Interface("trace-resquest-id", ctx.Value("trace-request-id")).Send()
 	
 	// Trace
 	span := tracerProvider.Span(ctx, "database.GetAccountBalance")
@@ -136,7 +136,7 @@ func (w WorkerRepository) GetAccountBalance(ctx context.Context, accountBalance 
 
 // About get the sum of all stalments of a account
 func (w WorkerRepository) GetSumAccountBalance(ctx context.Context, type_charge string, accountBalance *model.AccountBalance) (*model.AccountBalance, error){
-	childLogger.Info().Str("trace-resquest-id", ctx.Value("trace-request-id").(string)).Msg("GetSumAccountBalance")
+	childLogger.Info().Str("func","GetSumAccountBalance").Interface("trace-resquest-id", ctx.Value("trace-request-id")).Send()
 	
 	// Trace
 	span := tracerProvider.Span(ctx, "database.GetSumAccountBalance")
@@ -187,7 +187,7 @@ func (w WorkerRepository) GetSumAccountBalance(ctx context.Context, type_charge 
 
 // About list all account stalements from account
 func (w WorkerRepository) ListAccountBalance(ctx context.Context, accountBalance *model.AccountBalance) (*[]model.AccountStatement, error){
-	childLogger.Info().Str("trace-resquest-id", ctx.Value("trace-request-id").(string)).Msg("ListAccountBalance")
+	childLogger.Info().Str("func","ListAccountBalance").Interface("trace-resquest-id", ctx.Value("trace-request-id")).Send()
 	
 	// Trace
 	span := tracerProvider.Span(ctx, "database.ListAccountBalance")
@@ -244,7 +244,7 @@ func (w WorkerRepository) ListAccountBalance(ctx context.Context, accountBalance
 
 // About create a uuid transaction
 func (w WorkerRepository) GetTransactionUUID(ctx context.Context) (*string, error){
-	childLogger.Info().Str("trace-resquest-id", ctx.Value("trace-request-id").(string)).Msg("GetTransactionUUID")
+	childLogger.Info().Str("func","GetTransactionUUID").Interface("trace-resquest-id", ctx.Value("trace-request-id")).Send()
 	
 	// Trace
 	span := tracerProvider.Span(ctx, "database.GetTransactionUUID")

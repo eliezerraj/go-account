@@ -14,8 +14,7 @@ var apiService go_core_api.ApiService
 
 // About add an account
 func (s *WorkerService) AddAccount(ctx context.Context, account *model.Account) (*model.Account, error){
-	childLogger.Info().Interface("trace-resquest-id", ctx.Value("trace-request-id")).Msg("AddAccount")
-	childLogger.Info().Interface("trace-resquest-id", ctx.Value("trace-request-id")).Interface("account: ", account).Msg("")
+	childLogger.Info().Str("func","AddAccount").Interface("trace-resquest-id", ctx.Value("trace-request-id")).Interface("account", account).Send()
 
 	// Trace
 	span := tracerProvider.Span(ctx, "service.AddAccount")
@@ -70,8 +69,7 @@ func (s *WorkerService) AddAccount(ctx context.Context, account *model.Account) 
 
 // About update an account
 func (s *WorkerService) UpdateAccount(ctx context.Context, account *model.Account) (*model.Account, error){
-	childLogger.Info().Interface("trace-resquest-id", ctx.Value("trace-request-id")).Msg("UpdateAccount")
-	childLogger.Info().Interface("trace-resquest-id", ctx.Value("trace-request-id")).Interface("account: ", account).Msg("")
+	childLogger.Info().Str("func","UpdateAccount").Interface("trace-resquest-id", ctx.Value("trace-request-id")).Interface("account", account).Send()
 
 	// Trace
 	span := tracerProvider.Span(ctx, "service.UpdateAccount")
@@ -113,8 +111,7 @@ func (s *WorkerService) UpdateAccount(ctx context.Context, account *model.Accoun
 
 // About delete an account
 func (s *WorkerService) DeleteAccount(ctx context.Context, account *model.Account) (*model.Account, error){
-	childLogger.Info().Interface("trace-resquest-id", ctx.Value("trace-request-id")).Msg("DeleteAccount")
-	childLogger.Info().Interface("trace-resquest-id", ctx.Value("trace-request-id")).Interface("account: ", account).Msg("")
+	childLogger.Info().Str("func","DeleteAccount").Interface("trace-resquest-id", ctx.Value("trace-request-id")).Interface("account", account).Send()
 
 	// Trace
 	span := tracerProvider.Span(ctx, "service.UpdateAccount")
@@ -137,8 +134,7 @@ func (s *WorkerService) DeleteAccount(ctx context.Context, account *model.Accoun
 
 // About get an account
 func (s *WorkerService) GetAccount(ctx context.Context, account *model.Account) (*model.Account, error){
-	childLogger.Info().Interface("trace-resquest-id", ctx.Value("trace-request-id")).Msg("GetAccount")
-	childLogger.Info().Interface("trace-resquest-id", ctx.Value("trace-request-id")).Interface("account: ", account).Msg("")
+	childLogger.Info().Str("func","GetAccount").Interface("trace-resquest-id", ctx.Value("trace-request-id")).Interface("account", account).Send()
 
 	// Trace
 	span := tracerProvider.Span(ctx, "service.GetAccount")
@@ -154,8 +150,7 @@ func (s *WorkerService) GetAccount(ctx context.Context, account *model.Account) 
 
 // About list all person´s account
 func (s *WorkerService) ListAccountPerPerson(ctx context.Context, account *model.Account) (*[]model.Account, error){
-	childLogger.Info().Interface("trace-resquest-id", ctx.Value("trace-request-id")).Msg("ListAccountPerPerson")
-	childLogger.Info().Interface("trace-resquest-id", ctx.Value("trace-request-id")).Interface("account: ", account).Msg("")
+	childLogger.Info().Str("func","ListAccountPerPerson").Interface("trace-resquest-id", ctx.Value("trace-request-id")).Interface("account", account).Send()
 
 	// Trace
 	span := tracerProvider.Span(ctx, "service.ListAccountPerPerson")

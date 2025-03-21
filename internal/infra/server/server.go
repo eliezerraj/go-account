@@ -24,7 +24,8 @@ import (
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux"
 )
 
-var childLogger = log.With().Str("handler", "api").Logger()
+
+var childLogger = log.With().Str("component","go-account").Str("package","internal.infra.server").Logger()
 var core_middleware middleware.ToolsMiddleware
 var tracerProvider go_core_observ.TracerProvider
 var infoTrace go_core_observ.InfoTrace
@@ -41,11 +42,9 @@ func NewHttpAppServer(httpServer *model.Server) HttpServer {
 func (h HttpServer) StartHttpAppServer(	ctx context.Context, 
 										httpRouters *api.HttpRouters,
 										appServer *model.AppServer) {
-	childLogger.Info().Msg("StartHttpAppServer")
+	childLogger.Info().Str("func","StartHttpAppServer").Send()
 			
 	// Otel
-	childLogger.Info().Str("OTEL_EXPORTER_OTLP_ENDPOINT :", appServer.ConfigOTEL.OtelExportEndpoint).Msg("")
-	
 	infoTrace.PodName = appServer.InfoPod.PodName
 	infoTrace.PodVersion = appServer.InfoPod.ApiVersion
 	infoTrace.ServiceType = "k8-workload"
@@ -73,7 +72,8 @@ func (h HttpServer) StartHttpAppServer(	ctx context.Context,
 	myRouter.Use(core_middleware.MiddleWareHandlerHeader)
 
 	myRouter.HandleFunc("/", func(rw http.ResponseWriter, req *http.Request) {
-		childLogger.Info().Msg("/")
+		childLogger.Info().Str("HandleFunc","/").Send()
+		
 		json.NewEncoder(rw).Encode(appServer)
 	})
 
@@ -87,7 +87,8 @@ func (h HttpServer) StartHttpAppServer(	ctx context.Context,
     header.HandleFunc("/header", httpRouters.Header)
 
 	myRouter.HandleFunc("/info", func(rw http.ResponseWriter, req *http.Request) {
-		childLogger.Info().Msg("/info")
+		childLogger.Info().Str("HandleFunc","/info").Send()
+
 		rw.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(rw).Encode(appServer)
 	})
@@ -111,9 +112,7 @@ func (h HttpServer) StartHttpAppServer(	ctx context.Context,
 	listAccountPerPerson := myRouter.Methods(http.MethodGet, http.MethodOptions).Subrouter()
 	listAccountPerPerson.HandleFunc("/list/{id}", core_middleware.MiddleWareErrorHandler(httpRouters.ListAccountPerPerson))		
 	listAccountPerPerson.Use(otelmux.Middleware("go-account"))
-
 	//----------------------------------
-
 	addAccountBalance := myRouter.Methods(http.MethodPost, http.MethodOptions).Subrouter()
 	addAccountBalance.HandleFunc("/add/accountBalance", core_middleware.MiddleWareErrorHandler(httpRouters.AddAccountBalance))
 	addAccountBalance.Use(otelmux.Middleware("go-account"))
@@ -135,12 +134,12 @@ func (h HttpServer) StartHttpAppServer(	ctx context.Context,
 		IdleTimeout:  time.Duration(h.httpServer.IdleTimeout) * time.Second, 
 	}
 
-	childLogger.Info().Str("Service Port : ", strconv.Itoa(h.httpServer.Port)).Msg("Service Port")
+	childLogger.Info().Str("Service Port:", strconv.Itoa(h.httpServer.Port)).Send()
 
 	go func() {
 		err := srv.ListenAndServe()
 		if err != nil {
-			childLogger.Error().Err(err).Msg("canceling http mux server !!!")
+			childLogger.Info().Err(err).Msg("canceling http mux server !!!")
 		}
 	}()
 
