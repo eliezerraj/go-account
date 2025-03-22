@@ -35,6 +35,8 @@ type HttpServer struct {
 }
 
 func NewHttpAppServer(httpServer *model.Server) HttpServer {
+	childLogger.Info().Str("func","NewHttpAppServer").Send()
+	
 	return HttpServer{httpServer: httpServer }
 }
 
@@ -62,7 +64,7 @@ func (h HttpServer) StartHttpAppServer(	ctx context.Context,
 	defer func() { 
 		err := tp.Shutdown(ctx)
 		if err != nil{
-			childLogger.Error().Err(err).Msg("error closing OTEL tracer !!!")
+			childLogger.Info().Err(err).Send()
 		}
 		childLogger.Info().Msg("stop done !!!")
 	}()
@@ -134,7 +136,7 @@ func (h HttpServer) StartHttpAppServer(	ctx context.Context,
 		IdleTimeout:  time.Duration(h.httpServer.IdleTimeout) * time.Second, 
 	}
 
-	childLogger.Info().Str("Service Port:", strconv.Itoa(h.httpServer.Port)).Send()
+	childLogger.Info().Str("Service Port", strconv.Itoa(h.httpServer.Port)).Send()
 
 	go func() {
 		err := srv.ListenAndServe()

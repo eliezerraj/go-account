@@ -25,6 +25,8 @@ type HttpRouters struct {
 }
 
 func NewHttpRouters(workerService *service.WorkerService) HttpRouters {
+	childLogger.Info().Str("func","NewHttpRouters").Send()
+
 	return HttpRouters{
 		workerService: workerService,
 	}
