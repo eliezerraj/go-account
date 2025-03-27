@@ -24,8 +24,8 @@ import (
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux"
 )
 
-
 var childLogger = log.With().Str("component","go-account").Str("package","internal.infra.server").Logger()
+
 var core_middleware middleware.ToolsMiddleware
 var tracerProvider go_core_observ.TracerProvider
 var infoTrace go_core_observ.InfoTrace
