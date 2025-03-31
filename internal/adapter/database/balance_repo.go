@@ -20,7 +20,7 @@ func (w WorkerRepository) AddAccountBalance(ctx context.Context, tx pgx.Tx, acco
 
 	// Prepare 
 	var id int
-	accountBalance.CreateAt = time.Now()
+	accountBalance.CreatedAt = time.Now()
 	accountBalance.UserLastUpdate = nil
 
 	// Query and Execute
@@ -28,7 +28,7 @@ func (w WorkerRepository) AddAccountBalance(ctx context.Context, tx pgx.Tx, acco
 											currency, 
 											amount,
 											tenant_id,
-											create_at,
+											created_at,
 											user_last_update) 
 				VALUES($1, $2, $3, $4, $5, $6) RETURNING id`
 
@@ -36,7 +36,7 @@ func (w WorkerRepository) AddAccountBalance(ctx context.Context, tx pgx.Tx, acco
 									accountBalance.Currency, 
 									accountBalance.Amount, 
 									accountBalance.TenantID,
-									accountBalance.CreateAt, 
+									accountBalance.CreatedAt, 
 									accountBalance.UserLastUpdate)								
 	if err := row.Scan(&id); err != nil {
 		return nil, errors.New(err.Error())
@@ -58,19 +58,19 @@ func (w WorkerRepository) UpdateAccountBalance(ctx context.Context, tx pgx.Tx, a
 
 	// Prepare
 	updateAt := time.Now()
-	accountBalance.UpdateAt = &updateAt
+	accountBalance.UpdatedAt = &updateAt
 
 	// Query and Execute
 	query := `Update ACCOUNT_BALANCE
 				set amount = amount + $1, 
-					update_at = $2,
+					updated_at = $2,
 					request_id = $3,
 					jwt_id	= $4,
 					transaction_id =$6
 			where fk_account_id = $5 `
 
 	row, err := tx.Exec(ctx, query, accountBalance.Amount,  
-									accountBalance.UpdateAt,
+									accountBalance.UpdatedAt,
 									accountBalance.RequestId,
 									accountBalance.JwtId,
 									accountBalance.FkAccountID,
@@ -107,7 +107,7 @@ func (w WorkerRepository) GetAccountBalance(ctx context.Context, accountBalance 
 					b.fk_account_id,
 					b.currency, 
 					b.amount, 
-					b.create_at 
+					b.created_at 
 				from account a,
 					account_balance b
 				where account_id = $1 and a.id = b.fk_account_id`
@@ -123,7 +123,7 @@ func (w WorkerRepository) GetAccountBalance(ctx context.Context, accountBalance 
 							&res_accountBalance.FkAccountID, 
 							&res_accountBalance.Currency, 
 							&res_accountBalance.Amount, 
-							&res_accountBalance.CreateAt,
+							&res_accountBalance.CreatedAt,
 		) 
 		if err != nil {
 			return nil, errors.New(err.Error())
@@ -230,7 +230,7 @@ func (w WorkerRepository) ListAccountBalance(ctx context.Context, accountBalance
 							&res_accountStatement.Type, 
 							&res_accountStatement.Currency, 
 							&res_accountStatement.Amount, 
-							&res_accountStatement.ChargeAt,
+							&res_accountStatement.ChargedAt,
 							&res_accountStatement.TransactionID,
 		)
 		if err != nil {

@@ -53,15 +53,6 @@ func (h *HttpRouters) AddAccountBalance(rw http.ResponseWriter, req *http.Reques
 		return &core_apiError
     }
 
-	if (req.Context().Value("jwt_id") != nil) {
-		jwtid := req.Context().Value("jwt_id").(string)
-		accountBalance.JwtId = &jwtid
-	}
-	if (req.Context().Value("request_id") != nil) {
-		request_id := req.Context().Value("request_id").(string)
-		accountBalance.RequestId = &request_id
-	}
-
 	// call service
 	res, err := h.workerService.AddAccountBalance(req.Context(), &accountBalance)
 	if err != nil {

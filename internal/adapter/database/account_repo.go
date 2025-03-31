@@ -41,20 +41,18 @@ func (w WorkerRepository) AddAccount(ctx context.Context, tx pgx.Tx, account *mo
 
 	//Prepare
 	var id int
-	account.CreateAt = time.Now()
+	account.CreatedAt = time.Now()
 
 	// Query Execute
 	query := `INSERT INTO account ( account_id, 
 									person_id, 
-									create_at,
-									tenant_id,
-									user_last_update) 
-				VALUES($1, $2, $3, $4, $5) RETURNING id`
+									created_at,
+									tenant_id) 
+				VALUES($1, $2, $3, $4) RETURNING id`
 
 	row := tx.QueryRow(ctx, query,account.AccountID, 
 									account.PersonID,
-									account.CreateAt,
-									account.TenantID,
+									account.CreatedAt,
 									account.TenantID)
 	if err := row.Scan(&id); err != nil {
 		return nil, errors.New(err.Error())
@@ -87,8 +85,8 @@ func (w WorkerRepository) GetAccount(ctx context.Context, account *model.Account
 	query := `SELECT id, 
 					account_id, 
 					person_id, 
-					create_at, 
-					update_at, 
+					created_at, 
+					updated_at, 
 					tenant_id, 
 					user_last_update 
 				FROM account 
@@ -104,8 +102,8 @@ func (w WorkerRepository) GetAccount(ctx context.Context, account *model.Account
 		err := rows.Scan( &res_account.ID, 
 							&res_account.AccountID, 
 							&res_account.PersonID, 
-							&res_account.CreateAt,
-							&res_account.UpdateAt,
+							&res_account.CreatedAt,
+							&res_account.UpdatedAt,
 							&res_account.TenantID,
 							&res_account.UserLastUpdate,
 							)
@@ -141,8 +139,8 @@ func (w WorkerRepository) ListAccountPerPerson(ctx context.Context, account *mod
 	query := `SELECT 	id, 
 						account_id, 
 						person_id, 
-						create_at, 
-						update_at, 
+						created_at, 
+						updated_at, 
 						user_last_update,
 						tenant_id 
 						FROM account 
@@ -158,8 +156,8 @@ func (w WorkerRepository) ListAccountPerPerson(ctx context.Context, account *mod
 		err := rows.Scan( 	&res_account.ID, 
 							&res_account.AccountID, 
 							&res_account.PersonID, 
-							&res_account.CreateAt,
-							&res_account.UpdateAt,
+							&res_account.CreatedAt,
+							&res_account.UpdatedAt,
 							&res_account.UserLastUpdate,
 							&res_account.TenantID,
 						)
@@ -181,19 +179,19 @@ func (w WorkerRepository) UpdateAccount(ctx context.Context, tx pgx.Tx, account 
 	defer span.End()
 
 	// Prepare
-	account.CreateAt = time.Now()
-	account.UserLastUpdate = nil
+	updateAt := time.Now()
+	account.UpdatedAt = &updateAt
 
 	//Query Execute
 	query := `Update account
 				set person_id = $1, 
-					update_at = $2,
+					updated_at = $2,
 					user_last_update =$3,
 					tenant_id = $4
 				where account_id = $5 `
 
 	row, err := tx.Exec(ctx, query, account.PersonID,
-									account.CreateAt,
+									account.UpdatedAt,
 									account.UserLastUpdate,
 									account.TenantID,
 									account.AccountID)
