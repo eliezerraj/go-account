@@ -1,14 +1,17 @@
 package api
 
 import (
-	"encoding/json"
 	"net/http"
+	"strconv"
+	"encoding/json"
+
 	"github.com/rs/zerolog/log"
 	"github.com/go-account/internal/core/service"
 	"github.com/go-account/internal/core/model"
 	"github.com/go-account/internal/core/erro"
 	go_core_observ "github.com/eliezerraj/go-core/observability"
 	go_core_tools "github.com/eliezerraj/go-core/tools"
+
 	"github.com/eliezerraj/go-core/coreJson"
 	"github.com/gorilla/mux"
 )
@@ -106,6 +109,41 @@ func (h *HttpRouters) GetAccount(rw http.ResponseWriter, req *http.Request) erro
 
 	// call service
 	res, err := h.workerService.GetAccount(req.Context(), &account)
+	if err != nil {
+		switch err {
+		case erro.ErrNotFound:
+			core_apiError = core_apiError.NewAPIError(err, http.StatusNotFound)
+		default:
+			core_apiError = core_apiError.NewAPIError(err, http.StatusInternalServerError)
+		}
+		return &core_apiError
+	}
+	
+	return core_json.WriteJSON(rw, http.StatusOK, res)
+}
+
+// About get an account from PK
+func (h *HttpRouters) GetAccountId(rw http.ResponseWriter, req *http.Request) error {
+	childLogger.Info().Str("func","GetAccountId").Interface("trace-resquest-id", req.Context().Value("trace-request-id")).Send()
+
+	// trace
+	span := tracerProvider.Span(req.Context(), "adapter.api.GetAccountId")
+	defer span.End()
+
+	//parameters
+	vars := mux.Vars(req)
+	varID := vars["id"]
+
+	varIDint, err := strconv.Atoi(varID)
+    if err != nil {
+		core_apiError = core_apiError.NewAPIError(err, http.StatusBadRequest)
+		return &core_apiError
+    }
+	account := model.Account{}
+	account.ID = varIDint
+
+	// call service
+	res, err := h.workerService.GetAccountId(req.Context(), &account)
 	if err != nil {
 		switch err {
 		case erro.ErrNotFound:

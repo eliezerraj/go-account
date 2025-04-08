@@ -116,6 +116,60 @@ func (w WorkerRepository) GetAccount(ctx context.Context, account *model.Account
 	return nil, erro.ErrNotFound
 }
 
+// About get an account from id (pk)
+func (w WorkerRepository) GetAccountId(ctx context.Context, account *model.Account) (*model.Account, error){
+	childLogger.Info().Str("func","GetAccountId").Interface("trace-resquest-id", ctx.Value("trace-request-id")).Send()
+
+	// Trace
+	span := tracerProvider.Span(ctx, "database.GetAccountId")
+	defer span.End()
+
+	// db connection
+	conn, err := w.DatabasePGServer.Acquire(ctx)
+	if err != nil {
+		return nil, errors.New(err.Error())
+	}
+	defer w.DatabasePGServer.Release(conn)
+
+	// Prepare
+	res_account := model.Account{}
+
+	// Query and Execute
+	query := `SELECT id, 
+					account_id, 
+					person_id, 
+					created_at, 
+					updated_at, 
+					tenant_id, 
+					user_last_update 
+				FROM account 
+				WHERE id =$1`
+
+	rows, err := conn.Query(ctx, query, account.ID)
+	if err != nil {
+		return nil, errors.New(err.Error())
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		err := rows.Scan( &res_account.ID, 
+							&res_account.AccountID, 
+							&res_account.PersonID, 
+							&res_account.CreatedAt,
+							&res_account.UpdatedAt,
+							&res_account.TenantID,
+							&res_account.UserLastUpdate,
+							)
+		if err != nil {
+			return nil, errors.New(err.Error())
+        }
+		return &res_account, nil
+	}
+	
+	return nil, erro.ErrNotFound
+}
+
+
 // About get all account per person
 func (w WorkerRepository) ListAccountPerPerson(ctx context.Context, account *model.Account) (*[]model.Account, error){
 	childLogger.Info().Str("func","ListAccountPerPerson").Interface("trace-resquest-id", ctx.Value("trace-request-id")).Send()

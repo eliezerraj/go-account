@@ -57,14 +57,18 @@ func (h HttpServer) StartHttpAppServer(	ctx context.Context,
 											appServer.ConfigOTEL, 
 											&infoTrace)
 
-	otel.SetTextMapPropagator(xray.Propagator{})
-	otel.SetTracerProvider(tp)
+	if tp != nil {
+		otel.SetTextMapPropagator(xray.Propagator{})
+		otel.SetTracerProvider(tp)
+	}
 
 	// handle defer
 	defer func() { 
-		err := tp.Shutdown(ctx)
-		if err != nil{
-			childLogger.Info().Err(err).Send()
+		if tp != nil {
+			err := tp.Shutdown(ctx)
+			if err != nil{
+				childLogger.Error().Err(err).Send()
+			}
 		}
 		childLogger.Info().Msg("stop done !!!")
 	}()
@@ -103,6 +107,10 @@ func (h HttpServer) StartHttpAppServer(	ctx context.Context,
 	getAccount.HandleFunc("/get/{id}", core_middleware.MiddleWareErrorHandler(httpRouters.GetAccount))		
 	getAccount.Use(otelmux.Middleware("go-account"))
 
+	getAccountId := myRouter.Methods(http.MethodGet, http.MethodOptions).Subrouter()
+	getAccountId.HandleFunc("/getId/{id}", core_middleware.MiddleWareErrorHandler(httpRouters.GetAccountId))		
+	getAccountId.Use(otelmux.Middleware("go-account"))
+
 	deleteAccount := myRouter.Methods(http.MethodPost, http.MethodOptions).Subrouter()
 	deleteAccount.HandleFunc("/delete", core_middleware.MiddleWareErrorHandler(httpRouters.DeleteAccount))		
 	deleteAccount.Use(otelmux.Middleware("go-account"))
@@ -114,6 +122,7 @@ func (h HttpServer) StartHttpAppServer(	ctx context.Context,
 	listAccountPerPerson := myRouter.Methods(http.MethodGet, http.MethodOptions).Subrouter()
 	listAccountPerPerson.HandleFunc("/list/{id}", core_middleware.MiddleWareErrorHandler(httpRouters.ListAccountPerPerson))		
 	listAccountPerPerson.Use(otelmux.Middleware("go-account"))
+	
 	//----------------------------------
 	addAccountBalance := myRouter.Methods(http.MethodPost, http.MethodOptions).Subrouter()
 	addAccountBalance.HandleFunc("/add/accountBalance", core_middleware.MiddleWareErrorHandler(httpRouters.AddAccountBalance))

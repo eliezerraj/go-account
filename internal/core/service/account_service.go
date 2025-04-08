@@ -148,6 +148,22 @@ func (s *WorkerService) GetAccount(ctx context.Context, account *model.Account) 
 	return res, nil
 }
 
+// About get an account
+func (s *WorkerService) GetAccountId(ctx context.Context, account *model.Account) (*model.Account, error){
+	childLogger.Info().Str("func","GetAccountId").Interface("trace-resquest-id", ctx.Value("trace-request-id")).Interface("account", account).Send()
+
+	// Trace
+	span := tracerProvider.Span(ctx, "service.GetAccountId")
+	defer span.End()
+	
+	// Get account
+	res, err := s.workerRepository.GetAccountId(ctx, account)
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
+}
+
 // About list all person´s account
 func (s *WorkerService) ListAccountPerPerson(ctx context.Context, account *model.Account) (*[]model.Account, error){
 	childLogger.Info().Str("func","ListAccountPerPerson").Interface("trace-resquest-id", ctx.Value("trace-request-id")).Interface("account", account).Send()
