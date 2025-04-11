@@ -122,20 +122,7 @@ func (h HttpServer) StartHttpAppServer(	ctx context.Context,
 	listAccountPerPerson := myRouter.Methods(http.MethodGet, http.MethodOptions).Subrouter()
 	listAccountPerPerson.HandleFunc("/list/{id}", core_middleware.MiddleWareErrorHandler(httpRouters.ListAccountPerPerson))		
 	listAccountPerPerson.Use(otelmux.Middleware("go-account"))
-	
-	//----------------------------------
-	addAccountBalance := myRouter.Methods(http.MethodPost, http.MethodOptions).Subrouter()
-	addAccountBalance.HandleFunc("/add/accountBalance", core_middleware.MiddleWareErrorHandler(httpRouters.AddAccountBalance))
-	addAccountBalance.Use(otelmux.Middleware("go-account"))
-
-	getAccountBalance := myRouter.Methods(http.MethodGet, http.MethodOptions).Subrouter()
-	getAccountBalance.HandleFunc("/accountBalance/{id}", core_middleware.MiddleWareErrorHandler(httpRouters.GetAccountBalance))		
-	getAccountBalance.Use(otelmux.Middleware("go-account"))
-
-	getMovimentAccountBalance := myRouter.Methods(http.MethodGet, http.MethodOptions).Subrouter()
-	getMovimentAccountBalance.HandleFunc("/movimentAccountBalance/{id}", core_middleware.MiddleWareErrorHandler(httpRouters.GetMovimentAccountBalance))		
-	getMovimentAccountBalance.Use(otelmux.Middleware("go-account"))
-
+		
 	// start http server
 	srv := http.Server{
 		Addr:         ":" +  strconv.Itoa(h.httpServer.Port),      	

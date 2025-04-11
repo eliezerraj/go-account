@@ -2,15 +2,31 @@ package service
 
 import(
 	"context"
+	"github.com/rs/zerolog/log"
 
+	"github.com/go-account/internal/adapter/database"
 	"github.com/go-account/internal/core/model"
 	"github.com/go-account/internal/core/erro"
 	go_core_observ "github.com/eliezerraj/go-core/observability"
 	go_core_api "github.com/eliezerraj/go-core/api"
 )
 
+var childLogger = log.With().Str("component","go-account").Str("package","internal.core.service").Logger()
 var tracerProvider go_core_observ.TracerProvider
 var apiService go_core_api.ApiService
+
+type WorkerService struct {
+	workerRepository *database.WorkerRepository
+}
+
+// About new worker service
+func NewWorkerService(workerRepository *database.WorkerRepository) *WorkerService{
+	childLogger.Info().Str("func","NewWorkerService").Send()
+
+	return &WorkerService{
+		workerRepository: workerRepository,
+	}
+}
 
 // About add an account
 func (s *WorkerService) AddAccount(ctx context.Context, account *model.Account) (*model.Account, error){
@@ -40,28 +56,6 @@ func (s *WorkerService) AddAccount(ctx context.Context, account *model.Account) 
 	res, err := s.workerRepository.AddAccount(ctx, tx, account)
 	if err != nil {
 		return nil, err
-	}
-
-	// Create the Balance Account
-	accountBalance := model.AccountBalance{}
-	accountBalance.Amount = 0
-	accountBalance.Currency = "BRL"
-	accountBalance.AccountID = res.AccountID
-	accountBalance.FkAccountID = res.ID
-	accountBalance.TenantID = res.TenantID
-
-	// Try to update the account_balance
-	res_update, err := s.workerRepository.UpdateAccountBalance(ctx, tx, &accountBalance)
-	if err != nil {
-		return nil, err
-	}
-
-	// If the account_balance so it created one
-	if res_update == 0 {
-		_, err = s.workerRepository.AddAccountBalance(ctx, tx, &accountBalance)
-		if err != nil {
-			return nil, err
-		}
 	}
 
 	return res, nil
