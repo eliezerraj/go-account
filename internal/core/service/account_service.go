@@ -7,6 +7,8 @@ import(
 	"github.com/go-account/internal/adapter/database"
 	"github.com/go-account/internal/core/model"
 	"github.com/go-account/internal/core/erro"
+
+	go_core_pg "github.com/eliezerraj/go-core/database/pg"
 	go_core_observ "github.com/eliezerraj/go-core/observability"
 	go_core_api "github.com/eliezerraj/go-core/api"
 )
@@ -28,6 +30,13 @@ func NewWorkerService(workerRepository *database.WorkerRepository) *WorkerServic
 	}
 }
 
+// About handle/convert http status code
+func (s *WorkerService) Stat(ctx context.Context) (go_core_pg.PoolStats){
+	childLogger.Info().Str("func","Stat").Interface("trace-resquest-id", ctx.Value("trace-request-id")).Send()
+
+	return s.workerRepository.Stat(ctx)
+}
+
 // About add an account
 func (s *WorkerService) AddAccount(ctx context.Context, account *model.Account) (*model.Account, error){
 	childLogger.Info().Str("func","AddAccount").Interface("trace-resquest-id", ctx.Value("trace-request-id")).Interface("account", account).Send()
@@ -40,6 +49,7 @@ func (s *WorkerService) AddAccount(ctx context.Context, account *model.Account) 
 	if err != nil {
 		return nil, err
 	}
+	defer s.workerRepository.DatabasePGServer.ReleaseTx(conn)
 	
 	// Handle the transaction
 	defer func() {
@@ -48,7 +58,6 @@ func (s *WorkerService) AddAccount(ctx context.Context, account *model.Account) 
 		} else {
 			tx.Commit(ctx)
 		}
-		s.workerRepository.DatabasePGServer.ReleaseTx(conn)
 		span.End()
 	}()
 
@@ -73,7 +82,8 @@ func (s *WorkerService) UpdateAccount(ctx context.Context, account *model.Accoun
 	if err != nil {
 		return nil, err
 	}
-	
+	defer s.workerRepository.DatabasePGServer.ReleaseTx(conn)
+
 	// Handle the transaction
 	defer func() {
 		if err != nil {
@@ -81,7 +91,6 @@ func (s *WorkerService) UpdateAccount(ctx context.Context, account *model.Accoun
 		} else {
 			tx.Commit(ctx)
 		}
-		s.workerRepository.DatabasePGServer.ReleaseTx(conn)
 		span.End()
 	}()
 

@@ -66,6 +66,15 @@ func (h *HttpRouters) Context(rw http.ResponseWriter, req *http.Request) {
 	json.NewEncoder(rw).Encode(fmt.Sprintf("%v",contextValues))
 }
 
+// About show pgx stats
+func (h *HttpRouters) Stat(rw http.ResponseWriter, req *http.Request) {
+	childLogger.Info().Str("func","Stat").Interface("trace-resquest-id", req.Context().Value("trace-request-id")).Send()
+	
+	res := h.workerService.Stat(req.Context())
+
+	json.NewEncoder(rw).Encode(res)
+}
+
 // About add an account
 func (h *HttpRouters) AddAccount(rw http.ResponseWriter, req *http.Request) error {
 	childLogger.Info().Str("func","AddAccount").Interface("trace-resquest-id", req.Context().Value("trace-request-id")).Send()
@@ -74,11 +83,13 @@ func (h *HttpRouters) AddAccount(rw http.ResponseWriter, req *http.Request) erro
 	span := tracerProvider.Span(req.Context(), "adapter.api.AddAccount")
 	defer span.End()
 
+	trace_id := fmt.Sprintf("%v",req.Context().Value("trace-request-id"))
+
 	// prepare body
 	account := model.Account{}
 	err := json.NewDecoder(req.Body).Decode(&account)
     if err != nil {
-		core_apiError = core_apiError.NewAPIError(err, http.StatusBadRequest)
+		core_apiError = core_apiError.NewAPIError(err, trace_id, http.StatusBadRequest)
 		return &core_apiError
     }
 	defer req.Body.Close()
@@ -88,13 +99,13 @@ func (h *HttpRouters) AddAccount(rw http.ResponseWriter, req *http.Request) erro
 	if err != nil {
 		switch err {
 		case erro.ErrNotFound:
-			core_apiError = core_apiError.NewAPIError(err, http.StatusNotFound)
+			core_apiError = core_apiError.NewAPIError(err, trace_id, http.StatusNotFound)
 		case erro.ErrTransInvalid:
-			core_apiError = core_apiError.NewAPIError(err, http.StatusConflict)
+			core_apiError = core_apiError.NewAPIError(err, trace_id, http.StatusConflict)
 		case erro.ErrInvalidAmount:
-			core_apiError = core_apiError.NewAPIError(err, http.StatusConflict)	
+			core_apiError = core_apiError.NewAPIError(err, trace_id, http.StatusConflict)	
 		default:
-			core_apiError = core_apiError.NewAPIError(err, http.StatusInternalServerError)
+			core_apiError = core_apiError.NewAPIError(err, trace_id, http.StatusInternalServerError)
 		}
 		return &core_apiError
 	}
@@ -109,6 +120,7 @@ func (h *HttpRouters) GetAccount(rw http.ResponseWriter, req *http.Request) erro
 	// trace
 	span := tracerProvider.Span(req.Context(), "adapter.api.GetAccount")
 	defer span.End()
+	trace_id := fmt.Sprintf("%v",req.Context().Value("trace-request-id"))
 
 	//parameters
 	vars := mux.Vars(req)
@@ -122,9 +134,9 @@ func (h *HttpRouters) GetAccount(rw http.ResponseWriter, req *http.Request) erro
 	if err != nil {
 		switch err {
 		case erro.ErrNotFound:
-			core_apiError = core_apiError.NewAPIError(err, http.StatusNotFound)
+			core_apiError = core_apiError.NewAPIError(err, trace_id, http.StatusNotFound)
 		default:
-			core_apiError = core_apiError.NewAPIError(err, http.StatusInternalServerError)
+			core_apiError = core_apiError.NewAPIError(err, trace_id, http.StatusInternalServerError)
 		}
 		return &core_apiError
 	}
@@ -139,6 +151,7 @@ func (h *HttpRouters) GetAccountId(rw http.ResponseWriter, req *http.Request) er
 	// trace
 	span := tracerProvider.Span(req.Context(), "adapter.api.GetAccountId")
 	defer span.End()
+	trace_id := fmt.Sprintf("%v",req.Context().Value("trace-request-id"))
 
 	//parameters
 	vars := mux.Vars(req)
@@ -146,7 +159,7 @@ func (h *HttpRouters) GetAccountId(rw http.ResponseWriter, req *http.Request) er
 
 	varIDint, err := strconv.Atoi(varID)
     if err != nil {
-		core_apiError = core_apiError.NewAPIError(err, http.StatusBadRequest)
+		core_apiError = core_apiError.NewAPIError(err, trace_id, http.StatusBadRequest)
 		return &core_apiError
     }
 	account := model.Account{}
@@ -157,9 +170,9 @@ func (h *HttpRouters) GetAccountId(rw http.ResponseWriter, req *http.Request) er
 	if err != nil {
 		switch err {
 		case erro.ErrNotFound:
-			core_apiError = core_apiError.NewAPIError(err, http.StatusNotFound)
+			core_apiError = core_apiError.NewAPIError(err, trace_id, http.StatusNotFound)
 		default:
-			core_apiError = core_apiError.NewAPIError(err, http.StatusInternalServerError)
+			core_apiError = core_apiError.NewAPIError(err, trace_id, http.StatusInternalServerError)
 		}
 		return &core_apiError
 	}
@@ -174,12 +187,13 @@ func (h *HttpRouters) UpdateAccount(rw http.ResponseWriter, req *http.Request) e
 	// trace
 	span := tracerProvider.Span(req.Context(), "adapter.api.UpdateAccount")
 	defer span.End()
+	trace_id := fmt.Sprintf("%v",req.Context().Value("trace-request-id"))
 
 	//parameters
 	account := model.Account{}
 	err := json.NewDecoder(req.Body).Decode(&account)
     if err != nil {
-		core_apiError = core_apiError.NewAPIError(err, http.StatusBadRequest)
+		core_apiError = core_apiError.NewAPIError(err, trace_id, http.StatusBadRequest)
 		return &core_apiError
     }
 	vars := mux.Vars(req)
@@ -191,11 +205,11 @@ func (h *HttpRouters) UpdateAccount(rw http.ResponseWriter, req *http.Request) e
 	if err != nil {
 		switch err {
 		case erro.ErrNotFound:
-			core_apiError = core_apiError.NewAPIError(err, http.StatusNotFound)
+			core_apiError = core_apiError.NewAPIError(err, trace_id, http.StatusNotFound)
 		case erro.ErrUpdate:
-			core_apiError = core_apiError.NewAPIError(err, http.StatusInternalServerError)
+			core_apiError = core_apiError.NewAPIError(err, trace_id, http.StatusInternalServerError)
 		default:
-			core_apiError = core_apiError.NewAPIError(err, http.StatusInternalServerError)
+			core_apiError = core_apiError.NewAPIError(err, trace_id, http.StatusInternalServerError)
 		}
 		return &core_apiError
 	}
@@ -210,6 +224,7 @@ func (h *HttpRouters) DeleteAccount(rw http.ResponseWriter, req *http.Request) e
 	// trace
 	span := tracerProvider.Span(req.Context(), "adapter.api.DeleteAccount")
 	defer span.End()
+	trace_id := fmt.Sprintf("%v",req.Context().Value("trace-request-id"))
 
 	//parameters
 	account := model.Account{}
@@ -222,9 +237,9 @@ func (h *HttpRouters) DeleteAccount(rw http.ResponseWriter, req *http.Request) e
 	if err != nil {
 		switch err {
 		case erro.ErrNotFound:
-			core_apiError = core_apiError.NewAPIError(err, http.StatusNotFound)
+			core_apiError = core_apiError.NewAPIError(err, trace_id, http.StatusNotFound)
 		default:
-			core_apiError = core_apiError.NewAPIError(err, http.StatusInternalServerError)
+			core_apiError = core_apiError.NewAPIError(err, trace_id, http.StatusInternalServerError)
 		}
 		return &core_apiError
 	}
@@ -239,6 +254,7 @@ func (h *HttpRouters) ListAccountPerPerson(rw http.ResponseWriter, req *http.Req
 	// trace
 	span := tracerProvider.Span(req.Context(), "adapter.api.ListAccountPerPerson")
 	defer span.End()
+	trace_id := fmt.Sprintf("%v",req.Context().Value("trace-request-id"))
 
 	//parameters
 	vars := mux.Vars(req)
@@ -252,9 +268,9 @@ func (h *HttpRouters) ListAccountPerPerson(rw http.ResponseWriter, req *http.Req
 	if err != nil {
 		switch err {
 		case erro.ErrNotFound:
-			core_apiError = core_apiError.NewAPIError(err, http.StatusNotFound)
+			core_apiError = core_apiError.NewAPIError(err, trace_id, http.StatusNotFound)
 		default:
-			core_apiError = core_apiError.NewAPIError(err, http.StatusInternalServerError)
+			core_apiError = core_apiError.NewAPIError(err, trace_id, http.StatusInternalServerError)
 		}
 		return &core_apiError
 	}
