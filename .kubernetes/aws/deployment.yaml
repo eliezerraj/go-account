@@ -19,9 +19,9 @@ spec:
     spec:
       serviceAccountName: sa-go-account
       volumes:
-      - name: volume-cert
-        secret:
-          secretName: es-certs-go-account
+      #- name: volume-cert
+      #  secret:
+      #    secretName: es-certs-go-account
       - name: volume-secret
         secret:
           secretName: es-rds-arch-secret-go-account
@@ -39,9 +39,9 @@ spec:
           - mountPath: "/var/pod/secret"
             name: volume-secret
             readOnly: true
-          - mountPath: "/var/pod/cert"
-            name: volume-cert
-            readOnly: true
+          #- mountPath: "/var/pod/cert"
+          #  name: volume-cert
+          #  readOnly: true
         resources:
            requests:
              cpu: 100m
@@ -96,3 +96,10 @@ spec:
                   matchLabels:
                     app: *app-name
               weight: 100
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                - key: karpenter.sh/capacity-type
+                  operator: "In"
+                  values: ["spot"]

@@ -11,6 +11,9 @@ Parameters:
   providerURL:
     Type: String
     Default: https://oidc.eks.us-east-2.amazonaws.com/id/8D68C5A86EBBDC04DD570CF1DAFB76BE
+  providerURL2:
+    Type: String
+    Default: https://oidc.eks.us-east-2.amazonaws.com/id/205A262D011CA12BB91418AAD2AD0A33
   ServiceAccountName:
     Type: String
     Default: sa-go-account
@@ -60,25 +63,40 @@ Resources:
       RoleName: OIDCRoleGoAccount
       AssumeRolePolicyDocument:
         Fn::Sub:
-        - "{\n  \"Version\": \"2012-10-17\",\n  \"Statement\": [\n    {\n      \"\
-          Effect\": \"Allow\",\n      \"Principal\": {\n        \"Federated\": \"\
-          arn:aws:iam::${AWS::AccountId}:oidc-provider/oidc.eks.${AWS::Region}.amazonaws.com/id/${eksId}\"\
-          \n      },\n      \"Action\": \"sts:AssumeRoleWithWebIdentity\",\n     \
-          \ \"Condition\": {\n        \"StringEquals\": {\n          \"${eksEndpoint}:sub\"\
-          : \"system:serviceaccount:${K8Namespace}:${ServiceAccountName}\"\n\
-          \        }\n      }\n    }\n  ]\n}\n"
-        - eksId:
-            Fn::Select:
-            - 4
-            - Fn::Split:
-              - /
-              - Ref: providerURL
-          eksEndpoint:
-            Fn::Select:
-            - 1
-            - Fn::Split:
-              - //
-              - Ref: providerURL
+        - |
+          {
+            "Version": "2012-10-17",
+            "Statement": [
+              { 
+                "Effect": "Allow",
+                "Principal": {
+                  "Federated": "arn:aws:iam::${AWS::AccountId}:oidc-provider/oidc.eks.${AWS::Region}.amazonaws.com/id/${eksId}"
+                },
+                "Action": "sts:AssumeRoleWithWebIdentity",
+                  "Condition": {
+                    "StringEquals": {
+                      "${eksEndpoint}:sub": "system:serviceaccount:${K8Namespace}:${ServiceAccountName}"
+                    }
+                  }
+                },
+              { 
+                "Effect": "Allow",
+                "Principal": {
+                  "Federated": "arn:aws:iam::${AWS::AccountId}:oidc-provider/oidc.eks.${AWS::Region}.amazonaws.com/id/${eksId2}"
+                },
+                "Action": "sts:AssumeRoleWithWebIdentity",
+                  "Condition": {
+                    "StringEquals": {
+                      "${eksEndpoint2}:sub": "system:serviceaccount:${K8Namespace}:${ServiceAccountName}"
+                    }
+                  }
+                }
+              ]
+            }
+        - eksId: !Select [4, !Split ["/", !Ref providerURL]]
+          eksEndpoint: !Select [1, !Split ["//", !Ref providerURL]]
+          eksId2: !Select [4, !Split ["/", !Ref providerURL2]]
+          eksEndpoint2: !Select [1, !Split ["//", !Ref providerURL2]]
       Policies:
       - PolicyName: GoAccountClusterPolicy
         PolicyDocument:
