@@ -1,0 +1,26 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ing-go-account
+  namespace: test-a
+  annotations:
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/default-backend: "svc-go-account"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "400"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "400"
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "400"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: go-account.architecture.caradhras.io
+      http:
+        paths:
+        - path: /
+          pathType: Prefix
+          backend:
+            service:
+              name: svc-go-account
+              port:
+                number: 5000
