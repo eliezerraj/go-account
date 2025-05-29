@@ -1,0 +1,43 @@
+http {
+    lua_shared_dict jwt_secrets 10m;
+
+    server {
+        listen 80;
+
+        location / {
+            access_by_lua_block {
+                local jwt = require "resty.jwt"
+
+                -- Get Authorization header
+                local auth_header = ngx.var.http_Authorization
+                if not auth_header then
+                    return ngx.exit(ngx.HTTP_UNAUTHORIZED)
+                end
+
+                local _, _, token = string.find(auth_header, "Bearer%s+(.+)")
+                if not token then
+                    return ngx.exit(ngx.HTTP_UNAUTHORIZED)
+                end
+
+                -- Validate JWT
+                local jwt_obj = jwt:verify("your_secret_or_public_key", token)
+
+                if not jwt_obj.verified then
+                    ngx.status = ngx.HTTP_UNAUTHORIZED
+                    ngx.say("Invalid token: ", jwt_obj.reason)
+                    return ngx.exit(ngx.HTTP_UNAUTHORIZED)
+                end
+
+                -- Extract claims
+                local claims = jwt_obj.payload
+                -- Insert claim into header
+                ngx.req.set_header("X-User-ID", claims.sub or "")
+                ngx.req.set_header("X-User-Role", claims.role or "")
+
+                -- Continue proxying
+            }
+
+            proxy_pass http://backend_service;
+        }
+    }
+}

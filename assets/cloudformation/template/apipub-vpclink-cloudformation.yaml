@@ -290,9 +290,9 @@ Resources:
       WebACLArn:
         Ref: WafaclArn
 
-Outputs:
-  ApiPublicGoAccountGateway:
-    Value:
-      Ref: ApiPublicGoAccountGateway
-    Export:
-      Name: ApiPublicGoAccountGateway
+#Outputs:
+#  ApiPublicGoAccountGateway:
+#    Value:
+#      Ref: ApiPublicGoAccountGateway
+#    Export:
+#      Name: ApiPublicGoAccountGateway
