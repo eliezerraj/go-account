@@ -1,7 +1,7 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform:
 - AWS::Serverless-2016-10-31
-Description: Apigateway Public VPCLink Integration v3.2 - 26/04/2025
+Description: Apigateway Public VPCLink Integration v3.3 - 09/06/2025
 
 Parameters:
   Versao:
@@ -123,7 +123,7 @@ Resources:
         schemes:
         - https
         paths:
-          /{proxy+}:
+          /health:
             get:
               produces:
               - application/json
@@ -139,17 +139,147 @@ Resources:
                 connectionId: !Ref VpcLinkIdEks01                
                 uri: 
                   Fn::Sub:
-                  - 'https://${EksDomainName}/{proxy}'
+                  - 'https://${EksDomainName}/health'
                   - EksDomainName: !FindInMap [ApigwMap, Account, EndpointURL]
                 passthroughBehavior: when_no_match
                 requestParameters:
-                  integration.request.path.proxy: method.request.path.proxy
                   integration.request.header.X-Request-ID: context.requestId
                   integration.request.header.client-id: context.authorizer.tenant_id
                   integration.request.header.X-Forwarded-For: context.identity.sourceIp
                   integration.request.header.jwt-id: context.authorizer.jwt_id   
               security:
               - authorizer: []
+          /live:
+            get:
+              produces:
+              - application/json
+              responses:
+                '200':
+                  description: 200 response
+                  schema:
+                    $ref: '#/definitions/Empty'
+              x-amazon-apigateway-integration:
+                type: http_proxy
+                httpMethod: GET
+                connectionType: VPC_LINK
+                connectionId: !Ref VpcLinkIdEks01                
+                uri: 
+                  Fn::Sub:
+                  - 'https://${EksDomainName}/live'
+                  - EksDomainName: !FindInMap [ApigwMap, Account, EndpointURL]
+                passthroughBehavior: when_no_match
+                requestParameters:
+                  integration.request.header.X-Request-ID: context.requestId
+                  integration.request.header.client-id: context.authorizer.tenant_id
+                  integration.request.header.X-Forwarded-For: context.identity.sourceIp
+                  integration.request.header.jwt-id: context.authorizer.jwt_id   
+              security:
+              - authorizer: []
+          /header:
+            get:
+              produces:
+              - application/json
+              responses:
+                '200':
+                  description: 200 response
+                  schema:
+                    $ref: '#/definitions/Empty'
+              x-amazon-apigateway-integration:
+                type: http_proxy
+                httpMethod: GET
+                connectionType: VPC_LINK
+                connectionId: !Ref VpcLinkIdEks01                
+                uri: 
+                  Fn::Sub:
+                  - 'https://${EksDomainName}/header'
+                  - EksDomainName: !FindInMap [ApigwMap, Account, EndpointURL]
+                passthroughBehavior: when_no_match
+                requestParameters:
+                  integration.request.header.X-Request-ID: context.requestId
+                  integration.request.header.client-id: context.authorizer.tenant_id
+                  integration.request.header.X-Forwarded-For: context.identity.sourceIp
+                  integration.request.header.jwt-id: context.authorizer.jwt_id   
+              security:
+              - authorizer: []
+          /context:
+            get:
+              produces:
+              - application/json
+              responses:
+                '200':
+                  description: 200 response
+                  schema:
+                    $ref: '#/definitions/Empty'
+              x-amazon-apigateway-integration:
+                type: http_proxy
+                httpMethod: GET
+                connectionType: VPC_LINK
+                connectionId: !Ref VpcLinkIdEks01                
+                uri: 
+                  Fn::Sub:
+                  - 'https://${EksDomainName}/context'
+                  - EksDomainName: !FindInMap [ApigwMap, Account, EndpointURL]
+                passthroughBehavior: when_no_match
+                requestParameters:
+                  integration.request.header.X-Request-ID: context.requestId
+                  integration.request.header.client-id: context.authorizer.tenant_id
+                  integration.request.header.X-Forwarded-For: context.identity.sourceIp
+                  integration.request.header.jwt-id: context.authorizer.jwt_id   
+              security:
+              - authorizer: []
+          /stat:
+            get:
+              produces:
+              - application/json
+              responses:
+                '200':
+                  description: 200 response
+                  schema:
+                    $ref: '#/definitions/Empty'
+              x-amazon-apigateway-integration:
+                type: http_proxy
+                httpMethod: GET
+                connectionType: VPC_LINK
+                connectionId: !Ref VpcLinkIdEks01                
+                uri: 
+                  Fn::Sub:
+                  - 'https://${EksDomainName}/stat'
+                  - EksDomainName: !FindInMap [ApigwMap, Account, EndpointURL]
+                passthroughBehavior: when_no_match
+                requestParameters:
+                  integration.request.header.X-Request-ID: context.requestId
+                  integration.request.header.client-id: context.authorizer.tenant_id
+                  integration.request.header.X-Forwarded-For: context.identity.sourceIp
+                  integration.request.header.jwt-id: context.authorizer.jwt_id   
+              security:
+              - authorizer: []
+          /info:
+            get:
+              produces:
+              - application/json
+              responses:
+                '200':
+                  description: 200 response
+                  schema:
+                    $ref: '#/definitions/Empty'
+              x-amazon-apigateway-integration:
+                type: http_proxy
+                httpMethod: GET
+                connectionType: VPC_LINK
+                connectionId: !Ref VpcLinkIdEks01                
+                uri: 
+                  Fn::Sub:
+                  - 'https://${EksDomainName}/info'
+                  - EksDomainName: !FindInMap [ApigwMap, Account, EndpointURL]
+                passthroughBehavior: when_no_match
+                requestParameters:
+                  integration.request.header.X-Request-ID: context.requestId
+                  integration.request.header.client-id: context.authorizer.tenant_id
+                  integration.request.header.X-Forwarded-For: context.identity.sourceIp
+                  integration.request.header.jwt-id: context.authorizer.jwt_id   
+              security:
+              - authorizer: []
+          /add:
             post:
               produces:
               - application/json
@@ -165,17 +295,150 @@ Resources:
                 connectionId: !Ref VpcLinkIdEks01                
                 uri: 
                   Fn::Sub:
-                  - 'https://${EksDomainName}/{proxy}'
+                  - 'https://${EksDomainName}/add'
                   - EksDomainName: !FindInMap [ApigwMap, Account, EndpointURL]
                 passthroughBehavior: when_no_match
                 requestParameters:
-                  integration.request.path.proxy: method.request.path.proxy
                   integration.request.header.X-Request-ID: context.requestId
                   integration.request.header.client-id: context.authorizer.tenant_id
                   integration.request.header.X-Forwarded-For: context.identity.sourceIp
-                  integration.request.header.jwt-id: context.authorizer.jwt_id     
+                  integration.request.header.jwt-id: context.authorizer.jwt_id   
               security:
               - authorizer: []
+          /get/{id}:
+            get:
+              produces:
+              - application/json
+              responses:
+                '200':
+                  description: 200 response
+                  schema:
+                    $ref: '#/definitions/Empty'
+              x-amazon-apigateway-integration:
+                type: http_proxy
+                httpMethod: GET
+                connectionType: VPC_LINK
+                connectionId: !Ref VpcLinkIdEks01                
+                uri: 
+                  Fn::Sub:
+                  - 'https://${EksDomainName}/get/{id}'
+                  - EksDomainName: !FindInMap [ApigwMap, Account, EndpointURL]
+                passthroughBehavior: when_no_match
+                requestParameters:
+                  integration.request.path.id: method.request.path.id
+                  integration.request.header.X-Request-ID: context.requestId
+                  integration.request.header.client-id: context.authorizer.tenant_id
+                  integration.request.header.X-Forwarded-For: context.identity.sourceIp
+                  integration.request.header.jwt-id: context.authorizer.jwt_id   
+              security:
+              - authorizer: []
+          /getId/{id}:
+            get:
+              produces:
+              - application/json
+              responses:
+                '200':
+                  description: 200 response
+                  schema:
+                    $ref: '#/definitions/Empty'
+              x-amazon-apigateway-integration:
+                type: http_proxy
+                httpMethod: GET
+                connectionType: VPC_LINK
+                connectionId: !Ref VpcLinkIdEks01                
+                uri: 
+                  Fn::Sub:
+                  - 'https://${EksDomainName}/getId/{id}'
+                  - EksDomainName: !FindInMap [ApigwMap, Account, EndpointURL]
+                passthroughBehavior: when_no_match
+                requestParameters:
+                  integration.request.path.id: method.request.path.id
+                  integration.request.header.X-Request-ID: context.requestId
+                  integration.request.header.client-id: context.authorizer.tenant_id
+                  integration.request.header.X-Forwarded-For: context.identity.sourceIp
+                  integration.request.header.jwt-id: context.authorizer.jwt_id   
+              security:
+              - authorizer: [] 
+          /delete:
+            post:
+              produces:
+              - application/json
+              responses:
+                '200':
+                  description: 200 response
+                  schema:
+                    $ref: '#/definitions/Empty'
+              x-amazon-apigateway-integration:
+                type: http_proxy
+                httpMethod: POST
+                connectionType: VPC_LINK
+                connectionId: !Ref VpcLinkIdEks01                
+                uri: 
+                  Fn::Sub:
+                  - 'https://${EksDomainName}/delete'
+                  - EksDomainName: !FindInMap [ApigwMap, Account, EndpointURL]
+                passthroughBehavior: when_no_match
+                requestParameters:
+                  integration.request.header.X-Request-ID: context.requestId
+                  integration.request.header.client-id: context.authorizer.tenant_id
+                  integration.request.header.X-Forwarded-For: context.identity.sourceIp
+                  integration.request.header.jwt-id: context.authorizer.jwt_id   
+              security:
+              - authorizer: [] 
+          /update/{id}:
+            get:
+              produces:
+              - application/json
+              responses:
+                '200':
+                  description: 200 response
+                  schema:
+                    $ref: '#/definitions/Empty'
+              x-amazon-apigateway-integration:
+                type: http_proxy
+                httpMethod: GET
+                connectionType: VPC_LINK
+                connectionId: !Ref VpcLinkIdEks01                
+                uri: 
+                  Fn::Sub:
+                  - 'https://${EksDomainName}/update/{id}'
+                  - EksDomainName: !FindInMap [ApigwMap, Account, EndpointURL]
+                passthroughBehavior: when_no_match
+                requestParameters:
+                  integration.request.path.id: method.request.path.id
+                  integration.request.header.X-Request-ID: context.requestId
+                  integration.request.header.client-id: context.authorizer.tenant_id
+                  integration.request.header.X-Forwarded-For: context.identity.sourceIp
+                  integration.request.header.jwt-id: context.authorizer.jwt_id   
+              security:
+              - authorizer: [] 
+          /list/{id}:
+            get:
+              produces:
+              - application/json
+              responses:
+                '200':
+                  description: 200 response
+                  schema:
+                    $ref: '#/definitions/Empty'
+              x-amazon-apigateway-integration:
+                type: http_proxy
+                httpMethod: GET
+                connectionType: VPC_LINK
+                connectionId: !Ref VpcLinkIdEks01                
+                uri: 
+                  Fn::Sub:
+                  - 'https://${EksDomainName}/list/{id}'
+                  - EksDomainName: !FindInMap [ApigwMap, Account, EndpointURL]
+                passthroughBehavior: when_no_match
+                requestParameters:
+                  integration.request.path.id: method.request.path.id
+                  integration.request.header.X-Request-ID: context.requestId
+                  integration.request.header.client-id: context.authorizer.tenant_id
+                  integration.request.header.X-Forwarded-For: context.identity.sourceIp
+                  integration.request.header.jwt-id: context.authorizer.jwt_id   
+              security:
+              - authorizer: [] 
         x-amazon-apigateway-api-key-source: AUTHORIZER
         securityDefinitions:
           authorizer:
