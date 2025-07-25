@@ -98,6 +98,7 @@ data:
         Match               kube.*
         Remove_key          logtag
         Remove_key          stream
+        Remove_key          log
 
     ## Remove Health checks ##
     [FILTER]
