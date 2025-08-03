@@ -6,15 +6,19 @@ metadata:
   labels:
     app: *app-name
 data:
-  API_VERSION: "1.1"
+  API_VERSION: "3.1"
   POD_NAME: "go-account-local.k8"
   PORT: "5000"
-  DB_HOST: "0.0.0.0"
+  DB_HOST: "192.168.49.1" #minikube ip
   DB_PORT: "5432"
   DB_NAME: "postgres"
   DB_SCHEMA: "public"
   DB_DRIVER: "postgres"
+  DB_MAX_CONNECTION: "5"
   SETPOD_AZ: "false"
-  TLS: "false"
-  OTEL_EXPORTER_OTLP_ENDPOINT: "localhost:4317"
   ENV: "dev"
+  
+  OTEL_EXPORTER_OTLP_ENDPOINT: "localhost:4317"
+  USE_STDOUT_TRACER_EXPORTER: "false"
+  USE_OTLP_COLLECTOR: "true" 
+  AWS_CLOUDWATCH_LOG_GROUP_NAMES: "/dock/eks/eks-arch-01-02"
