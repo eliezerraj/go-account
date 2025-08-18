@@ -1,6 +1,7 @@
 package service
 
 import(
+	"time"
 	"context"
 	"github.com/rs/zerolog/log"
 
@@ -159,6 +160,8 @@ func (s *WorkerService) GetAccountId(ctx context.Context, account *model.Account
 	span := tracerProvider.Span(ctx, "service.GetAccountId")
 	defer span.End()
 	
+	time.Sleep(15 * time.Second)
+
 	// Get account
 	res, err := s.workerRepository.GetAccountId(ctx, account)
 	if err != nil {
