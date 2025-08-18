@@ -160,7 +160,7 @@ func (s *WorkerService) GetAccountId(ctx context.Context, account *model.Account
 	span := tracerProvider.Span(ctx, "service.GetAccountId")
 	defer span.End()
 	
-	time.Sleep(15 * time.Second)
+	time.Sleep(0 * time.Second) // just for test
 
 	// Get account
 	res, err := s.workerRepository.GetAccountId(ctx, account)

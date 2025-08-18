@@ -29,13 +29,16 @@ var tracerProvider go_core_observ.TracerProvider
 
 type HttpRouters struct {
 	workerService 	*service.WorkerService
+	ctxTimeout		time.Duration
 }
 
-func NewHttpRouters(workerService *service.WorkerService) HttpRouters {
+func NewHttpRouters(workerService *service.WorkerService,
+					ctxTimeout	time.Duration) HttpRouters {
 	childLogger.Info().Str("func","NewHttpRouters").Send()
 
 	return HttpRouters{
 		workerService: workerService,
+		ctxTimeout: ctxTimeout,
 	}
 }
 
@@ -81,7 +84,7 @@ func (h *HttpRouters) Stat(rw http.ResponseWriter, req *http.Request) {
 func (h *HttpRouters) AddAccount(rw http.ResponseWriter, req *http.Request) error {
 	childLogger.Info().Str("func","AddAccount").Interface("trace-resquest-id", req.Context().Value("trace-request-id")).Send()
 
-	ctx, cancel := context.WithTimeout(req.Context(), 5 * time.Second)
+	ctx, cancel := context.WithTimeout(req.Context(), h.ctxTimeout * time.Second)
     defer cancel()
 
 	//trace
@@ -122,7 +125,7 @@ func (h *HttpRouters) AddAccount(rw http.ResponseWriter, req *http.Request) erro
 func (h *HttpRouters) GetAccount(rw http.ResponseWriter, req *http.Request) error {
 	childLogger.Info().Str("func","GetAccount").Interface("trace-resquest-id", req.Context().Value("trace-request-id")).Send()
 
-	ctx, cancel := context.WithTimeout(req.Context(), 5 * time.Second)
+	ctx, cancel := context.WithTimeout(req.Context(), h.ctxTimeout * time.Second)
     defer cancel()
 
 	// trace
@@ -156,7 +159,7 @@ func (h *HttpRouters) GetAccount(rw http.ResponseWriter, req *http.Request) erro
 func (h *HttpRouters) GetAccountId(rw http.ResponseWriter, req *http.Request) error {
 	childLogger.Info().Str("func","GetAccountId").Interface("trace-resquest-id", req.Context().Value("trace-request-id")).Send()
 
-	ctx, cancel := context.WithTimeout(req.Context(), 5 * time.Second)
+	ctx, cancel := context.WithTimeout(req.Context(), h.ctxTimeout * time.Second)
     defer cancel()
 
 	// trace
@@ -195,7 +198,7 @@ func (h *HttpRouters) GetAccountId(rw http.ResponseWriter, req *http.Request) er
 func (h *HttpRouters) UpdateAccount(rw http.ResponseWriter, req *http.Request) error {
 	childLogger.Info().Str("func","UpdateAccount").Interface("trace-resquest-id", req.Context().Value("trace-request-id")).Send()
 
-	ctx, cancel := context.WithTimeout(req.Context(), 5 * time.Second)
+	ctx, cancel := context.WithTimeout(req.Context(), h.ctxTimeout * time.Second)
     defer cancel()
 
 	// trace
@@ -235,7 +238,7 @@ func (h *HttpRouters) UpdateAccount(rw http.ResponseWriter, req *http.Request) e
 func (h *HttpRouters) DeleteAccount(rw http.ResponseWriter, req *http.Request) error {
 	childLogger.Info().Str("func","DeleteAccount").Interface("trace-resquest-id", req.Context().Value("trace-request-id")).Send()
 
-	ctx, cancel := context.WithTimeout(req.Context(), 5 * time.Second)
+	ctx, cancel := context.WithTimeout(req.Context(), h.ctxTimeout * time.Second)
     defer cancel()
 
 	// trace
@@ -268,7 +271,7 @@ func (h *HttpRouters) DeleteAccount(rw http.ResponseWriter, req *http.Request) e
 func (h *HttpRouters) ListAccountPerPerson(rw http.ResponseWriter, req *http.Request) error {
 	childLogger.Info().Str("func","ListAccountPerPerson").Interface("trace-resquest-id", req.Context().Value("trace-request-id")).Send()
 
-	ctx, cancel := context.WithTimeout(req.Context(), 5 * time.Second)
+	ctx, cancel := context.WithTimeout(req.Context(), h.ctxTimeout * time.Second)
     defer cancel()
 
 	// trace

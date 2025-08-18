@@ -70,7 +70,7 @@ func main (){
 	// wire
 	database := database.NewWorkerRepository(&databasePGServer)
 	workerService := service.NewWorkerService(database)
-	httpRouters := api.NewHttpRouters(workerService)
+	httpRouters := api.NewHttpRouters(workerService, time.Duration(appServer.Server.CtxTimeout))
 	httpServer := server.NewHttpAppServer(appServer.Server)
 
 	// start server
