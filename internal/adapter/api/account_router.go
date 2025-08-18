@@ -2,6 +2,8 @@ package api
 
 import (
 	"fmt"
+	"time"
+	"context"
 	"net/http"
 	"strconv"
 	"reflect"	
@@ -79,11 +81,14 @@ func (h *HttpRouters) Stat(rw http.ResponseWriter, req *http.Request) {
 func (h *HttpRouters) AddAccount(rw http.ResponseWriter, req *http.Request) error {
 	childLogger.Info().Str("func","AddAccount").Interface("trace-resquest-id", req.Context().Value("trace-request-id")).Send()
 
+	ctx, cancel := context.WithTimeout(req.Context(), 5 * time.Second)
+    defer cancel()
+
 	//trace
-	span := tracerProvider.Span(req.Context(), "adapter.api.AddAccount")
+	span := tracerProvider.Span(ctx, "adapter.api.AddAccount")
 	defer span.End()
 
-	trace_id := fmt.Sprintf("%v",req.Context().Value("trace-request-id"))
+	trace_id := fmt.Sprintf("%v",ctx.Value("trace-request-id"))
 
 	// prepare body
 	account := model.Account{}
@@ -95,7 +100,7 @@ func (h *HttpRouters) AddAccount(rw http.ResponseWriter, req *http.Request) erro
 	defer req.Body.Close()
 
 	//call service
-	res, err := h.workerService.AddAccount(req.Context(), &account)
+	res, err := h.workerService.AddAccount(ctx, &account)
 	if err != nil {
 		switch err {
 		case erro.ErrNotFound:
@@ -117,10 +122,13 @@ func (h *HttpRouters) AddAccount(rw http.ResponseWriter, req *http.Request) erro
 func (h *HttpRouters) GetAccount(rw http.ResponseWriter, req *http.Request) error {
 	childLogger.Info().Str("func","GetAccount").Interface("trace-resquest-id", req.Context().Value("trace-request-id")).Send()
 
+	ctx, cancel := context.WithTimeout(req.Context(), 5 * time.Second)
+    defer cancel()
+
 	// trace
-	span := tracerProvider.Span(req.Context(), "adapter.api.GetAccount")
+	span := tracerProvider.Span(ctx, "adapter.api.GetAccount")
 	defer span.End()
-	trace_id := fmt.Sprintf("%v",req.Context().Value("trace-request-id"))
+	trace_id := fmt.Sprintf("%v",ctx.Value("trace-request-id"))
 
 	//parameters
 	vars := mux.Vars(req)
@@ -130,7 +138,7 @@ func (h *HttpRouters) GetAccount(rw http.ResponseWriter, req *http.Request) erro
 	account.AccountID = varID
 
 	// call service
-	res, err := h.workerService.GetAccount(req.Context(), &account)
+	res, err := h.workerService.GetAccount(ctx, &account)
 	if err != nil {
 		switch err {
 		case erro.ErrNotFound:
@@ -148,10 +156,13 @@ func (h *HttpRouters) GetAccount(rw http.ResponseWriter, req *http.Request) erro
 func (h *HttpRouters) GetAccountId(rw http.ResponseWriter, req *http.Request) error {
 	childLogger.Info().Str("func","GetAccountId").Interface("trace-resquest-id", req.Context().Value("trace-request-id")).Send()
 
+	ctx, cancel := context.WithTimeout(req.Context(), 5 * time.Second)
+    defer cancel()
+
 	// trace
-	span := tracerProvider.Span(req.Context(), "adapter.api.GetAccountId")
+	span := tracerProvider.Span(ctx, "adapter.api.GetAccountId")
 	defer span.End()
-	trace_id := fmt.Sprintf("%v",req.Context().Value("trace-request-id"))
+	trace_id := fmt.Sprintf("%v", ctx.Value("trace-request-id"))
 
 	//parameters
 	vars := mux.Vars(req)
@@ -166,7 +177,7 @@ func (h *HttpRouters) GetAccountId(rw http.ResponseWriter, req *http.Request) er
 	account.ID = varIDint
 
 	// call service
-	res, err := h.workerService.GetAccountId(req.Context(), &account)
+	res, err := h.workerService.GetAccountId(ctx, &account)
 	if err != nil {
 		switch err {
 		case erro.ErrNotFound:
@@ -184,10 +195,13 @@ func (h *HttpRouters) GetAccountId(rw http.ResponseWriter, req *http.Request) er
 func (h *HttpRouters) UpdateAccount(rw http.ResponseWriter, req *http.Request) error {
 	childLogger.Info().Str("func","UpdateAccount").Interface("trace-resquest-id", req.Context().Value("trace-request-id")).Send()
 
+	ctx, cancel := context.WithTimeout(req.Context(), 5 * time.Second)
+    defer cancel()
+
 	// trace
-	span := tracerProvider.Span(req.Context(), "adapter.api.UpdateAccount")
+	span := tracerProvider.Span(ctx, "adapter.api.UpdateAccount")
 	defer span.End()
-	trace_id := fmt.Sprintf("%v",req.Context().Value("trace-request-id"))
+	trace_id := fmt.Sprintf("%v", ctx.Value("trace-request-id"))
 
 	//parameters
 	account := model.Account{}
@@ -201,7 +215,7 @@ func (h *HttpRouters) UpdateAccount(rw http.ResponseWriter, req *http.Request) e
 	account.AccountID = varID
 
 	// call service
-	res, err := h.workerService.UpdateAccount(req.Context(), &account)
+	res, err := h.workerService.UpdateAccount(ctx, &account)
 	if err != nil {
 		switch err {
 		case erro.ErrNotFound:
@@ -221,10 +235,13 @@ func (h *HttpRouters) UpdateAccount(rw http.ResponseWriter, req *http.Request) e
 func (h *HttpRouters) DeleteAccount(rw http.ResponseWriter, req *http.Request) error {
 	childLogger.Info().Str("func","DeleteAccount").Interface("trace-resquest-id", req.Context().Value("trace-request-id")).Send()
 
+	ctx, cancel := context.WithTimeout(req.Context(), 5 * time.Second)
+    defer cancel()
+
 	// trace
-	span := tracerProvider.Span(req.Context(), "adapter.api.DeleteAccount")
+	span := tracerProvider.Span(ctx, "adapter.api.DeleteAccount")
 	defer span.End()
-	trace_id := fmt.Sprintf("%v",req.Context().Value("trace-request-id"))
+	trace_id := fmt.Sprintf("%v", ctx.Value("trace-request-id"))
 
 	//parameters
 	account := model.Account{}
@@ -233,7 +250,7 @@ func (h *HttpRouters) DeleteAccount(rw http.ResponseWriter, req *http.Request) e
 	account.AccountID = varID
 
 	// call service
-	res, err := h.workerService.DeleteAccount(req.Context(), &account)
+	res, err := h.workerService.DeleteAccount(ctx, &account)
 	if err != nil {
 		switch err {
 		case erro.ErrNotFound:
@@ -251,10 +268,13 @@ func (h *HttpRouters) DeleteAccount(rw http.ResponseWriter, req *http.Request) e
 func (h *HttpRouters) ListAccountPerPerson(rw http.ResponseWriter, req *http.Request) error {
 	childLogger.Info().Str("func","ListAccountPerPerson").Interface("trace-resquest-id", req.Context().Value("trace-request-id")).Send()
 
+	ctx, cancel := context.WithTimeout(req.Context(), 5 * time.Second)
+    defer cancel()
+
 	// trace
-	span := tracerProvider.Span(req.Context(), "adapter.api.ListAccountPerPerson")
+	span := tracerProvider.Span(ctx, "adapter.api.ListAccountPerPerson")
 	defer span.End()
-	trace_id := fmt.Sprintf("%v",req.Context().Value("trace-request-id"))
+	trace_id := fmt.Sprintf("%v", ctx.Value("trace-request-id"))
 
 	//parameters
 	vars := mux.Vars(req)
@@ -264,7 +284,7 @@ func (h *HttpRouters) ListAccountPerPerson(rw http.ResponseWriter, req *http.Req
 	account.PersonID = varID
 
 	// call service
-	res, err := h.workerService.ListAccountPerPerson(req.Context(), &account)
+	res, err := h.workerService.ListAccountPerPerson(ctx, &account)
 	if err != nil {
 		switch err {
 		case erro.ErrNotFound:
