@@ -159,12 +159,14 @@ func (h *HttpRouters) GetAccount(rw http.ResponseWriter, req *http.Request) erro
 func (h *HttpRouters) GetAccountId(rw http.ResponseWriter, req *http.Request) error {
 	childLogger.Info().Str("func","GetAccountId").Interface("trace-resquest-id", req.Context().Value("trace-request-id")).Send()
 
+	//context
 	ctx, cancel := context.WithTimeout(req.Context(), h.ctxTimeout * time.Second)
     defer cancel()
 
 	// trace
 	span := tracerProvider.Span(ctx, "adapter.api.GetAccountId")
 	defer span.End()
+
 	trace_id := fmt.Sprintf("%v", ctx.Value("trace-request-id"))
 
 	//parameters
