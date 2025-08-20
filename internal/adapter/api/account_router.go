@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"reflect"	
 	"encoding/json"
+	"strings"
 
 	"github.com/rs/zerolog/log"
 	"github.com/go-account/internal/core/service"
@@ -105,6 +106,11 @@ func (h *HttpRouters) AddAccount(rw http.ResponseWriter, req *http.Request) erro
 	//call service
 	res, err := h.workerService.AddAccount(ctx, &account)
 	if err != nil {
+
+		if strings.Contains(err.Error(), "context deadline exceeded") {
+    		err = erro.ErrTimeout
+		} 
+
 		switch err {
 		case erro.ErrNotFound:
 			core_apiError = core_apiError.NewAPIError(err, trace_id, http.StatusNotFound)
@@ -112,6 +118,8 @@ func (h *HttpRouters) AddAccount(rw http.ResponseWriter, req *http.Request) erro
 			core_apiError = core_apiError.NewAPIError(err, trace_id, http.StatusConflict)
 		case erro.ErrInvalidAmount:
 			core_apiError = core_apiError.NewAPIError(err, trace_id, http.StatusConflict)	
+		case erro.ErrTimeout:
+			core_apiError = core_apiError.NewAPIError(err, trace_id, http.StatusGatewayTimeout)
 		default:
 			core_apiError = core_apiError.NewAPIError(err, trace_id, http.StatusInternalServerError)
 		}
@@ -143,9 +151,16 @@ func (h *HttpRouters) GetAccount(rw http.ResponseWriter, req *http.Request) erro
 	// call service
 	res, err := h.workerService.GetAccount(ctx, &account)
 	if err != nil {
+
+		if strings.Contains(err.Error(), "context deadline exceeded") {
+    		err = erro.ErrTimeout
+		} 
+
 		switch err {
 		case erro.ErrNotFound:
 			core_apiError = core_apiError.NewAPIError(err, trace_id, http.StatusNotFound)
+		case erro.ErrTimeout:
+			core_apiError = core_apiError.NewAPIError(err, trace_id, http.StatusGatewayTimeout)
 		default:
 			core_apiError = core_apiError.NewAPIError(err, trace_id, http.StatusInternalServerError)
 		}
@@ -184,9 +199,17 @@ func (h *HttpRouters) GetAccountId(rw http.ResponseWriter, req *http.Request) er
 	// call service
 	res, err := h.workerService.GetAccountId(ctx, &account)
 	if err != nil {
+		
+		if strings.Contains(err.Error(), "context deadline exceeded") {
+    		err = erro.ErrTimeout
+		} 
+
 		switch err {
 		case erro.ErrNotFound:
 			core_apiError = core_apiError.NewAPIError(err, trace_id, http.StatusNotFound)
+		case erro.ErrTimeout:
+			core_apiError = core_apiError.NewAPIError(err, trace_id, http.StatusGatewayTimeout)
+
 		default:
 			core_apiError = core_apiError.NewAPIError(err, trace_id, http.StatusInternalServerError)
 		}
@@ -222,11 +245,18 @@ func (h *HttpRouters) UpdateAccount(rw http.ResponseWriter, req *http.Request) e
 	// call service
 	res, err := h.workerService.UpdateAccount(ctx, &account)
 	if err != nil {
+
+		if strings.Contains(err.Error(), "context deadline exceeded") {
+    		err = erro.ErrTimeout
+		} 
+
 		switch err {
 		case erro.ErrNotFound:
 			core_apiError = core_apiError.NewAPIError(err, trace_id, http.StatusNotFound)
 		case erro.ErrUpdate:
 			core_apiError = core_apiError.NewAPIError(err, trace_id, http.StatusInternalServerError)
+		case erro.ErrTimeout:
+			core_apiError = core_apiError.NewAPIError(err, trace_id, http.StatusGatewayTimeout)
 		default:
 			core_apiError = core_apiError.NewAPIError(err, trace_id, http.StatusInternalServerError)
 		}
@@ -257,9 +287,17 @@ func (h *HttpRouters) DeleteAccount(rw http.ResponseWriter, req *http.Request) e
 	// call service
 	res, err := h.workerService.DeleteAccount(ctx, &account)
 	if err != nil {
+
+		if strings.Contains(err.Error(), "context deadline exceeded") {
+    		err = erro.ErrTimeout
+		} 
+
 		switch err {
 		case erro.ErrNotFound:
 			core_apiError = core_apiError.NewAPIError(err, trace_id, http.StatusNotFound)
+		case erro.ErrTimeout:
+			core_apiError = core_apiError.NewAPIError(err, trace_id, http.StatusGatewayTimeout)
+
 		default:
 			core_apiError = core_apiError.NewAPIError(err, trace_id, http.StatusInternalServerError)
 		}
@@ -291,9 +329,16 @@ func (h *HttpRouters) ListAccountPerPerson(rw http.ResponseWriter, req *http.Req
 	// call service
 	res, err := h.workerService.ListAccountPerPerson(ctx, &account)
 	if err != nil {
+
+		if strings.Contains(err.Error(), "context deadline exceeded") {
+    		err = erro.ErrTimeout
+		} 
+
 		switch err {
 		case erro.ErrNotFound:
 			core_apiError = core_apiError.NewAPIError(err, trace_id, http.StatusNotFound)
+		case erro.ErrTimeout:
+			core_apiError = core_apiError.NewAPIError(err, trace_id, http.StatusGatewayTimeout)
 		default:
 			core_apiError = core_apiError.NewAPIError(err, trace_id, http.StatusInternalServerError)
 		}
