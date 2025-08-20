@@ -2,6 +2,9 @@ package main
 
 import(
 	"time"
+	"os"
+	"os/signal"
+	"syscall"
 	"context"
 	
 	"github.com/rs/zerolog"
@@ -44,8 +47,7 @@ func init(){
 func main (){
 	childLogger.Info().Str("func","main").Interface("appServer",appServer).Send()
 
-	ctx, cancel := context.WithTimeout(	context.Background(), 
-										time.Duration( appServer.Server.ReadTimeout ) * time.Second)
+	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer cancel()
 
 	// Open Database

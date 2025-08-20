@@ -189,7 +189,6 @@ func (w WorkerRepository) GetAccountId(ctx context.Context, account *model.Accou
 	return nil, erro.ErrNotFound
 }
 
-
 // About get all account per person
 func (w WorkerRepository) ListAccountPerPerson(ctx context.Context, account *model.Account) (*[]model.Account, error){
 	childLogger.Info().Str("func","ListAccountPerPerson").Interface("trace-resquest-id", ctx.Value("trace-request-id")).Send()
