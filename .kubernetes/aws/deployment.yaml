@@ -66,7 +66,7 @@ spec:
             httpGet:
               path: /health
               port: http
-            initialDelaySeconds: 2
+            initialDelaySeconds: 3
             periodSeconds: 30
             failureThreshold: 3
             successThreshold: 1
@@ -77,7 +77,7 @@ spec:
               - /bin/sh
               - -c
               - "ps -A | grep go-account | grep -v grep"
-            initialDelaySeconds: 3
+            initialDelaySeconds: 5
             periodSeconds: 30
             failureThreshold: 3
             successThreshold: 1
