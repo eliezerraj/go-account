@@ -6,8 +6,8 @@ metadata:
   labels:
     app: *app-name
 data:
-  API_VERSION: "3.2"
-  POD_NAME: "go-account-02.arch-eks-01-02"
+  API_VERSION: "3.3"
+  POD_NAME: "go-account.arch-eks-01-02"
   PORT: "5000"
   DB_HOST: "rds-proxy-db-arch.proxy-couoacqalfwt.us-east-2.rds.amazonaws.com"
   DB_PORT: "5432"
