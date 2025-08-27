@@ -6,6 +6,7 @@ import (
 
 var (
 	ErrNotFound 		= errors.New("item not found")
+	ErrBadRequest 		= errors.New("bad request ! check parameters")
 	ErrUpdate			= errors.New("update unsuccessful")
 	ErrInsert 			= errors.New("insert data error")
 	ErrUnmarshal 		= errors.New("unmarshal json error")

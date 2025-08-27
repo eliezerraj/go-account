@@ -117,6 +117,10 @@ func (w WorkerRepository) GetAccount(ctx context.Context, account *model.Account
 		return nil, errors.New(err.Error())
 	}
 	defer rows.Close()
+    if err := rows.Err(); err != nil {
+		childLogger.Error().Err(err).Msg("fatal error closing rows")
+        return nil, errors.New(err.Error())
+    }
 
 	for rows.Next() {
 		err := rows.Scan( &res_account.ID, 
@@ -170,6 +174,10 @@ func (w WorkerRepository) GetAccountId(ctx context.Context, account *model.Accou
 		return nil, errors.New(err.Error())
 	}
 	defer rows.Close()
+    if err := rows.Err(); err != nil {
+		childLogger.Error().Err(err).Msg("fatal error closing rows")
+        return nil, errors.New(err.Error())
+    }
 
 	for rows.Next() {
 		err := rows.Scan( &res_account.ID, 
@@ -223,7 +231,12 @@ func (w WorkerRepository) ListAccountPerPerson(ctx context.Context, account *mod
 	if err != nil {
 		return nil, errors.New(err.Error())
 	}
+	
 	defer rows.Close()
+    if err := rows.Err(); err != nil {
+		childLogger.Error().Err(err).Msg("fatal error closing rows")
+        return nil, errors.New(err.Error())
+    }
 
 	for rows.Next() {
 		err := rows.Scan( 	&res_account.ID, 
@@ -240,7 +253,7 @@ func (w WorkerRepository) ListAccountPerPerson(ctx context.Context, account *mod
 		res_account_list = append(res_account_list, res_account)
 	}
 	
-	return &res_account_list , nil
+	return &res_account_list, nil
 }
 
 // About update an account
