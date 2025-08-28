@@ -21,18 +21,20 @@ import (
 	"github.com/gorilla/mux"
 )
 
-var childLogger = log.With().Str("component", "go-account").Str("package", "internal.adapter.api").Logger()
-
-var core_json coreJson.CoreJson
-var core_apiError coreJson.APIError
-var core_tools go_core_tools.ToolsCore
-var tracerProvider go_core_observ.TracerProvider
+var (
+	childLogger = log.With().Str("component", "go-account").Str("package", "internal.adapter.api").Logger()
+	core_json coreJson.CoreJson
+	core_apiError coreJson.APIError
+	core_tools go_core_tools.ToolsCore
+	tracerProvider go_core_observ.TracerProvider
+)
 
 type HttpRouters struct {
 	workerService 	*service.WorkerService
 	ctxTimeout		time.Duration
 }
 
+// Initialize router
 func NewHttpRouters(workerService *service.WorkerService,
 					ctxTimeout	time.Duration) HttpRouters {
 	childLogger.Info().Str("func","NewHttpRouters").Send()
@@ -87,6 +89,12 @@ func (h *HttpRouters) ErrorHandler(trace_id string, err error) *coreJson.APIErro
     	err = erro.ErrTimeout
 	} 
 	switch err {
+	case erro.ErrUpdate:
+		core_apiError = core_apiError.NewAPIError(err, trace_id, http.StatusInternalServerError)
+	case erro.ErrTransInvalid:
+		core_apiError = core_apiError.NewAPIError(err, trace_id, http.StatusConflict)
+	case erro.ErrInvalidAmount:
+		core_apiError = core_apiError.NewAPIError(err, trace_id, http.StatusConflict)	
 	case erro.ErrBadRequest:
 		core_apiError = core_apiError.NewAPIError(err, trace_id, http.StatusBadRequest)
 	case erro.ErrNotFound:
@@ -123,26 +131,7 @@ func (h *HttpRouters) AddAccount(rw http.ResponseWriter, req *http.Request) erro
 	//call service
 	res, err := h.workerService.AddAccount(ctx, &account)
 	if err != nil {
-
-		if strings.Contains(err.Error(), "context deadline exceeded") {
-    		err = erro.ErrTimeout
-		} 
-
-		switch err {
-		case erro.ErrUpdate:
-			core_apiError = core_apiError.NewAPIError(err, trace_id, http.StatusInternalServerError)
-		case erro.ErrNotFound:
-			core_apiError = core_apiError.NewAPIError(err, trace_id, http.StatusNotFound)
-		case erro.ErrTransInvalid:
-			core_apiError = core_apiError.NewAPIError(err, trace_id, http.StatusConflict)
-		case erro.ErrInvalidAmount:
-			core_apiError = core_apiError.NewAPIError(err, trace_id, http.StatusConflict)	
-		case erro.ErrTimeout:
-			core_apiError = core_apiError.NewAPIError(err, trace_id, http.StatusGatewayTimeout)
-		default:
-			core_apiError = core_apiError.NewAPIError(err, trace_id, http.StatusInternalServerError)
-		}
-		return &core_apiError
+		return h.ErrorHandler(trace_id, err)
 	}
 	
 	return core_json.WriteJSON(rw, http.StatusOK, res)
