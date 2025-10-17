@@ -14,9 +14,11 @@ import(
 	go_core_api "github.com/eliezerraj/go-core/api"
 )
 
-var childLogger = log.With().Str("component","go-account").Str("package","internal.core.service").Logger()
-var tracerProvider go_core_observ.TracerProvider
-var apiService go_core_api.ApiService
+var (
+	childLogger = log.With().Str("component","go-account").Str("package","internal.core.service").Logger()
+	tracerProvider go_core_observ.TracerProvider
+	apiService go_core_api.ApiService
+)
 
 type WorkerService struct {
 	workerRepository *database.WorkerRepository
@@ -161,6 +163,7 @@ func (s *WorkerService) GetAccountId(ctx context.Context, account *model.Account
 	defer span.End()
 	
 	time.Sleep(0 * time.Second) // just for test
+	
 	// Get account
 	res, err := s.workerRepository.GetAccountId(ctx, account)
 	if err != nil {

@@ -24,16 +24,18 @@ import (
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux"
 )
 
-var childLogger = log.With().Str("component","go-account").Str("package","internal.infra.server").Logger()
-
-var core_middleware middleware.ToolsMiddleware
-var tracerProvider go_core_observ.TracerProvider
-var infoTrace go_core_observ.InfoTrace
+var (
+	childLogger = log.With().Str("component","go-account").Str("package","internal.infra.server").Logger()
+	core_middleware middleware.ToolsMiddleware
+	tracerProvider go_core_observ.TracerProvider
+	infoTrace go_core_observ.InfoTrace
+)
 
 type HttpServer struct {
 	httpServer	*model.Server
 }
 
+// About create new http server
 func NewHttpAppServer(httpServer *model.Server) HttpServer {
 	childLogger.Info().Str("func","NewHttpAppServer").Send()
 	
@@ -90,7 +92,8 @@ func (h HttpServer) StartHttpAppServer(	ctx context.Context,
     live.HandleFunc("/live", httpRouters.Live)
 
 	header := myRouter.Methods(http.MethodGet, http.MethodOptions).Subrouter()
-    header.HandleFunc("/header", httpRouters.Header)
+	header.HandleFunc("/header", core_middleware.MiddleWareErrorHandler(httpRouters.Header))	
+    header.Use(otelmux.Middleware("go-account"))
 
 	wk_ctx := myRouter.Methods(http.MethodGet, http.MethodOptions).Subrouter()
     wk_ctx.HandleFunc("/context", httpRouters.Context)
