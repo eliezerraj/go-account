@@ -92,7 +92,8 @@ func (h HttpServer) StartHttpAppServer(	ctx context.Context,
     live.HandleFunc("/live", httpRouters.Live)
 
 	header := myRouter.Methods(http.MethodGet, http.MethodOptions).Subrouter()
-    header.HandleFunc("/header", httpRouters.Header)
+	header.HandleFunc("/header", core_middleware.MiddleWareErrorHandler(httpRouters.Header))	
+    header.Use(otelmux.Middleware("go-account"))
 
 	wk_ctx := myRouter.Methods(http.MethodGet, http.MethodOptions).Subrouter()
     wk_ctx.HandleFunc("/context", httpRouters.Context)

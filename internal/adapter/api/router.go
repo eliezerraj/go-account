@@ -60,10 +60,10 @@ func (h *HttpRouters) Live(rw http.ResponseWriter, req *http.Request) {
 }
 
 // About show all header received
-func (h *HttpRouters) Header(rw http.ResponseWriter, req *http.Request) {
+func (h *HttpRouters) Header(rw http.ResponseWriter, req *http.Request) error {
 	childLogger.Info().Str("func","Header").Interface("trace-resquest-id", req.Context().Value("trace-request-id")).Send()
 	
-	json.NewEncoder(rw).Encode(req.Header)
+	return core_json.WriteJSON(rw, http.StatusOK, json.NewEncoder(rw).Encode(req.Header))
 }
 
 // About show all context values
@@ -147,6 +147,7 @@ func (h *HttpRouters) GetAccount(rw http.ResponseWriter, req *http.Request) erro
 	// trace
 	span := tracerProvider.Span(ctx, "adapter.api.GetAccount")
 	defer span.End()
+
 	trace_id := fmt.Sprintf("%v",ctx.Value("trace-request-id"))
 
 	//parameters
@@ -155,6 +156,8 @@ func (h *HttpRouters) GetAccount(rw http.ResponseWriter, req *http.Request) erro
 
 	account := model.Account{}
 	account.AccountID = varID
+
+	childLogger.Info().Str("func","GetAccount").Interface("header", req.Header).Send()
 
 	// call service
 	res, err := h.workerService.GetAccount(ctx, &account)
