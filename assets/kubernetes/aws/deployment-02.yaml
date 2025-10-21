@@ -102,11 +102,12 @@ spec:
               - matchExpressions:
                 - key: karpenter.sh/capacity-type
                   operator: "In"
-                  values: ["spot","on-demand"]
-              #- key: karpenter.k8s.aws/instance-family
-              #  operator: In
-              #  values: [t2, t3, t3a, t4g]
-              #- key: kubernetes.io/arch
-              #  operator: In
-              #  values:
-              #    - arm64
+                  values: ["spot","on-demand", "spot-al2023"]
+                - key: karpenter.k8s.aws/instance-family
+                  operator: In
+                  values: [t2, t3, t3a, t4g]
+                - key: kubernetes.io/arch
+                  operator: In
+                  values:
+                    - arm64
+                    - amd64
