@@ -15,5 +15,5 @@ var (
 	ErrHTTPForbiden		= errors.New("forbiden request")
 	ErrTransInvalid		= errors.New("transaction invalid")
 	ErrInvalidAmount	= errors.New("invalid amount for this transaction type")
-	ErrTimeout			= errors.New("timeout: context deadline exceeded.")
+	ErrTimeout			= errors.New("timeout: context deadline exceeded")
 )

@@ -34,6 +34,12 @@ type HttpRouters struct {
 	ctxTimeout		time.Duration
 }
 
+// Type for async result
+type result struct {
+		data interface{}
+		err  error
+}
+
 // Initialize router
 func NewHttpRouters(workerService *service.WorkerService,
 					ctxTimeout	time.Duration) HttpRouters {
@@ -129,12 +135,34 @@ func (h *HttpRouters) AddAccount(rw http.ResponseWriter, req *http.Request) erro
 	defer req.Body.Close()
 
 	//call service
-	res, err := h.workerService.AddAccount(ctx, &account)
+	/*res, err := h.workerService.AddAccount(ctx, &account)
 	if err != nil {
 		return h.ErrorHandler(trace_id, err)
 	}
 	
-	return core_json.WriteJSON(rw, http.StatusOK, res)
+	return core_json.WriteJSON(rw, http.StatusOK, res)*/
+
+	// create channel for async result
+	resCh := make(chan result, 1)
+
+	// run async call
+	go func() {
+		res, err := h.workerService.AddAccount(ctx, &account)
+		resCh <- result{data: res, err: err}
+	}()
+
+	// wait for either: context timeout or service result
+	select {
+	case <-ctx.Done():
+		childLogger.Error().Str("trace_id", trace_id).Msg("AddAccount timeout or cancelled")
+		return h.ErrorHandler(trace_id, ctx.Err())
+
+	case r := <-resCh:
+		if r.err != nil {
+			return h.ErrorHandler(trace_id, r.err)
+		}
+		return core_json.WriteJSON(rw, http.StatusOK, r.data)
+	}	
 }
 
 // About get an account
@@ -160,12 +188,35 @@ func (h *HttpRouters) GetAccount(rw http.ResponseWriter, req *http.Request) erro
 	childLogger.Info().Str("func","GetAccount").Interface("header", req.Header).Send()
 
 	// call service
-	res, err := h.workerService.GetAccount(ctx, &account)
+	/*res, err := h.workerService.GetAccount(ctx, &account)
 	if err != nil {
 		return h.ErrorHandler(trace_id, err)	
 	}
 	
 	return core_json.WriteJSON(rw, http.StatusOK, res)
+	*/
+
+	// create channel for async result
+	resCh := make(chan result, 1)
+
+	// run async call
+	go func() {
+		res, err := h.workerService.GetAccount(ctx, &account)
+		resCh <- result{data: res, err: err}
+	}()
+
+	// wait for either: context timeout or service result
+	select {
+	case <-ctx.Done():
+		childLogger.Error().Str("trace_id", trace_id).Msg("GetAccount timeout or cancelled")
+		return h.ErrorHandler(trace_id, ctx.Err())
+
+	case r := <-resCh:
+		if r.err != nil {
+			return h.ErrorHandler(trace_id, r.err)
+		}
+		return core_json.WriteJSON(rw, http.StatusOK, r.data)
+	}
 }
 
 // About get an account from PK
@@ -194,12 +245,35 @@ func (h *HttpRouters) GetAccountId(rw http.ResponseWriter, req *http.Request) er
 	account.ID = varIDint
 
 	// call service
-	res, err := h.workerService.GetAccountId(ctx, &account)
+	/*res, err := h.workerService.GetAccountId(ctx, &account)
 	if err != nil {
 		return h.ErrorHandler(trace_id, err)
 	}
 	
 	return core_json.WriteJSON(rw, http.StatusOK, res)
+	*/
+
+	// create channel for async result
+	resCh := make(chan result, 1)
+
+	// run async call
+	go func() {
+		res, err := h.workerService.GetAccountId(ctx, &account)
+		resCh <- result{data: res, err: err}
+	}()
+
+	// wait for either: context timeout or service result
+	select {
+	case <-ctx.Done():
+		childLogger.Error().Str("trace_id", trace_id).Msg("GetAccountId timeout or cancelled")
+		return h.ErrorHandler(trace_id, ctx.Err())
+
+	case r := <-resCh:
+		if r.err != nil {
+			return h.ErrorHandler(trace_id, r.err)
+		}
+		return core_json.WriteJSON(rw, http.StatusOK, r.data)
+	}
 }
 
 // About update an account
@@ -225,12 +299,35 @@ func (h *HttpRouters) UpdateAccount(rw http.ResponseWriter, req *http.Request) e
 	account.AccountID = varID
 
 	// call service
-	res, err := h.workerService.UpdateAccount(ctx, &account)
+	/*res, err := h.workerService.UpdateAccount(ctx, &account)
 	if err != nil {
 		return h.ErrorHandler(trace_id, err)
 	}
 	
 	return core_json.WriteJSON(rw, http.StatusOK, res)
+	*/
+
+	// create channel for async result
+	resCh := make(chan result, 1)
+
+	// run async call
+	go func() {
+		res, err := h.workerService.UpdateAccount(ctx, &account)
+		resCh <- result{data: res, err: err}
+	}()
+
+	// wait for either: context timeout or service result
+	select {
+	case <-ctx.Done():
+		childLogger.Error().Str("trace_id", trace_id).Msg("UpdateAccount timeout or cancelled")
+		return h.ErrorHandler(trace_id, ctx.Err())
+
+	case r := <-resCh:
+		if r.err != nil {
+			return h.ErrorHandler(trace_id, r.err)
+		}
+		return core_json.WriteJSON(rw, http.StatusOK, r.data)
+	}	
 }
 
 // About delete an account
@@ -280,10 +377,33 @@ func (h *HttpRouters) ListAccountPerPerson(rw http.ResponseWriter, req *http.Req
 	account.PersonID = varID
 
 	// call service
-	res, err := h.workerService.ListAccountPerPerson(ctx, &account)
+	/*res, err := h.workerService.ListAccountPerPerson(ctx, &account)
 	if err != nil {
 		return h.ErrorHandler(trace_id, err)
 	}
 	
-	return core_json.WriteJSON(rw, http.StatusOK, res)
+	return core_json.WriteJSON(rw, http.StatusOK, res)*/
+
+	// create channel for async result
+	resCh := make(chan result, 1)
+
+	// run async call
+	go func() {
+		res, err := h.workerService.ListAccountPerPerson(ctx, &account)
+		resCh <- result{data: res, err: err}
+	}()
+
+	// wait for either: context timeout or service result
+	select {
+	case <-ctx.Done():
+		childLogger.Error().Str("trace_id", trace_id).Msg("ListAccountPerPerson timeout or cancelled")
+		return h.ErrorHandler(trace_id, ctx.Err())
+
+	case r := <-resCh:
+		if r.err != nil {
+			return h.ErrorHandler(trace_id, r.err)
+		}
+		return core_json.WriteJSON(rw, http.StatusOK, r.data)
+	}	
+
 }
