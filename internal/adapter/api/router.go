@@ -227,6 +227,8 @@ func (h *HttpRouters) GetAccountId(rw http.ResponseWriter, req *http.Request) er
 	ctx, cancel := context.WithTimeout(req.Context(), h.ctxTimeout * time.Second)
     defer cancel()
 
+	childLogger.Info().Str("func","GetAccountId").Interface("header", req.Header).Send()
+
 	// trace
 	span := tracerProvider.Span(ctx, "adapter.api.GetAccountId")
 	defer span.End()
