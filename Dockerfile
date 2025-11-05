@@ -19,10 +19,10 @@ WORKDIR /app
 COPY --from=builder /app/cmd/go-account .
 
 WORKDIR /var/pod/secret
-RUN echo -n "postgres" > /var/pod/secret/username
-RUN echo -n "postgres" > /var/pod/secret/password
 
-COPY --from=builder /app/cmd/.env .
+#RUN echo -n "postgres" > /var/pod/secret/username # for testing only
+#RUN echo -n "postgres" > /var/pod/secret/password # for testing only
+#COPY --from=builder /app/cmd/.env . #for testing only
 
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 
