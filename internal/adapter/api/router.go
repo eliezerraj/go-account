@@ -66,10 +66,10 @@ func (h *HttpRouters) Live(rw http.ResponseWriter, req *http.Request) {
 }
 
 // About show all header received
-func (h *HttpRouters) Header(rw http.ResponseWriter, req *http.Request) error {
+func (h *HttpRouters) Header(rw http.ResponseWriter, req *http.Request) {
 	childLogger.Info().Str("func","Header").Interface("trace-resquest-id", req.Context().Value("trace-request-id")).Send()
 	
-	return core_json.WriteJSON(rw, http.StatusOK, json.NewEncoder(rw).Encode(req.Header))
+	json.NewEncoder(rw).Encode(req.Header)
 }
 
 // About show all context values
@@ -107,6 +107,8 @@ func (h *HttpRouters) ErrorHandler(trace_id string, err error) *coreJson.APIErro
 		core_apiError = core_apiError.NewAPIError(err, trace_id, http.StatusNotFound)
 	case erro.ErrTimeout:
 		core_apiError = core_apiError.NewAPIError(err, trace_id, http.StatusGatewayTimeout)
+	case erro.ErrInsert:
+		core_apiError = core_apiError.NewAPIError(err, trace_id, http.StatusBadRequest)
 	default:
 		core_apiError = core_apiError.NewAPIError(err, trace_id, http.StatusInternalServerError)
 	}
@@ -121,7 +123,7 @@ func (h *HttpRouters) AddAccount(rw http.ResponseWriter, req *http.Request) erro
     defer cancel()
 
 	//trace
-	span := tracerProvider.Span(ctx, "adapter.api.AddAccount")
+	ctx, span := tracerProvider.SpanCtx(ctx, "adapter.api.AddAccount")
 	defer span.End()
 
 	trace_id := fmt.Sprintf("%v",ctx.Value("trace-request-id"))
@@ -133,14 +135,6 @@ func (h *HttpRouters) AddAccount(rw http.ResponseWriter, req *http.Request) erro
 		return h.ErrorHandler(trace_id, erro.ErrBadRequest)
     }
 	defer req.Body.Close()
-
-	//call service
-	/*res, err := h.workerService.AddAccount(ctx, &account)
-	if err != nil {
-		return h.ErrorHandler(trace_id, err)
-	}
-	
-	return core_json.WriteJSON(rw, http.StatusOK, res)*/
 
 	// create channel for async result
 	resCh := make(chan result, 1)
@@ -156,7 +150,6 @@ func (h *HttpRouters) AddAccount(rw http.ResponseWriter, req *http.Request) erro
 	case <-ctx.Done():
 		childLogger.Error().Str("trace_id", trace_id).Msg("AddAccount timeout or cancelled")
 		return h.ErrorHandler(trace_id, ctx.Err())
-
 	case r := <-resCh:
 		if r.err != nil {
 			return h.ErrorHandler(trace_id, r.err)
@@ -173,7 +166,7 @@ func (h *HttpRouters) GetAccount(rw http.ResponseWriter, req *http.Request) erro
     defer cancel()
 
 	// trace
-	span := tracerProvider.Span(ctx, "adapter.api.GetAccount")
+	ctx, span := tracerProvider.SpanCtx(ctx, "adapter.api.GetAccount")
 	defer span.End()
 
 	trace_id := fmt.Sprintf("%v",ctx.Value("trace-request-id"))
@@ -186,15 +179,6 @@ func (h *HttpRouters) GetAccount(rw http.ResponseWriter, req *http.Request) erro
 	account.AccountID = varID
 
 	childLogger.Info().Str("func","GetAccount").Interface("header", req.Header).Send()
-
-	// call service
-	/*res, err := h.workerService.GetAccount(ctx, &account)
-	if err != nil {
-		return h.ErrorHandler(trace_id, err)	
-	}
-	
-	return core_json.WriteJSON(rw, http.StatusOK, res)
-	*/
 
 	// create channel for async result
 	resCh := make(chan result, 1)
@@ -230,7 +214,7 @@ func (h *HttpRouters) GetAccountId(rw http.ResponseWriter, req *http.Request) er
 	childLogger.Info().Str("func","GetAccountId").Interface("header", req.Header).Send()
 
 	// trace
-	span := tracerProvider.Span(ctx, "adapter.api.GetAccountId")
+	ctx, span := tracerProvider.SpanCtx(ctx, "adapter.api.GetAccountId")
 	defer span.End()
 
 	trace_id := fmt.Sprintf("%v", ctx.Value("trace-request-id"))
@@ -245,15 +229,6 @@ func (h *HttpRouters) GetAccountId(rw http.ResponseWriter, req *http.Request) er
     }
 	account := model.Account{}
 	account.ID = varIDint
-
-	// call service
-	/*res, err := h.workerService.GetAccountId(ctx, &account)
-	if err != nil {
-		return h.ErrorHandler(trace_id, err)
-	}
-	
-	return core_json.WriteJSON(rw, http.StatusOK, res)
-	*/
 
 	// create channel for async result
 	resCh := make(chan result, 1)
@@ -286,8 +261,9 @@ func (h *HttpRouters) UpdateAccount(rw http.ResponseWriter, req *http.Request) e
     defer cancel()
 
 	// trace
-	span := tracerProvider.Span(ctx, "adapter.api.UpdateAccount")
+	ctx, span := tracerProvider.SpanCtx(ctx, "adapter.api.UpdateAccount")
 	defer span.End()
+
 	trace_id := fmt.Sprintf("%v", ctx.Value("trace-request-id"))
 
 	//parameters
@@ -299,15 +275,6 @@ func (h *HttpRouters) UpdateAccount(rw http.ResponseWriter, req *http.Request) e
 	vars := mux.Vars(req)
 	varID := vars["id"]
 	account.AccountID = varID
-
-	// call service
-	/*res, err := h.workerService.UpdateAccount(ctx, &account)
-	if err != nil {
-		return h.ErrorHandler(trace_id, err)
-	}
-	
-	return core_json.WriteJSON(rw, http.StatusOK, res)
-	*/
 
 	// create channel for async result
 	resCh := make(chan result, 1)
@@ -340,8 +307,9 @@ func (h *HttpRouters) DeleteAccount(rw http.ResponseWriter, req *http.Request) e
     defer cancel()
 
 	// trace
-	span := tracerProvider.Span(ctx, "adapter.api.DeleteAccount")
+	ctx, span := tracerProvider.SpanCtx(ctx, "adapter.api.DeleteAccount")
 	defer span.End()
+
 	trace_id := fmt.Sprintf("%v", ctx.Value("trace-request-id"))
 
 	//parameters
@@ -367,8 +335,9 @@ func (h *HttpRouters) ListAccountPerPerson(rw http.ResponseWriter, req *http.Req
     defer cancel()
 
 	// trace
-	span := tracerProvider.Span(ctx, "adapter.api.ListAccountPerPerson")
+	ctx, span := tracerProvider.SpanCtx(ctx, "adapter.api.ListAccountPerPerson")
 	defer span.End()
+	
 	trace_id := fmt.Sprintf("%v", ctx.Value("trace-request-id"))
 
 	//parameters
@@ -377,14 +346,6 @@ func (h *HttpRouters) ListAccountPerPerson(rw http.ResponseWriter, req *http.Req
 
 	account := model.Account{}
 	account.PersonID = varID
-
-	// call service
-	/*res, err := h.workerService.ListAccountPerPerson(ctx, &account)
-	if err != nil {
-		return h.ErrorHandler(trace_id, err)
-	}
-	
-	return core_json.WriteJSON(rw, http.StatusOK, res)*/
 
 	// create channel for async result
 	resCh := make(chan result, 1)

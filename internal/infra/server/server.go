@@ -19,11 +19,24 @@ import (
 
 	"github.com/eliezerraj/go-core/middleware"
 
+	// trace
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/trace"
-	//"go.opentelemetry.io/contrib/propagators/aws/xray"
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux"
+
+	// metrics
+	"go.opentelemetry.io/otel/metric"
+	"go.opentelemetry.io/contrib/instrumentation/runtime"
+	"go.opentelemetry.io/otel/sdk/resource"
+	"go.opentelemetry.io/otel/attribute"
+
+	otelprom "go.opentelemetry.io/otel/exporters/prometheus"
+	clientprom "github.com/prometheus/client_golang/prometheus"
+	sdkmetric "go.opentelemetry.io/otel/sdk/metric"
+	 semconv "go.opentelemetry.io/otel/semconv/v1.24.0"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
+
 )
 
 var (
@@ -51,12 +64,12 @@ func (h HttpServer) StartHttpAppServer(	ctx context.Context,
 										appServer *model.AppServer) {
 	childLogger.Info().Str("func","StartHttpAppServer").Send()
 			
-	// Otel
+	// Otel tracer
+	infoTrace.AccountID = appServer.InfoPod.AccountID
 	infoTrace.PodName = appServer.InfoPod.PodName
 	infoTrace.PodVersion = appServer.InfoPod.ApiVersion
 	infoTrace.ServiceType = "k8-workload"
 	infoTrace.Env = appServer.InfoPod.Env
-	infoTrace.AccountID = appServer.InfoPod.AccountID
 
 	tp := tracerProvider.NewTracerProvider(	ctx, 
 											appServer.ConfigOTEL, 
@@ -67,6 +80,59 @@ func (h HttpServer) StartHttpAppServer(	ctx context.Context,
 		otel.SetTracerProvider(tp)
 		tracer = tp.Tracer(appServer.InfoPod.PodName)
 	}
+
+	// Metrics
+	exporterMetrics, err := otelprom.New()
+	if err != nil {
+		childLogger.Error().Err(err).Msg("failed to initialize prometheus exporter")
+	}
+
+	res := resource.NewWithAttributes(
+		semconv.SchemaURL,
+		semconv.ServiceName("go-account"),
+	)
+
+	meterProvider := sdkmetric.NewMeterProvider(
+		sdkmetric.WithReader(exporterMetrics),
+		sdkmetric.WithResource(res),
+	)
+	otel.SetMeterProvider(meterProvider)
+	meter := otel.Meter("go-account")
+
+	// --- Start collecting Go runtime metrics
+	if err := runtime.Start(runtime.WithMeterProvider(meterProvider)); err != nil {
+		childLogger.Error().Err(err).Msg("failed to start runtime instrumentation")
+	}
+
+	// metrics
+	requestCounter, err := meter.Int64Counter("http_requests_total")
+	if err != nil {
+		childLogger.Error().Err(err).Msg("failed to create request counter")
+	}
+
+	latencyHistogram, err := meter.Float64Histogram("http_request_duration_seconds")
+	if err != nil {
+		childLogger.Error().Err(err).Msg("failed to create histogram")
+	}
+
+	cpuUsage := clientprom.NewGauge(clientprom.GaugeOpts{
+		Name: "go_process_cpu_usage_percent",
+		Help: "Approximate CPU usage percentage of the Go process",
+	})
+
+	// ---- Prometheus HTTP Handler (/metrics) ----
+	var metricsHandler http.Handler
+	// Create a separate client_golang registry for process/go collectors and custom gauges.
+	registry := clientprom.NewRegistry()
+	registry.MustRegister(clientprom.NewProcessCollector(clientprom.ProcessCollectorOpts{}))
+	registry.MustRegister(clientprom.NewGoCollector())
+	registry.MustRegister(cpuUsage)
+
+	// Use the client_golang registry as the /metrics handler. In some versions of the
+	// OpenTelemetry Prometheus exporter the exporter type does not implement the
+	// client_golang Gatherer interface, so combining them fails. To ensure Prometheus
+	// receives process/go metrics and custom gauges, expose the client_golang registry.
+	metricsHandler = promhttp.HandlerFor(registry, promhttp.HandlerOpts{})
 
 	// handle defer
 	defer func() { 
@@ -88,6 +154,12 @@ func (h HttpServer) StartHttpAppServer(	ctx context.Context,
 		
 		json.NewEncoder(rw).Encode(appServer)
 	})
+	
+	metrics := myRouter.Methods(http.MethodGet, http.MethodOptions).Subrouter()
+	metrics.HandleFunc("/metrics", func(rw http.ResponseWriter, req *http.Request) {
+		childLogger.Info().Str("HandleFunc","/metrics").Send()
+		metricsHandler.ServeHTTP(rw, req)
+	})
 
 	health := myRouter.Methods(http.MethodGet, http.MethodOptions).Subrouter()
     health.HandleFunc("/health", httpRouters.Health)
@@ -96,8 +168,7 @@ func (h HttpServer) StartHttpAppServer(	ctx context.Context,
     live.HandleFunc("/live", httpRouters.Live)
 
 	header := myRouter.Methods(http.MethodGet, http.MethodOptions).Subrouter()
-	header.HandleFunc("/header", core_middleware.MiddleWareErrorHandler(httpRouters.Header))	
-    header.Use(otelmux.Middleware("go-account"))
+	header.HandleFunc("/header", httpRouters.Header)	
 
 	wk_ctx := myRouter.Methods(http.MethodGet, http.MethodOptions).Subrouter()
     wk_ctx.HandleFunc("/context", httpRouters.Context)
@@ -107,6 +178,17 @@ func (h HttpServer) StartHttpAppServer(	ctx context.Context,
 	
 	myRouter.HandleFunc("/info", func(rw http.ResponseWriter, req *http.Request) {
 		childLogger.Info().Str("HandleFunc","/info").Send()
+
+		start := time.Now()
+		defer func() {
+			duration := time.Since(start).Seconds()
+			latencyHistogram.Record(ctx, duration, metric.WithAttributes(attribute.String("path", "/info")))
+		}()
+
+		requestCounter.Add(ctx, 1, metric.WithAttributes(
+			attribute.String("path", "/info"),
+			attribute.String("method", req.Method),
+		))
 
 		rw.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(rw).Encode(appServer)

@@ -6,7 +6,8 @@ metadata:
   labels:
     app: *app-name
 data:
-  API_VERSION: "3.5"
+  API_VERSION: "3.6"
+  ACCOUNT_ID: "aws:908671954593"
   POD_NAME: "go-account.arch-eks-01"
   PORT: "5000"
   DB_HOST: "rds-proxy-db-arch.proxy-couoacqalfwt.us-east-2.rds.amazonaws.com"
@@ -17,8 +18,11 @@ data:
   SETPOD_AZ: "false"
   ENV: "dev"
 
+  CACHE_USERNAME: "user-02"
+  CACHE_PASSWORD: "MyCachePassword123!"
+  CACHE_HOST: "arch-valkey-02-001.arch-valkey-02.vovqz2.use2.cache.amazonaws.com:6379" 
+
   OTEL_EXPORTER_OTLP_ENDPOINT: "arch-eks-01-xray-collector.default.svc.cluster.local:4317"
   USE_STDOUT_TRACER_EXPORTER: "false"
   USE_OTLP_COLLECTOR: "true" 
   AWS_CLOUDWATCH_LOG_GROUP_NAMES: "/dock/eks/eks-arch-02"
-

@@ -10,7 +10,14 @@ type AppServer struct {
 	InfoPod 		*InfoPod 					`json:"info_pod"`
 	Server     		*Server     				`json:"server"`
 	ConfigOTEL		*go_core_observ.ConfigOTEL	`json:"otel_config"`
-	DatabaseConfig	*go_core_pg.DatabaseConfig  `json:"database"`		
+	DatabaseConfig	*go_core_pg.DatabaseConfig  `json:"database"`
+	CacheConfig		*CacheConfig				`json:"cache_config"`
+}
+
+type CacheConfig struct {
+	Host		string `json:"host"`
+	Username	string `json:"username"`
+	Password	string `json:"password"`
 }
 
 type InfoPod struct {

@@ -72,11 +72,15 @@ func (w WorkerRepository) AddAccount(ctx context.Context, tx pgx.Tx, account *mo
 									tenant_id) 
 				VALUES($1, $2, $3, $4) RETURNING id`
 
-	row := tx.QueryRow(ctx, query,account.AccountID, 
-									account.PersonID,
-									account.CreatedAt,
-									account.TenantID)
+	row := tx.QueryRow(	ctx, 
+						query,
+						account.AccountID, 
+						account.PersonID,
+						account.CreatedAt,
+						account.TenantID)
+						
 	if err := row.Scan(&id); err != nil {
+		childLogger.Error().Err(err).Send()
 		return nil, errors.New(err.Error())
 	}
 
@@ -96,6 +100,7 @@ func (w WorkerRepository) GetAccount(ctx context.Context, account *model.Account
 	// db connection
 	conn, err := w.DatabasePGServer.Acquire(ctx)
 	if err != nil {
+		childLogger.Error().Err(err).Send()
 		return nil, errors.New(err.Error())
 	}
 	defer w.DatabasePGServer.Release(conn)
@@ -116,6 +121,7 @@ func (w WorkerRepository) GetAccount(ctx context.Context, account *model.Account
 
 	rows, err := conn.Query(ctx, query, account.AccountID)
 	if err != nil {
+		childLogger.Error().Err(err).Send()
 		return nil, errors.New(err.Error())
 	}
 	defer rows.Close()
@@ -153,6 +159,7 @@ func (w WorkerRepository) GetAccountId(ctx context.Context, account *model.Accou
 	// db connection
 	conn, err := w.DatabasePGServer.Acquire(ctx)
 	if err != nil {
+		childLogger.Error().Err(err).Send()
 		return nil, errors.New(err.Error())
 	}
 	defer w.DatabasePGServer.Release(conn)
@@ -173,6 +180,7 @@ func (w WorkerRepository) GetAccountId(ctx context.Context, account *model.Accou
 
 	rows, err := conn.Query(ctx, query, account.ID)
 	if err != nil {
+		childLogger.Error().Err(err).Send()		
 		return nil, errors.New(err.Error())
 	}
 	defer rows.Close()
@@ -191,6 +199,7 @@ func (w WorkerRepository) GetAccountId(ctx context.Context, account *model.Accou
 							&res_account.UserLastUpdate,
 							)
 		if err != nil {
+			childLogger.Error().Err(err).Send()
 			return nil, errors.New(err.Error())
         }
 		return &res_account, nil
@@ -214,6 +223,7 @@ func (w WorkerRepository) ListAccountPerPerson(ctx context.Context, account *mod
 	// db connection
 	conn, err := w.DatabasePGServer.Acquire(ctx)
 	if err != nil {
+		childLogger.Error().Err(err).Send()
 		return nil, errors.New(err.Error())
 	}
 	defer w.DatabasePGServer.Release(conn)
@@ -231,6 +241,7 @@ func (w WorkerRepository) ListAccountPerPerson(ctx context.Context, account *mod
 
 	rows, err := conn.Query(ctx, query, account.PersonID)
 	if err != nil {
+		childLogger.Error().Err(err).Send()
 		return nil, errors.New(err.Error())
 	}
 	
@@ -250,6 +261,7 @@ func (w WorkerRepository) ListAccountPerPerson(ctx context.Context, account *mod
 							&res_account.TenantID,
 						)
 		if err != nil {
+			childLogger.Error().Err(err).Send()			
 			return nil, errors.New(err.Error())
         }
 		res_account_list = append(res_account_list, res_account)
@@ -284,6 +296,7 @@ func (w WorkerRepository) UpdateAccount(ctx context.Context, tx pgx.Tx, account 
 									account.TenantID,
 									account.AccountID)
 	if err != nil {
+		childLogger.Error().Err(err).Send()
 		return 0, errors.New(err.Error())
 	}
 
@@ -301,6 +314,7 @@ func (w WorkerRepository) DeleteAccount(ctx context.Context, account *model.Acco
 
 	conn, err := w.DatabasePGServer.Acquire(ctx)
 	if err != nil {
+		childLogger.Error().Err(err).Send()
 		return false, errors.New(err.Error())
 	}
 	defer w.DatabasePGServer.Release(conn)
@@ -309,6 +323,7 @@ func (w WorkerRepository) DeleteAccount(ctx context.Context, account *model.Acco
 
 	_, err = conn.Exec(ctx, query, account.AccountID)
 	if err != nil {
+		childLogger.Error().Err(err).Send()
 		return false, errors.New(err.Error())
 	}
 		

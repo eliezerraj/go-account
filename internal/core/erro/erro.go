@@ -16,4 +16,5 @@ var (
 	ErrTransInvalid		= errors.New("transaction invalid")
 	ErrInvalidAmount	= errors.New("invalid amount for this transaction type")
 	ErrTimeout			= errors.New("timeout: context deadline exceeded")
+	ErrHealthCheck		= errors.New("health check services required failed")
 )

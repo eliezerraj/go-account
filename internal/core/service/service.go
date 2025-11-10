@@ -12,6 +12,7 @@ import(
 	go_core_pg "github.com/eliezerraj/go-core/database/pg"
 	go_core_observ "github.com/eliezerraj/go-core/observability"
 	go_core_api "github.com/eliezerraj/go-core/api"
+	go_core_cache "github.com/eliezerraj/go-core/cache/redis_cluster"
 )
 
 var (
@@ -22,14 +23,17 @@ var (
 
 type WorkerService struct {
 	workerRepository *database.WorkerRepository
+	workerCache		*go_core_cache.RedisClient
 }
 
 // About new worker service
-func NewWorkerService(workerRepository *database.WorkerRepository) *WorkerService{
+func NewWorkerService(	workerRepository *database.WorkerRepository, 
+						workerCache	*go_core_cache.RedisClient ) *WorkerService{
 	childLogger.Info().Str("func","NewWorkerService").Send()
 
 	return &WorkerService{
 		workerRepository: workerRepository,
+		workerCache: workerCache,
 	}
 }
 
@@ -45,7 +49,7 @@ func (s *WorkerService) AddAccount(ctx context.Context, account *model.Account) 
 	childLogger.Info().Str("func","AddAccount").Interface("trace-resquest-id", ctx.Value("trace-request-id")).Interface("account", account).Send()
 
 	// Trace
-	span := tracerProvider.Span(ctx, "service.AddAccount")
+	ctx, span := tracerProvider.SpanCtx(ctx, "service.AddAccount")
 	
 	// Get the database connection
 	tx, conn, err := s.workerRepository.DatabasePGServer.StartTx(ctx)
@@ -67,7 +71,7 @@ func (s *WorkerService) AddAccount(ctx context.Context, account *model.Account) 
 	// Add the account
 	res, err := s.workerRepository.AddAccount(ctx, tx, account)
 	if err != nil {
-		return nil, err
+		return nil, erro.ErrInsert
 	}
 
 	return res, nil
@@ -78,7 +82,7 @@ func (s *WorkerService) UpdateAccount(ctx context.Context, account *model.Accoun
 	childLogger.Info().Str("func","UpdateAccount").Interface("trace-resquest-id", ctx.Value("trace-request-id")).Interface("account", account).Send()
 
 	// Trace
-	span := tracerProvider.Span(ctx, "service.UpdateAccount")
+	ctx, span := tracerProvider.SpanCtx(ctx, "service.UpdateAccount")
 	
 	// Get the database connection
 	tx, conn, err := s.workerRepository.DatabasePGServer.StartTx(ctx)
@@ -120,7 +124,7 @@ func (s *WorkerService) DeleteAccount(ctx context.Context, account *model.Accoun
 	childLogger.Info().Str("func","DeleteAccount").Interface("trace-resquest-id", ctx.Value("trace-request-id")).Interface("account", account).Send()
 
 	// Trace
-	span := tracerProvider.Span(ctx, "service.UpdateAccount")
+	ctx, span := tracerProvider.SpanCtx(ctx, "service.UpdateAccount")
 	defer span.End()
 	
 	// Get account (check if exists)
@@ -143,7 +147,7 @@ func (s *WorkerService) GetAccount(ctx context.Context, account *model.Account) 
 	childLogger.Info().Str("func","GetAccount").Interface("trace-resquest-id", ctx.Value("trace-request-id")).Interface("account", account).Send()
 
 	// Trace
-	span := tracerProvider.Span(ctx, "service.GetAccount")
+	ctx, span := tracerProvider.SpanCtx(ctx, "service.GetAccount")
 	defer span.End()
 	
 	// Get account
@@ -159,7 +163,7 @@ func (s *WorkerService) GetAccountId(ctx context.Context, account *model.Account
 	childLogger.Info().Str("func","GetAccountId").Interface("trace-resquest-id", ctx.Value("trace-request-id")).Interface("account", account).Send()
 
 	// Trace
-	span := tracerProvider.Span(ctx, "service.GetAccountId")
+	ctx, span := tracerProvider.SpanCtx(ctx, "service.GetAccountId")
 	defer span.End()
 	
 	time.Sleep(0 * time.Second) // just for test
@@ -178,7 +182,7 @@ func (s *WorkerService) ListAccountPerPerson(ctx context.Context, account *model
 	childLogger.Info().Str("func","ListAccountPerPerson").Interface("trace-resquest-id", ctx.Value("trace-request-id")).Interface("account", account).Send()
 
 	// Trace
-	span := tracerProvider.Span(ctx, "service.ListAccountPerPerson")
+	ctx, span := tracerProvider.SpanCtx(ctx, "service.ListAccountPerPerson")
 	defer span.End()
 	
 	// List account
@@ -187,4 +191,30 @@ func (s *WorkerService) ListAccountPerPerson(ctx context.Context, account *model
 		return nil, err
 	}
 	return res, nil
+}
+
+// About check health service
+func (s * WorkerService) HealthCheck(ctx context.Context) error{
+	childLogger.Info().Str("func","HealthCheck").Interface("trace-resquest-id", ctx.Value("trace-request-id")).Send()
+
+	// Trace
+	ctx, span := tracerProvider.SpanCtx(ctx, "service.HealthCheck")
+	defer span.End()
+
+	// Check database health
+	err := s.workerRepository.DatabasePGServer.Ping()
+	if err != nil {
+		childLogger.Error().Err(err).Msg("*** Database HEALTH FAILED ***")
+		return erro.ErrHealthCheck
+	}
+	childLogger.Info().Str("func","HealthCheck").Msg("*** Database HEALTH SUCCESSFULL ***")
+
+	_, err = s.workerCache.Ping(ctx)
+	if err != nil {
+		childLogger.Error().Err(err).Msg("*** Redis HEALTH FAILED ***")
+		return erro.ErrHealthCheck
+	} 
+	childLogger.Info().Str("func","HealthCheck").Msg("*** Redis HEALTH SUCCESSFULL ***")
+
+	return nil
 }
