@@ -1,23 +1,31 @@
 package database
 
 import (
-	"context"
-	"time"
-	"errors"
-	
-	"github.com/go-account/internal/core/model"
-	"github.com/go-account/internal/core/erro"
+		"os"
+		"context"
+		"time"
+		"errors"
 
-	go_core_observ "github.com/eliezerraj/go-core/observability"
-	go_core_pg "github.com/eliezerraj/go-core/database/pg"
+		"github.com/rs/zerolog"
+		
+		"github.com/go-account/internal/core/model"
+		"github.com/go-account/internal/core/erro"
 
-	"github.com/jackc/pgx/v5"
-	"github.com/rs/zerolog/log"
+		go_core_observ "github.com/eliezerraj/go-core/observability"
+		go_core_pg "github.com/eliezerraj/go-core/database/pg"
+
+		"github.com/jackc/pgx/v5"
 )
 
 var (
 	tracerProvider go_core_observ.TracerProvider
-	childLogger = log.With().Str("component","go-account").Str("package","internal.adapter.database").Logger()
+	
+	childLogger  = zerolog.New(os.Stdout).
+						With().
+						Str("component","go-account").
+						Str("package","internal.adapter.database").
+						Timestamp().
+						Logger()
 )
 
 type WorkerRepository struct {
@@ -26,7 +34,8 @@ type WorkerRepository struct {
 
 // Initialize repository
 func NewWorkerRepository(databasePGServer *go_core_pg.DatabasePGServer) *WorkerRepository{
-	childLogger.Info().Str("func","NewWorkerRepository").Send()
+	childLogger.Info().
+				Str("func","NewWorkerRepository").Send()
 
 	return &WorkerRepository{
 		DatabasePGServer: databasePGServer,
@@ -35,7 +44,9 @@ func NewWorkerRepository(databasePGServer *go_core_pg.DatabasePGServer) *WorkerR
 
 // Above get stats from database
 func (w WorkerRepository) Stat(ctx context.Context) (go_core_pg.PoolStats){
-	childLogger.Info().Str("func","Stat").Interface("trace-resquest-id", ctx.Value("trace-request-id")).Send()
+	childLogger.Info().
+				Str("func","Stat").
+				Interface("trace-resquest-id", ctx.Value("trace-request-id")).Send()
 	
 	stats := w.DatabasePGServer.Stat()
 
@@ -55,7 +66,9 @@ func (w WorkerRepository) Stat(ctx context.Context) (go_core_pg.PoolStats){
 
 // About create a account
 func (w WorkerRepository) AddAccount(ctx context.Context, tx pgx.Tx, account *model.Account) (*model.Account, error){
-	childLogger.Info().Str("func","AddAccount").Interface("trace-resquest-id", ctx.Value("trace-request-id")).Send()
+	childLogger.Info().
+				Str("func","AddAccount").
+				Interface("trace-resquest-id", ctx.Value("trace-request-id")).Send()
 
 	// trace
 	span := tracerProvider.Span(ctx, "database.AddAccount")
@@ -80,7 +93,8 @@ func (w WorkerRepository) AddAccount(ctx context.Context, tx pgx.Tx, account *mo
 						account.TenantID)
 						
 	if err := row.Scan(&id); err != nil {
-		childLogger.Error().Err(err).Send()
+		childLogger.Warn().
+					Err(err).Send()
 		return nil, errors.New(err.Error())
 	}
 
@@ -91,7 +105,9 @@ func (w WorkerRepository) AddAccount(ctx context.Context, tx pgx.Tx, account *mo
 
 // About get an account
 func (w WorkerRepository) GetAccount(ctx context.Context, account *model.Account) (*model.Account, error){
-	childLogger.Info().Str("func","GetAccount").Interface("trace-resquest-id", ctx.Value("trace-request-id")).Send()
+	childLogger.Info().
+				Str("func","GetAccount").
+				Interface("trace-resquest-id", ctx.Value("trace-request-id")).Send()
 
 	// Trace
 	span := tracerProvider.Span(ctx, "database.GetAccount")
@@ -100,7 +116,8 @@ func (w WorkerRepository) GetAccount(ctx context.Context, account *model.Account
 	// db connection
 	conn, err := w.DatabasePGServer.Acquire(ctx)
 	if err != nil {
-		childLogger.Error().Err(err).Send()
+		childLogger.Error().
+					Err(err).Send()
 		return nil, errors.New(err.Error())
 	}
 	defer w.DatabasePGServer.Release(conn)
@@ -121,12 +138,14 @@ func (w WorkerRepository) GetAccount(ctx context.Context, account *model.Account
 
 	rows, err := conn.Query(ctx, query, account.AccountID)
 	if err != nil {
-		childLogger.Error().Err(err).Send()
+		childLogger.Error().
+					Err(err).Send()
 		return nil, errors.New(err.Error())
 	}
 	defer rows.Close()
     if err := rows.Err(); err != nil {
-		childLogger.Error().Err(err).Msg("fatal error closing rows")
+		childLogger.Error().
+					Err(err).Msg("fatal error closing rows")
         return nil, errors.New(err.Error())
     }
 
@@ -140,17 +159,23 @@ func (w WorkerRepository) GetAccount(ctx context.Context, account *model.Account
 							&res_account.UserLastUpdate,
 							)
 		if err != nil {
+			childLogger.Error().
+					Err(err).Send()
 			return nil, errors.New(err.Error())
         }
 		return &res_account, nil
 	}
-	
+
+	childLogger.Warn().
+				Err(erro.ErrNotFound).Send()
 	return nil, erro.ErrNotFound
 }
 
 // About get an account from id (pk)
 func (w WorkerRepository) GetAccountId(ctx context.Context, account *model.Account) (*model.Account, error){
-	childLogger.Info().Str("func","GetAccountId").Interface("trace-resquest-id", ctx.Value("trace-request-id")).Send()
+	childLogger.Info().
+				Str("func","GetAccountId").
+				Interface("trace-resquest-id", ctx.Value("trace-request-id")).Send()
 
 	// Trace
 	span := tracerProvider.Span(ctx, "database.GetAccountId")
@@ -159,7 +184,8 @@ func (w WorkerRepository) GetAccountId(ctx context.Context, account *model.Accou
 	// db connection
 	conn, err := w.DatabasePGServer.Acquire(ctx)
 	if err != nil {
-		childLogger.Error().Err(err).Send()
+		childLogger.Error().
+					Err(err).Send()
 		return nil, errors.New(err.Error())
 	}
 	defer w.DatabasePGServer.Release(conn)
@@ -180,12 +206,14 @@ func (w WorkerRepository) GetAccountId(ctx context.Context, account *model.Accou
 
 	rows, err := conn.Query(ctx, query, account.ID)
 	if err != nil {
-		childLogger.Error().Err(err).Send()		
+		childLogger.Error().
+					Err(err).Send()		
 		return nil, errors.New(err.Error())
 	}
 	defer rows.Close()
     if err := rows.Err(); err != nil {
-		childLogger.Error().Err(err).Msg("fatal error closing rows")
+		childLogger.Error().
+					Err(err).Msg("fatal error closing rows")
         return nil, errors.New(err.Error())
     }
 
@@ -199,18 +227,23 @@ func (w WorkerRepository) GetAccountId(ctx context.Context, account *model.Accou
 							&res_account.UserLastUpdate,
 							)
 		if err != nil {
-			childLogger.Error().Err(err).Send()
+			childLogger.Error().
+						Err(err).Send()
 			return nil, errors.New(err.Error())
         }
 		return &res_account, nil
 	}
-	
+
+	childLogger.Warn().
+				Err(erro.ErrNotFound).Send()
 	return nil, erro.ErrNotFound
 }
 
 // About get all account per person
 func (w WorkerRepository) ListAccountPerPerson(ctx context.Context, account *model.Account) (*[]model.Account, error){
-	childLogger.Info().Str("func","ListAccountPerPerson").Interface("trace-resquest-id", ctx.Value("trace-request-id")).Send()
+	childLogger.Info().
+				Str("func","ListAccountPerPerson").
+				Interface("trace-resquest-id", ctx.Value("trace-request-id")).Send()
 	
 	// Trace
 	span := tracerProvider.Span(ctx, "database.ListAccount")
@@ -223,7 +256,8 @@ func (w WorkerRepository) ListAccountPerPerson(ctx context.Context, account *mod
 	// db connection
 	conn, err := w.DatabasePGServer.Acquire(ctx)
 	if err != nil {
-		childLogger.Error().Err(err).Send()
+		childLogger.Error().
+					Err(err).Send()
 		return nil, errors.New(err.Error())
 	}
 	defer w.DatabasePGServer.Release(conn)
@@ -241,13 +275,15 @@ func (w WorkerRepository) ListAccountPerPerson(ctx context.Context, account *mod
 
 	rows, err := conn.Query(ctx, query, account.PersonID)
 	if err != nil {
-		childLogger.Error().Err(err).Send()
+		childLogger.Error().
+					Err(err).Send()
 		return nil, errors.New(err.Error())
 	}
 	
 	defer rows.Close()
     if err := rows.Err(); err != nil {
-		childLogger.Error().Err(err).Msg("fatal error closing rows")
+		childLogger.Error().
+					Err(err).Msg("fatal error closing rows")
         return nil, errors.New(err.Error())
     }
 
@@ -261,7 +297,8 @@ func (w WorkerRepository) ListAccountPerPerson(ctx context.Context, account *mod
 							&res_account.TenantID,
 						)
 		if err != nil {
-			childLogger.Error().Err(err).Send()			
+			childLogger.Error().
+						Err(err).Send()			
 			return nil, errors.New(err.Error())
         }
 		res_account_list = append(res_account_list, res_account)
@@ -272,7 +309,9 @@ func (w WorkerRepository) ListAccountPerPerson(ctx context.Context, account *mod
 
 // About update an account
 func (w WorkerRepository) UpdateAccount(ctx context.Context, tx pgx.Tx, account *model.Account) (int64, error){
-	childLogger.Info().Str("func","UpdateAccount").Interface("trace-resquest-id", ctx.Value("trace-request-id")).Send()
+	childLogger.Info().
+				Str("func","UpdateAccount").
+				Interface("trace-resquest-id", ctx.Value("trace-request-id")).Send()
 
 	// trace
 	span := tracerProvider.Span(ctx, "database.UpdateAccount")
@@ -296,25 +335,30 @@ func (w WorkerRepository) UpdateAccount(ctx context.Context, tx pgx.Tx, account 
 									account.TenantID,
 									account.AccountID)
 	if err != nil {
-		childLogger.Error().Err(err).Send()
+		childLogger.Error().
+					Err(err).Send()
 		return 0, errors.New(err.Error())
 	}
 
-	childLogger.Debug().Int("rowsAffected : ",int(row.RowsAffected())).Msg("")
+	childLogger.Debug().
+				Int("rowsAffected : ", int(row.RowsAffected())).Send()
 
 	return row.RowsAffected() , nil
 }
 
 // About delete an account
 func (w WorkerRepository) DeleteAccount(ctx context.Context, account *model.Account) (bool, error){
-	childLogger.Info().Str("func","DeleteAccount").Interface("trace-resquest-id", ctx.Value("trace-request-id")).Send()
+	childLogger.Info().
+				Str("func","DeleteAccount").
+				Interface("trace-resquest-id", ctx.Value("trace-request-id")).Send()
 
 	span := tracerProvider.Span(ctx, "storage.DeleteAccount")	
 	defer span.End()
 
 	conn, err := w.DatabasePGServer.Acquire(ctx)
 	if err != nil {
-		childLogger.Error().Err(err).Send()
+		childLogger.Error().
+					Err(err).Send()
 		return false, errors.New(err.Error())
 	}
 	defer w.DatabasePGServer.Release(conn)
@@ -323,7 +367,8 @@ func (w WorkerRepository) DeleteAccount(ctx context.Context, account *model.Acco
 
 	_, err = conn.Exec(ctx, query, account.AccountID)
 	if err != nil {
-		childLogger.Error().Err(err).Send()
+		childLogger.Error().
+					Err(err).Send()
 		return false, errors.New(err.Error())
 	}
 		

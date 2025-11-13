@@ -10,7 +10,8 @@ import(
 
 // About get all otel env var
 func GetOtelEnv() go_core_observ.ConfigOTEL {
-	childLogger.Info().Str("func","GetOtelEnv").Send()
+	childLogger.Info().
+				Str("func","GetOtelEnv").Send()
 
 	err := godotenv.Load(".env")
 	if err != nil {

@@ -9,8 +9,6 @@ import(
 	"crypto/tls"
 	
 	"github.com/rs/zerolog"
-	"github.com/rs/zerolog/log"
-	"github.com/afiskon/promtail-client/promtail"
 
 	"github.com/go-account/internal/infra/configuration"
 	"github.com/go-account/internal/core/model"
@@ -27,37 +25,26 @@ import(
 
 var(
 	logLevel = 	zerolog.InfoLevel // zerolog.InfoLevel zerolog.DebugLevel
-	childLogger = log.With().Str("component","go-account").Str("package", "main").Logger()
-	
+
+	childLogger  = zerolog.New(os.Stdout).
+						With().
+						Str("component","go-account").
+						Str("package", "main").
+						Timestamp().
+						Logger()
+						
 	appServer	model.AppServer
 	databaseConfig go_core_pg.DatabaseConfig
 	databasePGServer go_core_pg.DatabasePGServer
-
-	promtailClient   promtail.Client
 )
 
 // About initialize the enviroment var
 func init(){
-	childLogger.Info().Str("func","init").Send()
-	
 	zerolog.SetGlobalLevel(logLevel)
 
-	cfg := promtail.ClientConfig{
-		PushURL:            "http://localhost:3100/api/prom/push",
-		BatchWait:          3 * time.Second,
-		BatchEntriesNumber: 100,
-		SendLevel:          promtail.INFO, // ⚠️ Use promtail.LogLevel, not zerolog
-		PrintLevel:         promtail.DEBUG,
-	}
-	var err error
-	promtailClient, err = promtail.NewClientProto(cfg)
-	if err != nil {
-		panic(err)
-	}
-
-	// You’ll send logs manually using promtailClient.Send()
-	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stdout})
-
+	childLogger.Info().
+				Str("func","init").Send()
+	
 	infoPod, server := configuration.GetInfoPod()
 	configOTEL 		:= configuration.GetOtelEnv()
 	databaseConfig 	:= configuration.GetDatabaseEnv()
@@ -72,7 +59,9 @@ func init(){
 
 // About main
 func main (){
-	childLogger.Info().Str("func","main").Interface("appServer",appServer).Send()
+	childLogger.Info().
+				Str("func","main").
+				Interface("appServer",appServer).Send()
 
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer cancel()
@@ -84,9 +73,12 @@ func main (){
 		databasePGServer, err = databasePGServer.NewDatabasePGServer(ctx, *appServer.DatabaseConfig)
 		if err != nil {
 			if count < 3 {
-				childLogger.Error().Err(err).Msg("error open database... trying again !!")
+				childLogger.Warn().
+							Err(nil).Msg("Unable to open database... trying again WARNING !!")
 			} else {
-				childLogger.Error().Err(err).Msg("fatal error open Database aborting")
+				childLogger.Error().
+							Err(err).
+							Msg("Fatal Error open Database ABORTING !!")
 				panic(err)
 			}
 			time.Sleep(3 * time.Second) //backoff
@@ -120,12 +112,14 @@ func main (){
 	httpRouters := api.NewHttpRouters(workerService, time.Duration(appServer.Server.CtxTimeout))
 	httpServer := server.NewHttpAppServer(appServer.Server)
 
-		// Services Health Check
+	// Services Health Check
 	err = workerService.HealthCheck(ctx)
 	if err != nil {
-		childLogger.Error().Err(err).Msg("fatal error health check aborting")
+		childLogger.Error().
+					Err(err).Msg("Error health check support services ERROR")
 	} else {
-		childLogger.Info().Msg("SERVICES HEALTH CHECK OK")
+		childLogger.Info().
+					Msg("SERVICES HEALTH CHECK OK")
 	}
 
 	// start server

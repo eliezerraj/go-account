@@ -2,13 +2,14 @@
 
 POC for test purposes.
 
-CRUD for account
+    CRUD for account
 
-CRUD for account_balance
+# Run
+    go run . >& /mnt/c/Eliezer/log/go-account.log
 
 ## Database
 
-See repo https://github.com/eliezerraj/go-account-migration-worker.git
+    See repo https://github.com/eliezerraj/go-account-migration-worker.git
 
 ## Endpoints
 
@@ -43,14 +44,11 @@ See repo https://github.com/eliezerraj/go-account-migration-worker.git
 
 ## K8 local
 
-Add in hosts file /etc/hosts the lines below
+    Add in hosts file /etc/hosts the lines below
 
     127.0.0.1   account.domain.com
 
-or
+    or
 
-Add -host header in PostMan
+    Add -host header in PostMan
 
-## AWS
-
-Create a public apigw

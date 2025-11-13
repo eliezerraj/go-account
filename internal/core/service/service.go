@@ -1,9 +1,10 @@
 package service
 
 import(
+	"os"
 	"time"
 	"context"
-	"github.com/rs/zerolog/log"
+	"github.com/rs/zerolog"
 
 	"github.com/go-account/internal/adapter/database"
 	"github.com/go-account/internal/core/model"
@@ -16,7 +17,13 @@ import(
 )
 
 var (
-	childLogger = log.With().Str("component","go-account").Str("package","internal.core.service").Logger()
+	childLogger  = zerolog.New(os.Stdout).
+						With().
+						Str("component","go-account").
+						Str("package","internal.core.service").
+						Timestamp().
+						Logger()
+
 	tracerProvider go_core_observ.TracerProvider
 	apiService go_core_api.ApiService
 )
@@ -29,7 +36,8 @@ type WorkerService struct {
 // About new worker service
 func NewWorkerService(	workerRepository *database.WorkerRepository, 
 						workerCache	*go_core_cache.RedisClient ) *WorkerService{
-	childLogger.Info().Str("func","NewWorkerService").Send()
+	childLogger.Info().
+				Str("func","NewWorkerService").Send()
 
 	return &WorkerService{
 		workerRepository: workerRepository,
@@ -39,14 +47,18 @@ func NewWorkerService(	workerRepository *database.WorkerRepository,
 
 // About handle/convert http status code
 func (s *WorkerService) Stat(ctx context.Context) (go_core_pg.PoolStats){
-	childLogger.Info().Str("func","Stat").Interface("trace-resquest-id", ctx.Value("trace-request-id")).Send()
+	childLogger.Info().
+				Str("func","Stat").
+				Interface("trace-resquest-id", ctx.Value("trace-request-id")).Send()
 
 	return s.workerRepository.Stat(ctx)
 }
 
 // About add an account
 func (s *WorkerService) AddAccount(ctx context.Context, account *model.Account) (*model.Account, error){
-	childLogger.Info().Str("func","AddAccount").Interface("trace-resquest-id", ctx.Value("trace-request-id")).Interface("account", account).Send()
+	childLogger.Info().
+				Str("func","AddAccount").
+				Interface("trace-resquest-id", ctx.Value("trace-request-id")).Interface("account", account).Send()
 
 	// Trace
 	ctx, span := tracerProvider.SpanCtx(ctx, "service.AddAccount")
@@ -71,6 +83,8 @@ func (s *WorkerService) AddAccount(ctx context.Context, account *model.Account) 
 	// Add the account
 	res, err := s.workerRepository.AddAccount(ctx, tx, account)
 	if err != nil {
+		childLogger.Warn().
+					Err(erro.ErrInsert).Send()
 		return nil, erro.ErrInsert
 	}
 
@@ -79,7 +93,10 @@ func (s *WorkerService) AddAccount(ctx context.Context, account *model.Account) 
 
 // About update an account
 func (s *WorkerService) UpdateAccount(ctx context.Context, account *model.Account) (*model.Account, error){
-	childLogger.Info().Str("func","UpdateAccount").Interface("trace-resquest-id", ctx.Value("trace-request-id")).Interface("account", account).Send()
+	childLogger.Info().
+				Str("func","UpdateAccount").
+				Interface("trace-resquest-id", ctx.Value("trace-request-id")).
+				Interface("account", account).Send()
 
 	// Trace
 	ctx, span := tracerProvider.SpanCtx(ctx, "service.UpdateAccount")
@@ -113,6 +130,8 @@ func (s *WorkerService) UpdateAccount(ctx context.Context, account *model.Accoun
 		return nil, err
 	}
 	if (res_update == 0) {
+		childLogger.Warn().
+				Err(erro.ErrUpdate).Send()
 		return nil, erro.ErrUpdate
 	}
 
@@ -121,7 +140,10 @@ func (s *WorkerService) UpdateAccount(ctx context.Context, account *model.Accoun
 
 // About delete an account
 func (s *WorkerService) DeleteAccount(ctx context.Context, account *model.Account) (*model.Account, error){
-	childLogger.Info().Str("func","DeleteAccount").Interface("trace-resquest-id", ctx.Value("trace-request-id")).Interface("account", account).Send()
+	childLogger.Info().
+				Str("func","DeleteAccount").
+				Interface("trace-resquest-id", ctx.Value("trace-request-id")).
+				Interface("account", account).Send()
 
 	// Trace
 	ctx, span := tracerProvider.SpanCtx(ctx, "service.UpdateAccount")
@@ -144,7 +166,10 @@ func (s *WorkerService) DeleteAccount(ctx context.Context, account *model.Accoun
 
 // About get an account
 func (s *WorkerService) GetAccount(ctx context.Context, account *model.Account) (*model.Account, error){
-	childLogger.Info().Str("func","GetAccount").Interface("trace-resquest-id", ctx.Value("trace-request-id")).Interface("account", account).Send()
+	childLogger.Info().
+				Str("func","GetAccount").
+				Interface("trace-resquest-id", ctx.Value("trace-request-id")).
+				Interface("account", account).Send()
 
 	// Trace
 	ctx, span := tracerProvider.SpanCtx(ctx, "service.GetAccount")
@@ -160,7 +185,10 @@ func (s *WorkerService) GetAccount(ctx context.Context, account *model.Account) 
 
 // About get an account
 func (s *WorkerService) GetAccountId(ctx context.Context, account *model.Account) (*model.Account, error){
-	childLogger.Info().Str("func","GetAccountId").Interface("trace-resquest-id", ctx.Value("trace-request-id")).Interface("account", account).Send()
+	childLogger.Info().
+				Str("func","GetAccountId").
+				Interface("trace-resquest-id", ctx.Value("trace-request-id")).
+				Interface("account", account).Send()
 
 	// Trace
 	ctx, span := tracerProvider.SpanCtx(ctx, "service.GetAccountId")
@@ -179,7 +207,10 @@ func (s *WorkerService) GetAccountId(ctx context.Context, account *model.Account
 
 // About list all person´s account
 func (s *WorkerService) ListAccountPerPerson(ctx context.Context, account *model.Account) (*[]model.Account, error){
-	childLogger.Info().Str("func","ListAccountPerPerson").Interface("trace-resquest-id", ctx.Value("trace-request-id")).Interface("account", account).Send()
+	childLogger.Info().
+				Str("func","ListAccountPerPerson").
+				Interface("trace-resquest-id", ctx.Value("trace-request-id")).
+				Interface("account", account).Send()
 
 	// Trace
 	ctx, span := tracerProvider.SpanCtx(ctx, "service.ListAccountPerPerson")
@@ -195,7 +226,9 @@ func (s *WorkerService) ListAccountPerPerson(ctx context.Context, account *model
 
 // About check health service
 func (s * WorkerService) HealthCheck(ctx context.Context) error{
-	childLogger.Info().Str("func","HealthCheck").Interface("trace-resquest-id", ctx.Value("trace-request-id")).Send()
+	childLogger.Info().
+				Str("func","HealthCheck").
+				Interface("trace-resquest-id", ctx.Value("trace-request-id")).Send()
 
 	// Trace
 	ctx, span := tracerProvider.SpanCtx(ctx, "service.HealthCheck")
@@ -204,17 +237,25 @@ func (s * WorkerService) HealthCheck(ctx context.Context) error{
 	// Check database health
 	err := s.workerRepository.DatabasePGServer.Ping()
 	if err != nil {
-		childLogger.Error().Err(err).Msg("*** Database HEALTH FAILED ***")
+		childLogger.Error().
+					Err(err).
+					Msg("*** Database HEALTH FAILED ***")
 		return erro.ErrHealthCheck
 	}
-	childLogger.Info().Str("func","HealthCheck").Msg("*** Database HEALTH SUCCESSFULL ***")
+	childLogger.Info().
+				Str("func","HealthCheck").
+				Msg("*** Database HEALTH SUCCESSFULL ***")
 
 	_, err = s.workerCache.Ping(ctx)
 	if err != nil {
-		childLogger.Error().Err(err).Msg("*** Redis HEALTH FAILED ***")
+		childLogger.Error().
+					Err(err).
+					Msg("*** Redis HEALTH FAILED ***")
 		return erro.ErrHealthCheck
 	} 
-	childLogger.Info().Str("func","HealthCheck").Msg("*** Redis HEALTH SUCCESSFULL ***")
+	childLogger.Info().
+				Str("func","HealthCheck").
+				Msg("*** Redis HEALTH SUCCESSFULL ***")
 
 	return nil
 }

@@ -7,22 +7,29 @@ import(
 	"context"
 
 	"github.com/joho/godotenv"
-	"github.com/rs/zerolog/log"
+	"github.com/rs/zerolog"
 	"github.com/aws/aws-sdk-go-v2/feature/ec2/imds"
 	"github.com/aws/aws-sdk-go-v2/config"
 
 	"github.com/go-account/internal/core/model"
 )
 
-var childLogger = log.With().Str("component","go-account").Str("package","internal.infra.configuration").Logger()
+var	childLogger  = zerolog.New(os.Stdout).
+						With().
+						Str("component","go-account").
+						Str("package","internal.infra.configuration").
+						Timestamp().
+						Logger()
 
 // About get all pod env var
 func GetInfoPod() (	model.InfoPod, model.Server) {
-	childLogger.Info().Str("func","GetInfoPod").Send()
+	childLogger.Info().
+				Str("func","GetInfoPod").Send()
 
 	err := godotenv.Load(".env")
 	if err != nil {
-		childLogger.Info().Err(err).Send()
+		childLogger.Info().
+					Err(err).Send()
 	}
 
 	var infoPod 	model.InfoPod
@@ -46,10 +53,27 @@ func GetInfoPod() (	model.InfoPod, model.Server) {
 		infoPod.AccountID = os.Getenv("ACCOUNT_ID")
 	}
 
+	if os.Getenv("OTEL_TRACES") ==  "true" {
+		infoPod.OtelTraces = true
+	} else {
+		infoPod.OtelTraces = false
+	}
+	if os.Getenv("OTEL_LOGS") ==  "true" {
+		infoPod.OtelLogs = true
+	} else {
+		infoPod.OtelLogs = false
+	}
+	if os.Getenv("OTEL_METRICS") ==  "true" {
+		infoPod.OtelMetrics = true
+	} else {
+		infoPod.OtelMetrics = false
+	}
+
 	// Get IP
 	addrs, err := net.InterfaceAddrs()
 	if err != nil {
-		log.Error().Err(err).Send()
+		childLogger.Error().
+					Err(err).Send()
 		os.Exit(3)
 	}
 	for _, a := range addrs {
@@ -65,13 +89,15 @@ func GetInfoPod() (	model.InfoPod, model.Server) {
 	if (infoPod.IsAZ) {
 		cfg, err := config.LoadDefaultConfig(context.TODO())
 		if err != nil {
-			childLogger.Error().Err(err).Send()
+			childLogger.Error().
+						Err(err).Send()
 			os.Exit(3)
 		}
 		client := imds.NewFromConfig(cfg)
 		response, err := client.GetInstanceIdentityDocument(context.TODO(), &imds.GetInstanceIdentityDocumentInput{})
 		if err != nil {
-			childLogger.Error().Err(err).Send()
+			childLogger.Error().
+						Err(err).Send()
 			os.Exit(3)
 		}
 		infoPod.AvailabilityZone = response.AvailabilityZone	

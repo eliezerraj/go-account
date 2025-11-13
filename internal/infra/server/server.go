@@ -15,7 +15,7 @@ import (
 	go_core_observ "github.com/eliezerraj/go-core/observability"  
 
 	"github.com/gorilla/mux"
-	"github.com/rs/zerolog/log"
+	"github.com/rs/zerolog"
 
 	"github.com/eliezerraj/go-core/middleware"
 
@@ -23,28 +23,31 @@ import (
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/trace"
 	"go.opentelemetry.io/otel/propagation"
+	 sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux"
 
-	// metrics
-	"go.opentelemetry.io/otel/metric"
-	"go.opentelemetry.io/contrib/instrumentation/runtime"
-	"go.opentelemetry.io/otel/sdk/resource"
+	// Metrics
 	"go.opentelemetry.io/otel/attribute"
-
-	otelprom "go.opentelemetry.io/otel/exporters/prometheus"
-	clientprom "github.com/prometheus/client_golang/prometheus"
-	sdkmetric "go.opentelemetry.io/otel/sdk/metric"
-	 semconv "go.opentelemetry.io/otel/semconv/v1.24.0"
+	"go.opentelemetry.io/otel/exporters/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-
+	"go.opentelemetry.io/otel/metric"
+	sdkmetric "go.opentelemetry.io/otel/sdk/metric"
+	"go.opentelemetry.io/otel/sdk/resource"
+	semconv "go.opentelemetry.io/otel/semconv/v1.24.0"
 )
 
 var (
-	childLogger = log.With().Str("component","go-account").Str("package","internal.infra.server").Logger()
+	childLogger  = zerolog.New(os.Stdout).
+						With().
+						Str("component","go-account").
+						Str("package","internal.core.service").
+						Timestamp().
+						Logger()
+
 	core_middleware middleware.ToolsMiddleware
-	tracerProvider go_core_observ.TracerProvider
-	infoTrace go_core_observ.InfoTrace
-	tracer	trace.Tracer
+	tracerProvider 	go_core_observ.TracerProvider
+	infoTrace 		go_core_observ.InfoTrace
+	tracer			trace.Tracer
 )
 
 type HttpServer struct {
@@ -53,101 +56,154 @@ type HttpServer struct {
 
 // About create new http server
 func NewHttpAppServer(httpServer *model.Server) HttpServer {
-	childLogger.Info().Str("func","NewHttpAppServer").Send()
+	childLogger.Info().
+				Str("func","NewHttpAppServer").Send()
 	
 	return HttpServer{httpServer: httpServer }
+}
+
+// About initialize MeterProvider with Prometheus exporter
+func initMeterProvider(ctx context.Context, serviceName string) (*sdkmetric.MeterProvider, error) {
+	childLogger.Info().
+				Str("func","initMeterProvider").Send()
+
+	// 1. Configurar o Recurso OTel
+	res, err := resource.New(ctx,
+		resource.WithSchemaURL(semconv.SchemaURL),
+		resource.WithAttributes(
+			semconv.ServiceNameKey.String(serviceName),
+			attribute.String("env", "DEV"),
+		),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	// 2. Criar o Prometheus Exporter
+	exporter, err := prometheus.New()
+	if err != nil {
+		return nil, err
+	}
+
+	// 3. Criar o MeterProvider, usando o Prometheus Exporter como Reader.
+	provider := sdkmetric.NewMeterProvider(
+		sdkmetric.WithResource(res),
+		sdkmetric.WithReader(exporter),
+	)
+
+	return provider, nil
+}
+
+//About Create Custom Metrics
+var httpRequestsCounter metric.Int64Counter
+var httpLatencyHistogram metric.Float64Histogram
+var err_metric error
+
+func setupCustomMetrics(meter metric.Meter) error {
+	childLogger.Info().
+				Str("func","setupCustomMetrics").Send()
+
+	httpRequestsCounter, err_metric = meter.Int64Counter("eliezer-http_requests_total",
+				metric.WithDescription("Total number of HTTP requests by path"),
+				metric.WithUnit("1"),
+	)
+	if err_metric != nil {
+		childLogger.Error().
+					Err(err_metric).
+					Msg("Erro Create Custom Metrics")
+		return err_metric
+	}
+
+	httpLatencyHistogram, err_metric = meter.Float64Histogram("eliezer-http_server_latency_seconds",
+		metric.WithDescription("Latency of HTTP server requests by path"),
+		metric.WithUnit("s"),
+	)	
+	if err_metric != nil {
+		childLogger.Error().
+					Err(err_metric).
+					Msg("Erro Create Custom Metrics")
+		return err_metric
+	}
+
+	return nil
 }
 
 // About start http server
 func (h HttpServer) StartHttpAppServer(	ctx context.Context, 
 										httpRouters *api.HttpRouters,
 										appServer *model.AppServer) {
-	childLogger.Info().Str("func","StartHttpAppServer").Send()
+	childLogger.Info().
+				Str("func","StartHttpAppServer").Send()
 			
-	// Otel tracer
-	infoTrace.AccountID = appServer.InfoPod.AccountID
-	infoTrace.PodName = appServer.InfoPod.PodName
-	infoTrace.PodVersion = appServer.InfoPod.ApiVersion
-	infoTrace.ServiceType = "k8-workload"
-	infoTrace.Env = appServer.InfoPod.Env
+	// --------- OTEL traces ---------------
+	var initTracerProvider *sdktrace.TracerProvider
+	
+	if appServer.InfoPod.OtelTraces {
+		infoTrace.PodName = appServer.InfoPod.PodName
+		infoTrace.PodVersion = appServer.InfoPod.ApiVersion
+		infoTrace.ServiceType = "k8-workload"
+		infoTrace.Env = appServer.InfoPod.Env
+		infoTrace.AccountID = appServer.InfoPod.AccountID
 
-	tp := tracerProvider.NewTracerProvider(	ctx, 
-											appServer.ConfigOTEL, 
-											&infoTrace)
+		initTracerProvider = tracerProvider.NewTracerProvider(	ctx, 
+																appServer.ConfigOTEL, 
+																&infoTrace)
 
-	if tp != nil {
-		otel.SetTextMapPropagator(propagation.TraceContext{}) //  propagation.TraceContext{}
-		otel.SetTracerProvider(tp)
-		tracer = tp.Tracer(appServer.InfoPod.PodName)
+		otel.SetTextMapPropagator(propagation.TraceContext{})
+		otel.SetTracerProvider(initTracerProvider)
+		tracer = initTracerProvider.Tracer(appServer.InfoPod.PodName)
 	}
 
-	// Metrics
-	exporterMetrics, err := otelprom.New()
-	if err != nil {
-		childLogger.Error().Err(err).Msg("failed to initialize prometheus exporter")
+	// --------- OTEL metrics ---------------
+	var meterProvider *sdkmetric.MeterProvider
+
+	if appServer.InfoPod.OtelMetrics {
+		meterProvider, err := initMeterProvider(ctx, infoTrace.PodName)
+		if err != nil {
+			childLogger.Error().
+						Err(err).
+						Msg("Error start Otel Metrics Provider")
+		} else {
+			meter := meterProvider.Meter(infoTrace.PodName)
+
+			setupCustomMetrics(meter)
+			if err != nil {
+				childLogger.Info().
+							Msg("Erro Create Custom Metrics")
+			}
+
+			childLogger.Info().
+						Msg("Otel Metrics Provider started SUCCESSFULL")
+		}
 	}
-
-	res := resource.NewWithAttributes(
-		semconv.SchemaURL,
-		semconv.ServiceName("go-account"),
-	)
-
-	meterProvider := sdkmetric.NewMeterProvider(
-		sdkmetric.WithReader(exporterMetrics),
-		sdkmetric.WithResource(res),
-	)
-	otel.SetMeterProvider(meterProvider)
-	meter := otel.Meter("go-account")
-
-	// --- Start collecting Go runtime metrics
-	if err := runtime.Start(runtime.WithMeterProvider(meterProvider)); err != nil {
-		childLogger.Error().Err(err).Msg("failed to start runtime instrumentation")
-	}
-
-	// metrics
-	requestCounter, err := meter.Int64Counter("http_requests_total")
-	if err != nil {
-		childLogger.Error().Err(err).Msg("failed to create request counter")
-	}
-
-	latencyHistogram, err := meter.Float64Histogram("http_request_duration_seconds")
-	if err != nil {
-		childLogger.Error().Err(err).Msg("failed to create histogram")
-	}
-
-	cpuUsage := clientprom.NewGauge(clientprom.GaugeOpts{
-		Name: "go_process_cpu_usage_percent",
-		Help: "Approximate CPU usage percentage of the Go process",
-	})
-
-	// ---- Prometheus HTTP Handler (/metrics) ----
-	var metricsHandler http.Handler
-	// Create a separate client_golang registry for process/go collectors and custom gauges.
-	registry := clientprom.NewRegistry()
-	registry.MustRegister(clientprom.NewProcessCollector(clientprom.ProcessCollectorOpts{}))
-	registry.MustRegister(clientprom.NewGoCollector())
-	registry.MustRegister(cpuUsage)
-
-	// Use the client_golang registry as the /metrics handler. In some versions of the
-	// OpenTelemetry Prometheus exporter the exporter type does not implement the
-	// client_golang Gatherer interface, so combining them fails. To ensure Prometheus
-	// receives process/go metrics and custom gauges, expose the client_golang registry.
-	metricsHandler = promhttp.HandlerFor(registry, promhttp.HandlerOpts{})
 
 	// handle defer
 	defer func() { 
-		if tp != nil {
-			err := tp.Shutdown(ctx)
-			if err != nil{
-				childLogger.Error().Err(err).Send()
+
+		if meterProvider != nil {
+			if err := meterProvider.Shutdown(ctx); err != nil {
+				childLogger.Error().
+							Err(err).
+							Msg("Erro to stop metrics provider")
 			}
 		}
-		childLogger.Info().Msg("stop done !!!")
+
+		if initTracerProvider != nil {
+			err := initTracerProvider.Shutdown(ctx)
+			if err != nil{
+				childLogger.Error().
+							Err(err).
+							Msg("Erro to shutdown tracer provider")
+			}
+		}
+		childLogger.Info().
+					Msg("stop done !!!")
 	}()
 
 	// Router
 	myRouter := mux.NewRouter().StrictSlash(true)
 	myRouter.Use(core_middleware.MiddleWareHandlerHeader)
+	myRouter.Handle("/metrics", promhttp.Handler())
 
 	myRouter.HandleFunc("/", func(rw http.ResponseWriter, req *http.Request) {
 		childLogger.Info().Str("HandleFunc","/").Send()
@@ -155,12 +211,6 @@ func (h HttpServer) StartHttpAppServer(	ctx context.Context,
 		json.NewEncoder(rw).Encode(appServer)
 	})
 	
-	metrics := myRouter.Methods(http.MethodGet, http.MethodOptions).Subrouter()
-	metrics.HandleFunc("/metrics", func(rw http.ResponseWriter, req *http.Request) {
-		childLogger.Info().Str("HandleFunc","/metrics").Send()
-		metricsHandler.ServeHTTP(rw, req)
-	})
-
 	health := myRouter.Methods(http.MethodGet, http.MethodOptions).Subrouter()
     health.HandleFunc("/health", httpRouters.Health)
 
@@ -177,18 +227,27 @@ func (h HttpServer) StartHttpAppServer(	ctx context.Context,
     stat.HandleFunc("/stat", httpRouters.Stat)
 	
 	myRouter.HandleFunc("/info", func(rw http.ResponseWriter, req *http.Request) {
-		childLogger.Info().Str("HandleFunc","/info").Send()
-
+		childLogger.Info().
+					Str("HandleFunc","/info").Send()
 		start := time.Now()
+		targetPath := "/info"
+
+		req_ctx, cancel := context.WithTimeout(req.Context(), 5 * time.Second)
+    	defer cancel()
+
+		req_ctx, span := tracerProvider.SpanCtx(req_ctx, "adapter.api.info")
+		defer span.End()
+
 		defer func() {
-			duration := time.Since(start).Seconds()
-			latencyHistogram.Record(ctx, duration, metric.WithAttributes(attribute.String("path", "/info")))
+			if httpLatencyHistogram != nil {
+				duration := time.Since(start).Seconds()
+				httpLatencyHistogram.Record(req.Context(), duration, metric.WithAttributes(attribute.String("http.target", targetPath)))
+			}
 		}()
 
-		requestCounter.Add(ctx, 1, metric.WithAttributes(
-			attribute.String("path", "/info"),
-			attribute.String("method", req.Method),
-		))
+		if httpRequestsCounter != nil {
+			httpRequestsCounter.Add(req.Context(), 1, metric.WithAttributes(attribute.String("http.target", "/info")))
+		}
 
 		rw.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(rw).Encode(appServer)
@@ -227,12 +286,14 @@ func (h HttpServer) StartHttpAppServer(	ctx context.Context,
 		IdleTimeout:  time.Duration(h.httpServer.IdleTimeout) * time.Second, 
 	}
 
-	childLogger.Info().Str("Service Port", strconv.Itoa(h.httpServer.Port)).Send()
+	childLogger.Info().
+				Str("Service Port", strconv.Itoa(h.httpServer.Port)).Send()
 
 	go func() {
 		err := srv.ListenAndServe()
 		if err != nil {
-			childLogger.Info().Err(err).Msg("canceling http mux server !!!")
+			childLogger.Warn().
+						Err(err).Msg("Canceling http mux server !!!")
 		}
 	}()
 	
@@ -245,17 +306,22 @@ func (h HttpServer) StartHttpAppServer(	ctx context.Context,
 
 		switch sig {
 		case syscall.SIGHUP:
-			childLogger.Info().Msg("Received SIGHUP: reloading configuration...")
+			childLogger.Info().
+						Msg("Received SIGHUP: reloading configuration...")
 		case syscall.SIGINT, syscall.SIGTERM:
-			childLogger.Info().Msg("Received SIGINT/SIGTERM termination signal. Exiting")
+			childLogger.Info().
+						Msg("Received SIGINT/SIGTERM termination signal. Exiting")
 			return
 		default:
-			childLogger.Info().Interface("Received signal:", sig).Send()
+			childLogger.Info().
+						Interface("Received signal:", sig).Send()
 		}
 	}
 
 	if err := srv.Shutdown(ctx); err != nil && err != http.ErrServerClosed {
-		childLogger.Error().Err(err).Msg("warning dirty shutdown !!!")
+		childLogger.Warn().
+					Err(err).
+					Msg("Dirty shutdown WARNING !!!")
 		return
 	}
 }

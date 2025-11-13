@@ -9,11 +9,13 @@ import(
 
 // About get redis env var
 func GetCacheEnv() model.CacheConfig {
-	childLogger.Info().Str("func","GetCacheEnv").Send()
+	childLogger.Info().
+				Str("func","GetCacheEnv").Send()
 
 	err := godotenv.Load(".env")
 	if err != nil {
-		childLogger.Info().Err(err).Send()
+		childLogger.Info().
+					Err(err).Send()
 	}
 	
 	var cacheConfig		model.CacheConfig
