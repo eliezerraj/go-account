@@ -23,6 +23,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
+// variables
 var (
 	childLogger  = zerolog.New(os.Stdout).
 						With().
@@ -37,6 +38,7 @@ var (
 	tracerProvider go_core_observ.TracerProvider
 )
 
+// About create the router
 type HttpRouters struct {
 	workerService 	*service.WorkerService
 	ctxTimeout		time.Duration

@@ -1,6 +1,7 @@
 package service
 
 import(
+	"fmt"
 	"os"
 	"time"
 	"context"
@@ -10,12 +11,15 @@ import(
 	"github.com/go-account/internal/core/model"
 	"github.com/go-account/internal/core/erro"
 
+	"go.opentelemetry.io/otel/trace"
+
 	go_core_pg "github.com/eliezerraj/go-core/database/pg"
 	go_core_observ "github.com/eliezerraj/go-core/observability"
 	go_core_api "github.com/eliezerraj/go-core/api"
 	go_core_cache "github.com/eliezerraj/go-core/cache/redis_cluster"
 )
 
+//  Variables
 var (
 	childLogger  = zerolog.New(os.Stdout).
 						With().
@@ -31,6 +35,22 @@ var (
 type WorkerService struct {
 	workerRepository *database.WorkerRepository
 	workerCache		*go_core_cache.RedisClient
+}
+
+
+func logWithTrace(ctx context.Context) *zerolog.Event {
+	e := childLogger.Info()
+
+	if sc := trace.SpanContextFromContext(ctx); sc.IsValid() {
+
+		fmt.Printf("2 TraceID: %d \n", sc.TraceID().String())
+		fmt.Printf("3 SpanID: %d \n", sc.SpanID().String())
+
+		e = e.
+			Str("trace_id", sc.TraceID().String()).
+			Str("span_id", sc.SpanID().String())
+	}
+	return e
 }
 
 // About new worker service
@@ -174,12 +194,21 @@ func (s *WorkerService) GetAccount(ctx context.Context, account *model.Account) 
 	// Trace
 	ctx, span := tracerProvider.SpanCtx(ctx, "service.GetAccount")
 	defer span.End()
-	
+
+	logWithTrace(ctx).
+				Str("func", "GetAccount").
+				Msg("=========================== teste 01")
+
 	// Get account
 	res, err := s.workerRepository.GetAccount(ctx, account)
 	if err != nil {
 		return nil, err
 	}
+
+	logWithTrace(ctx).
+				Str("func", "GetAccount").
+				Msg("===================================teste 02")
+
 	return res, nil
 }
 
